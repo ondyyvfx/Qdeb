@@ -9,25 +9,32 @@ export default function RegisterPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [fullname, setFullname] = useState("");
+    const [full_name, setFull_name] = useState("");
     const [phone, setPhone] = useState("");
-
-//     Email
-// Password
-// Full name
 
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const getCsrfToken = async () => {
+      const res = await fetch("http://localhost:8000/api/csrf/", {
+        credentials: "include",
+      })
+      const data = await res.json();
+      return data.csrfToken;
+    }
   
-    const res = await fetch("http://localhost:8000/auth/register/", {
+    const csrfToken = await getCsrfToken();
+    const res = await fetch("http://localhost:8000/api/auth/register/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'X-CSRFToken': csrfToken,
       },
+      credentials: "include",
       body: JSON.stringify({
         email,
         password,
-        fullname,
+        full_name,
         phone
       }),
     });
@@ -49,7 +56,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <Label htmlFor="first_name">Full name</Label>
-          <Input value={fullname} onChange={(e) => setFullname(e.target.value)} id="first_name" name="first_name" />
+          <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} id="first_name" name="first_name" />
         </div>
         <div className="mb-4">
           <Label htmlFor="email">Email</Label>
