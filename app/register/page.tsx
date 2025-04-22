@@ -65,32 +65,49 @@ export default function RegisterPage() {
     
   
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded-2xl shadow-md bg-background">
-      <h1 className="text-2xl font-bold mb-6">Регистрация</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <Label htmlFor="first_name">Full name</Label>
-          <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} id="first_name" name="first_name" />
-        </div>
-        <div className="mb-4">
-          <Label htmlFor="email">Email</Label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" id="email" name="email" />
-        </div>
-        <div className="mb-6">
-          <Label htmlFor="password">Пароль</Label>
-          <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" id="password" name="password" />
-        </div>
-        <div className="mb-6">
-          <Label htmlFor="phone">Phone number</Label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="phone" name="phone" />
-        </div>
-        <div className="mb-6">
-          <Label htmlFor="pfp">Profile picture</Label>
-          <Input onChange={handleFileChange} type="file" accept="image/" name="profilePicture" />
-          {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded-full" />}
-        </div>
-        <Button type="submit">Зарегистрироваться</Button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-muted px-4">
+      <div className="w-full max-w-lg p-8 border rounded-2xl shadow-md bg-background">
+        <h1 className="text-3xl font-bold mb-6 text-center">Регистрация</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <Label htmlFor="first_name">Full name</Label>
+            <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} id="first_name" name="first_name" />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="email">Email</Label>
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" id="email" name="email" />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="password">Пароль</Label>
+            <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" id="password" name="password" />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="phone">Phone number</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" name="phone" />
+          </div>
+
+          <div className="mb-6">
+            <Label htmlFor="pfp">Profile picture</Label>
+            <div className="flex items-center gap-4 mt-2">
+              <label className="cursor-pointer px-4 py-2 bg-accent text-white rounded-lg shadow-sm hover:bg-primary/90 transition">
+                Выбрать файл
+                <input
+                  onChange={handleFileChange}
+                  type="file"
+                  accept="image/*"
+                  name="profilePicture"
+                  className="hidden"
+                />
+              </label>
+              {preview && (
+                <img src={preview} alt="Preview" className="w-16 h-16 object-cover rounded-full border" />
+              )}
+            </div>
+          </div>
+            
+          <Button type="submit" className="w-full mt-4">Зарегистрироваться</Button>
+        </form>
+      </div>
     </div>
   );
 }
