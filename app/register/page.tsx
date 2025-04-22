@@ -11,44 +11,58 @@ export default function RegisterPage() {
     const [password, setPassword] = useState("");
     const [full_name, setFull_name] = useState("");
     const [phone, setPhone] = useState("");
+    const [avatar, setAvatar] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setAvatar(file);
+        setPreview(URL.createObjectURL(file));
+      }
+    };
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const getCsrfToken = async () => {
-      const res = await fetch("http://localhost:8000/api/csrf/", {
+      e.preventDefault();
+    
+      const getCsrfToken = async () => {
+        const res = await fetch("http://localhost:8000/api/csrf/", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        return data.csrfToken;
+      };
+    
+      const csrfToken = await getCsrfToken();
+    
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("full_name", full_name);
+      formData.append("phone", phone);
+      if (avatar) {
+        formData.append("avatar", avatar); // <-- имя должно совпадать с бэкендом
+      }
+    
+      const res = await fetch("http://localhost:8000/api/auth/register/", {
+        method: "POST",
         credentials: "include",
-      })
-      const data = await res.json();
-      return data.csrfToken;
-    }
-  
-    const csrfToken = await getCsrfToken();
-    const res = await fetch("http://localhost:8000/api/auth/register/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        'X-CSRFToken': csrfToken,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-        full_name,
-        phone
-      }),
-    });
-  
-    if (res.ok) {
-      const data = await res.json();
-      console.log("Успешная регистрация:", data);
-      // Здесь можно редиректнуть на login или показать сообщение
-    } else {
-      const error = await res.json();
-      console.error("Ошибка:", error);
-      // Покажи ошибку на UI (например, через useState)
-    }
-  };
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+        body: formData,
+      });
+    
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Успешная регистрация:", data);
+      } else {
+        const error = await res.json();
+        console.error("Ошибка:", error);
+      }
+    };
+    
   
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-2xl shadow-md bg-background">
@@ -67,8 +81,13 @@ export default function RegisterPage() {
           <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" id="password" name="password" />
         </div>
         <div className="mb-6">
-          <Label htmlFor="password">Phone number</Label>
+          <Label htmlFor="phone">Phone number</Label>
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="phone" name="phone" />
+        </div>
+        <div className="mb-6">
+          <Label htmlFor="pfp">Profile picture</Label>
+          <Input onChange={handleFileChange} type="file" accept="image/" name="profilePicture" />
+          {preview && <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded-full" />}
         </div>
         <Button type="submit">Зарегистрироваться</Button>
       </form>

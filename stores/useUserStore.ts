@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type User = {
   id: number;
@@ -13,7 +14,14 @@ type State = {
   setUser: (user: User | null) => void;
 };
 
-export const useUserStore = create<State>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
-}));
+export const useUserStore = create<State>()(
+  persist(
+    (set) => ({
+      user: null,
+      setUser: (user) => set({ user }),
+    }),
+    {
+      name: 'user-storage', // название ключа в localStorage
+    }
+  )
+);

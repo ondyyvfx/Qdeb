@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
 import { Montserrat } from "next/font/google";
+import { AppWrapper } from "@/components/shared/AppWrapper";
+import 'keen-slider/keen-slider.min.css';
+
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -24,7 +27,9 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable}`}
       >
+        <AppWrapper>
         {children}
+        </AppWrapper>
       </body>
     </html>
   );
