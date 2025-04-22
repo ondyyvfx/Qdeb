@@ -37,7 +37,7 @@ const UpcomingTournaments = () => {
   }, []);
 
   return (
-    <div className='mx-10'>
+    <div className='my-14 mx-19'>
       <h1 className="text-3xl font-bold mb-6">Ближайшие турниры</h1>
       <div className="flex flex-row overflow-hidden justify-between gap-4">
         {cards.map((card, index) => (
