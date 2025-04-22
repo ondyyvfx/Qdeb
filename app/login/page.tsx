@@ -76,8 +76,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded-2xl shadow-md bg-background">
-      <h1 className="text-2xl font-bold mb-6">Вход</h1>
+    <div className="flex items-center justify-center min-h-screen bg-muted px-4">
+    <div className="w-full max-w-lg p-8 border rounded-2xl shadow-md bg-background">
+      <h1 className="text-3xl font-bold mb-6 text-center">Вход</h1>
       <form onSubmit={handleLogin}>
         <div className="mb-4">
           <Label htmlFor="email">Email</Label>
@@ -107,8 +108,10 @@ export default function LoginPage() {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
-        <Button type="submit">Войти</Button>
+        <Button className="w-full" type="submit">Войти</Button>
       </form>
     </div>
+  </div>
+  
   );
 }
