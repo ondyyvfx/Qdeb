@@ -1,13 +1,27 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import TournamentCard, { card } from './TournamentCard';
+import React, { useEffect, useState, useRef } from 'react';
+import TournamentCard from './TournamentCard';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import { Swiper as SwiperCore } from 'swiper';
+import { Navigation } from 'swiper/modules';
 
-// --------- Кол-во ближайших турниров, которые мы хотим отобразить
-const NUMBER_OF_EVENTS = 3;
+const NUMBER_OF_EVENTS = 10;
+
+interface Tournament {
+  id: number;
+  title: string;
+  date: string;
+  cost: number;
+  location: string;
+  backgroundUrl: string;
+}
 
 const UpcomingTournaments = () => {
-  const [cards, setCards] = useState<card[]>([]);
+  const [cards, setCards] = useState<Tournament[]>([]);
+  const swiperRef = useRef<SwiperCore | null>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -16,15 +30,16 @@ const UpcomingTournaments = () => {
         const data = await res.json();
 
         const formatted = data.map((event: any) => {
-          const rawDate = event.event_datetime.split('T')[0]; // "2025-04-30"
+          const rawDate = event.event_datetime.split('T')[0];
           const [year, month, day] = rawDate.split('-');
           return {
+            id: event.id, 
             title: event.title,
-            date: `${day}.${month}.${year}`, // "30.04.2025"
+            date: `${day}.${month}.${year}`,
             cost: event.cost,
             location: event.city,
-            backgroundUrl: '/assets/Q.svg', // <--- Путь к твоей картинке
-          };
+            backgroundUrl: '/assets/Q.svg',
+          };          
         });
 
         setCards(formatted);
@@ -36,20 +51,72 @@ const UpcomingTournaments = () => {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.update();
+      swiperRef.current.slideTo(0);
+    }
+  }, [cards]);
+
   return (
-    <div className='my-14 mx-19'>
-      <h1 className="text-3xl font-bold mb-6">Ближайшие турниры</h1>
-      <div className="flex flex-row overflow-hidden justify-between gap-4">
-        {cards.map((card, index) => (
-          <TournamentCard
-            key={index}
-            title={card.title}
-            date={card.date}
-            cost={card.cost}
-            location={card.location}
-            backgroundUrl={card.backgroundUrl} // <--- Передаем сюда фон
-          />
-        ))}
+    <div className="my-14 px-4 xl:px-20">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Ближайшие турниры</h1>
+        <a href="/calendar" className="text-sm text-blue-500 hover:underline">
+          Посмотреть все
+        </a>
+      </div>
+
+      <div className="relative">
+        <div className="swiper-button-prev-custom absolute -left-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+          <ChevronLeft className="w-6 h-6 text-white" />
+        </div>
+
+        <div className="swiper-button-next-custom absolute -right-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+          <ChevronRight className="w-6 h-6 text-white" />
+        </div>
+
+        <Swiper
+          modules={[Navigation]}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          spaceBetween={24}
+          slidesPerView={1.2}
+          centeredSlides={false}
+          watchSlidesProgress
+          observer={true}
+          observeParents={true}
+          updateOnWindowResize={true}
+          breakpoints={{
+            640: {
+              slidesPerView: 1.8,
+              spaceBetween: 24,
+            },
+            768: {
+              slidesPerView: 2.5,
+              spaceBetween: 24,
+            },
+            1024: {
+              slidesPerView: 3.1,
+              spaceBetween: 24,
+            },
+            1280: {
+              slidesPerView: 3.2,
+              spaceBetween: 24,
+            },
+          }}
+          navigation={{
+            prevEl: '.swiper-button-prev-custom',
+            nextEl: '.swiper-button-next-custom',
+          }}
+        >
+          {cards.map((card) => (
+            <SwiperSlide key={card.id} className="!w-[30%]">
+              <TournamentCard {...card} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </div>
   );
