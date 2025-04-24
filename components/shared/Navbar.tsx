@@ -37,15 +37,18 @@ const Navbar = () => {
     router.push('/');
   };
 
+
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center">
       <div className="w-full my-3.5 py-4 flex items-center justify-between mx-19">
         <div className="flex">
+          <a href='/'>
           <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
+          </a>
         </div>
 
         <nav className="hidden md:flex gap-8 text-sm font-medium">
-          <a href="#" className="hover:text-accent transition-colors mx-4">Календарь мероприятий</a>
+          <a href="/calendar" className="hover:text-accent transition-colors mx-4">Календарь мероприятий</a>
           <a href="#" className="hover:text-accent transition-colors mx-4">Рейтинг спикеров</a>
           <a href="#" className="hover:text-accent transition-colors mx-4">О нас</a>
         </nav>
