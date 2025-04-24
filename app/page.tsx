@@ -4,6 +4,7 @@ import UpcomingTournaments from "@/components/shared/UpcomingTournaments";
 import TopSpeakersSection from "@/components/shared/TopSpeakerSection";
 import DebateClubs from "@/components/shared/DebateClubs";
 
+
 export default function Home() {
   return (
     <div className="">
