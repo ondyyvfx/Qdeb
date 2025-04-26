@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/stores/useUserStore";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function LoginPage() {
 
     if (res.ok) {
       const data = await res.json();
-      useUserStore.getState().setUser(data); // сохраняем юзера в Zustand
+      useUserStore.getState().setUser(data);
     } else {
       console.error("Не удалось получить профиль пользователя");
     }
@@ -60,14 +61,11 @@ export default function LoginPage() {
       const data = await res.json();
       console.log("Успешный вход:", data);
 
-      // Сохраняем токены в cookie
       Cookies.set("accessToken", data.access, { expires: 1 });
       Cookies.set("refreshToken", data.refresh, { expires: 7 });
 
-      // Получаем профиль и сохраняем в Zustand
       await fetchProfile(data.access);
 
-      // Редирект на главную
       router.push("/");
     } else {
       const error = await res.json();
@@ -76,42 +74,74 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted px-4">
-    <div className="w-full max-w-lg p-8 border rounded-2xl shadow-md bg-background">
-      <h1 className="text-3xl font-bold mb-6 text-center">Вход</h1>
-      <form onSubmit={handleLogin}>
-        <div className="mb-4">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            id="email"
-            name="email"
+    <div className="login-form flex min-h-screen bg-[#070A12] text-foreground">
+      {/* Левая сторона с баннером */}
+      <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
+        <div className="w-full h-full relative rounded-2xl overflow-hidden">
+          <Image
+            src="/assets/banner.png"
+            alt="Banner"
+            fill
+            className="object-cover w-full h-full"
           />
         </div>
-        <div className="mb-6 relative">
-          <Label htmlFor="password">Пароль</Label>
-          <Input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type={showPassword ? "text" : "password"}
-            id="password"
-            name="password"
-            className="pr-10"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute top-5 right-2 text-gray-500"
-          >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
+      </div>
+
+      {/* Правая сторона с формой */}
+      <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
+        <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
+          <h1 className="text-2xl font-bold text-center mb-8">
+            Вход в аккаунт
+          </h1>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="h-12 rounded-lg"
+              />
+            </div>
+
+            <div className="space-y-2 relative">
+              <div className="flex justify-between items-baseline">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Пароль
+                </Label>
+                <p className="text-sm text-center text-muted-foreground m-0 p-0 leading-none flex justify-end right-0">
+                  Забыли пароль?
+                </p>
+              </div>
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-12 rounded-lg pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-10 right-3 text-gray-400 hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold text-base"
+            >
+              Войти
+            </Button>
+          </form>
         </div>
-        <Button className="w-full" type="submit">Войти</Button>
-      </form>
+      </div>
     </div>
-  </div>
-  
   );
 }
