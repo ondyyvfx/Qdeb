@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef } from 'react';
-import TournamentCard from './TournamentCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import { Swiper as SwiperCore } from 'swiper';
-import { Navigation } from 'swiper/modules';
+import React, { useEffect, useState, useRef } from "react";
+import TournamentCard from "./TournamentCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { Swiper as SwiperCore } from "swiper";
+import { Navigation } from "swiper/modules";
 
 const NUMBER_OF_EVENTS = 10;
 
@@ -26,25 +26,31 @@ const UpcomingTournaments = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/events/nearest/${NUMBER_OF_EVENTS}/`);
+        const res = await fetch(
+          `http://localhost:8000/api/events/nearest/${NUMBER_OF_EVENTS}/`
+        );
         const data = await res.json();
+        console.log("API response:", data);
 
-        const formatted = data.map((event: any) => {
-          const rawDate = event.event_datetime.split('T')[0];
-          const [year, month, day] = rawDate.split('-');
-          return {
-            id: event.id, 
-            title: event.title,
-            date: `${day}.${month}.${year}`,
-            cost: event.cost,
-            location: event.city,
-            backgroundUrl: '/assets/Q.svg',
-          };          
-        });
-
-        setCards(formatted);
+        if (Array.isArray(data.results)) {
+          const formatted = data.results.map((event: any) => {
+            const rawDate = event.event_datetime.split("T")[0];
+            const [year, month, day] = rawDate.split("-");
+            return {
+              id: event.id,
+              title: event.title,
+              date: `${day}.${month}.${year}`,
+              cost: event.cost,
+              location: event.city,
+              backgroundUrl: "/assets/Q.svg",
+            };
+          });
+          setCards(formatted);
+        } else {
+          console.error("Ожидался массив, но получено:", data);
+        }
       } catch (error) {
-        console.error('Ошибка при загрузке турниров:', error);
+        console.error("Ошибка при загрузке турниров:", error);
       }
     };
 
@@ -68,11 +74,11 @@ const UpcomingTournaments = () => {
       </div>
 
       <div className="relative">
-        <div className="swiper-button-prev-custom absolute -left-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+        <div className="swiper-button-prev-tournaments absolute -left-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
           <ChevronLeft className="w-6 h-6 text-white" />
         </div>
 
-        <div className="swiper-button-next-custom absolute -right-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+        <div className="swiper-button-next-tournaments absolute -right-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
           <ChevronRight className="w-6 h-6 text-white" />
         </div>
 
@@ -107,8 +113,8 @@ const UpcomingTournaments = () => {
             },
           }}
           navigation={{
-            prevEl: '.swiper-button-prev-custom',
-            nextEl: '.swiper-button-next-custom',
+            prevEl: ".swiper-button-prev-tournaments",
+            nextEl: ".swiper-button-next-tournaments",
           }}
         >
           {cards.map((card) => (
