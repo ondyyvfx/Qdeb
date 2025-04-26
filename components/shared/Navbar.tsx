@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import React, { useState, useRef, useEffect } from 'react';
-import logoImage from '../../public/assets/logo.svg';
-import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation';
-import { useUserStore } from '@/stores/useUserStore';
-import Cookies from 'js-cookie';
+import Image from "next/image";
+import React, { useState, useRef, useEffect } from "react";
+import logoImage from "../../public/assets/logo.svg";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/useUserStore";
+import Cookies from "js-cookie";
 
 const Navbar = () => {
   const router = useRouter();
@@ -23,34 +23,45 @@ const Navbar = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // --------------------- Выход из аккаунта: удаляем куки и Zustand
   const handleLogout = () => {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
     setUser(null);
-    router.push('/');
+    router.push("/");
   };
-
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center">
       <div className="w-full my-3.5 py-4 flex items-center justify-between mx-19">
         <div className="flex">
-          <a href='/'>
-          <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
+          <a href="/">
+            <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
           </a>
         </div>
 
         <nav className="hidden md:flex gap-8 text-sm font-medium">
-          <a href="/calendar" className="hover:text-accent transition-colors mx-4">Календарь мероприятий</a>
-          <a href="#" className="hover:text-accent transition-colors mx-4">Рейтинг спикеров</a>
-          <a href="#" className="hover:text-accent transition-colors mx-4">О нас</a>
+          <a
+            href="/calendar"
+            className="hover:text-accent transition-colors mx-4"
+          >
+            Календарь мероприятий
+          </a>
+          <a
+            href="/rating"
+            className="hover:text-accent transition-colors mx-4"
+          >
+            Рейтинг спикеров
+          </a>
+          <a href="#" className="hover:text-accent transition-colors mx-4">
+            О нас
+          </a>
         </nav>
 
         <div className="flex-shrink-0 relative" ref={menuRef}>
@@ -68,11 +79,13 @@ const Navbar = () => {
                   className="rounded-full object-cover"
                 />
               )}
-              <span className="text-sm font-medium text-white">{user.full_name}</span>
+              <span className="text-sm font-medium text-white">
+                {user.full_name}
+              </span>
             </div>
           ) : (
             <Button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push("/login")}
               variant="default"
               className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6"
             >
@@ -85,7 +98,7 @@ const Navbar = () => {
             <div className="absolute right-0 mt-3 bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
               <button
                 onClick={() => {
-                  router.push('/profile');
+                  router.push("/profile");
                   setMenuOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
