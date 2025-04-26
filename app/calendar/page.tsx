@@ -10,6 +10,7 @@ type Event = {
   cost: number;
   city: string;
   event_datetime: string;
+  is_registration_open: boolean;
 };
 
 export default async function CalendarPage() {
@@ -25,14 +26,21 @@ export default async function CalendarPage() {
 
   const data: unknown = await res.json();
 
-  if (!Array.isArray(data)) {
+  if (
+    typeof data !== "object" ||
+    data === null ||
+    !("results" in data) ||
+    !Array.isArray((data as any).results)
+  ) {
     throw new Error("Неверный формат данных");
   }
 
-  const events: Event[] = data as Event[];
+  const events: Event[] = (data as any).results;
 
   const groupedByMonth = events.reduce((acc: any, event) => {
-    const month = format(new Date(event.event_datetime), "LLLL yyyy", { locale: ru });
+    const month = format(new Date(event.event_datetime), "LLLL yyyy", {
+      locale: ru,
+    });
     acc[month] = acc[month] || [];
     acc[month].push(event);
     return acc;
