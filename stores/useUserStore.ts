@@ -1,13 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type User = {
-  id: number;
-  email: string;
-  full_name: string;
-  avatar?: string;
-  bio?: string;
-};
+export type User = {
+  email: string
+  full_name: string
+  phone?: string
+  description?: string
+  elo_rating?: number
+  tournaments_completed?: number
+  avg_speech?: number
+  std_deviation?: number
+  total_achievements?: number
+  avatar: string // URL на аватарку
+  // achievements?: Achievement[] // если понадобится
+}
+
 
 type State = {
   user: User | null;
