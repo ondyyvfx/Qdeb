@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
 
   const router = useRouter();
 
@@ -61,7 +63,9 @@ export default function LoginPage() {
       const data = await res.json();
       console.log("Успешный вход:", data);
 
-      Cookies.set("accessToken", data.access, { expires: 1 });
+      Cookies.set("accessToken", data.access, {
+        expires: rememberDevice ? 7 : 1,
+      });
       Cookies.set("refreshToken", data.refresh, { expires: 7 });
 
       await fetchProfile(data.access);
@@ -75,70 +79,90 @@ export default function LoginPage() {
 
   return (
     <div className="login-form flex min-h-screen bg-[#070A12] text-foreground">
-      {/* Левая сторона с баннером */}
+      {/* Левая сторона с картинкой */}
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
-        <div className="w-full h-full relative rounded-2xl overflow-hidden">
+        <div className="relative w-full h-full bg-primary rounded-2xl overflow-hidden">
           <Image
-            src="/assets/banner.png"
-            alt="Banner"
+            src="/assets/banner.png" // путь к твоей картинке
+            alt="Login Banner"
             fill
-            className="object-cover w-full h-full"
+            className="object-cover rounded-2xl"
           />
         </div>
       </div>
 
       {/* Правая сторона с формой */}
-      <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
-        <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
-          <h1 className="text-2xl font-bold text-center mb-8">
-            Вход в аккаунт
-          </h1>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
+      <div className="flex w-full md:w-1/2 items-center justify-center p-12 md:p-24 animate-fade-in">
+        <div className="w-full">
+          <h1 className="text-4xl text-center mb-10">Войдите в аккаунт</h1>
+          <form onSubmit={handleLogin} className="space-y-8">
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-lg">
+                Электронная почта
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="h-12 rounded-lg"
+                placeholder="example@mail.com"
+                className="h-14 rounded-xl text-base"
               />
             </div>
 
-            <div className="space-y-2 relative">
-              <div className="flex justify-between items-baseline">
-                <Label htmlFor="password" className="text-sm font-medium">
+            <div className="space-y-3 relative">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="password" className="text-lg">
                   Пароль
                 </Label>
-                <p className="text-sm text-center text-muted-foreground m-0 p-0 leading-none flex justify-end right-0">
+                <a href="#" className="text-sm text-accent hover:underline">
                   Забыли пароль?
-                </p>
+                </a>
               </div>
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="h-12 rounded-lg pr-12"
+                placeholder="Введите пароль"
+                className="h-14 rounded-xl text-base pr-14"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-10 right-3 text-gray-400 hover:text-gray-300"
+                className="absolute top-11 right-4 text-gray-400 hover:text-gray-300"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
             </div>
+
+            {/* Чекбокс */}
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="remember"
+                checked={rememberDevice}
+                onCheckedChange={(checked) => setRememberDevice(!!checked)}
+              />
+              <Label htmlFor="remember" className="text-sm">
+                Запомнить это устройство
+              </Label>
+            </div>
+
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold text-base"
+              className="w-full h-14 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-lg"
             >
               Войти
             </Button>
+
+            <div className="flex justify-center text-base">
+              <span className="text-muted-foreground">
+                Нет учетной записи?&nbsp;
+              </span>
+              <a href="#" className="text-accent hover:underline font-medium">
+                Создайте аккаунт
+              </a>
+            </div>
           </form>
         </div>
       </div>
