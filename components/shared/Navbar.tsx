@@ -38,7 +38,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="w-full bg-background text-text border-b border-white/10 flex justify-center">
+    <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
       <div className="w-full my-3.5 py-4 flex items-center justify-between mx-19">
         <div className="flex">
           <a href="/">
@@ -71,13 +71,15 @@ const Navbar = () => {
               onClick={() => setMenuOpen((prev) => !prev)}
             >
               {user.avatar && (
-                <Image
-                  src={user.avatar}
-                  alt="avatar"
-                  width={40}
-                  height={40}
-                  className="rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full overflow-hidden">
+                  <Image
+                    src={user.avatar}
+                    alt="avatar"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
+                </div>
               )}
               <span className="text-sm font-medium text-white">
                 {user.full_name}
