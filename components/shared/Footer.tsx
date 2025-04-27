@@ -3,7 +3,7 @@ import { FaInstagram, FaTelegram } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#0B0D12] text-gray-400 py-6 mt-10">
+    <footer className="w-full bg-background border text-gray-400 py-6 mt-10">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-6 gap-4">
         {/* Логотип и копирайт */}
         <div className="flex flex-col items-start">
