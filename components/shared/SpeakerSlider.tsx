@@ -86,7 +86,12 @@ const SpeakerSlider = () => {
       >
         {speakers.map((speaker) => (
           <SwiperSlide key={speaker.id}>
-            <SpeakerCard {...speaker} />
+            <SpeakerCard
+              full_name={speaker.full_name}
+              avatar={speaker.avatar}
+              elo_rating={speaker.elo_rating}
+              achievements={speaker.achievements}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
