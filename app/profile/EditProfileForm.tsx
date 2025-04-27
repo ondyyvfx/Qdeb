@@ -17,12 +17,17 @@ const EditProfileForm = () => {
     full_name: "",
     phone: "",
     description: "",
-    avatar: "",
-    elo_rating: 0,
-    tournaments_completed: 0,
-    avg_speech: 0,
-    std_deviation: 0,
-    total_achievements: 0,
+    avatar: null as File | null, // Изменено на File
+    elo_rating: "",
+    tournaments_completed: "",
+    avg_speech: "",
+    std_deviation: "",
+    total_achievements: "",
+  });
+
+  const [achievementData, setAchievementData] = useState({
+    title: "",
+    tournament_id: "",
   });
 
   useEffect(() => {
@@ -32,12 +37,12 @@ const EditProfileForm = () => {
         full_name: user.full_name || "",
         phone: user.phone || "",
         description: user.description || "",
-        avatar: user.avatar || "",
-        elo_rating: user.elo_rating || 0,
-        tournaments_completed: user.tournaments_completed || 0,
-        avg_speech: user.avg_speech || 0,
-        std_deviation: user.std_deviation || 0,
-        total_achievements: user.total_achievements || 0,
+        avatar: user.avatar ? null : null, // Если есть аватар, то оставляем null
+        elo_rating: user.elo_rating?.toString() || "",
+        tournaments_completed: user.tournaments_completed?.toString() || "",
+        avg_speech: user.avg_speech?.toString() || "",
+        std_deviation: user.std_deviation?.toString() || "",
+        total_achievements: user.total_achievements?.toString() || "",
       });
     }
   }, [user]);
@@ -48,14 +53,25 @@ const EditProfileForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name.includes("rating") ||
-        name.includes("completed") ||
-        name.includes("avg") ||
-        name.includes("deviation") ||
-        name.includes("total")
-          ? Number(value)
-          : value,
+      [name]: value,
+    }));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        avatar: file,
+      }));
+    }
+  };
+
+  const handleAchievementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAchievementData((prev) => ({
+      ...prev,
+      [name]: value,
     }));
   };
 
@@ -68,14 +84,44 @@ const EditProfileForm = () => {
       return;
     }
 
+    const formDataToSend = new FormData();
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("full_name", formData.full_name);
+    formDataToSend.append("phone", formData.phone);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append(
+      "elo_rating",
+      formData.elo_rating ? formData.elo_rating : ""
+    );
+    formDataToSend.append(
+      "tournaments_completed",
+      formData.tournaments_completed ? formData.tournaments_completed : ""
+    );
+    formDataToSend.append(
+      "avg_speech",
+      formData.avg_speech ? formData.avg_speech : ""
+    );
+    formDataToSend.append(
+      "std_deviation",
+      formData.std_deviation ? formData.std_deviation : ""
+    );
+    formDataToSend.append(
+      "total_achievements",
+      formData.total_achievements ? formData.total_achievements : ""
+    );
+
+    // Добавляем аватар, если выбран файл
+    if (formData.avatar) {
+      formDataToSend.append("avatar", formData.avatar);
+    }
+
     try {
       const res = await fetch("http://localhost:8000/api/auth/profile/", {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: formDataToSend, // Отправляем FormData, не JSON
       });
 
       if (!res.ok) throw new Error("Ошибка обновления профиля");
@@ -86,9 +132,51 @@ const EditProfileForm = () => {
     }
   };
 
+  const handleAddAchievement = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      toast.error("Токен не найден");
+      return;
+    }
+
+    try {
+      const payload = {
+        title: achievementData.title,
+        tournament_id: achievementData.tournament_id
+          ? Number(achievementData.tournament_id)
+          : null,
+      };
+
+      const res = await fetch(
+        "http://localhost:8000/api/auth/add_achievement/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error("Ошибка добавления достижения");
+
+      toast.success("Достижение добавлено!");
+
+      setAchievementData({
+        title: "",
+        tournament_id: "",
+      });
+    } catch (error) {
+      toast.error("Ошибка при добавлении достижения");
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6 bg-background shadow-xl rounded-2xl mt-6">
-      <div className="flex items-center gap-4">
+    <div className="max-w-4xl mx-auto p-8 space-y-8 bg-background shadow-xl rounded-2xl mt-6">
+      <div className="flex items-center justify-between gap-6 mb-8">
         {user?.avatar ? (
           <div className="w-24 h-24 relative rounded-full overflow-hidden border border-gray-300">
             <Image
@@ -99,117 +187,174 @@ const EditProfileForm = () => {
             />
           </div>
         ) : (
-          <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold">
+          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-3xl font-semibold">
             {user?.full_name?.charAt(0).toUpperCase()}
           </div>
         )}
-        <div>
-          <h1 className="text-2xl font-semibold">
+        <div className="flex-grow">
+          <h1 className="text-3xl font-semibold text-gray-800">
             {user?.full_name || "Имя пользователя"}
           </h1>
-          <p className="text-muted-foreground">{user?.email}</p>
+          <p className="text-lg text-muted-foreground">{user?.email}</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <h2 className="text-lg font-medium mb-2">Личная информация</h2>
-          <div className="space-y-3">
-            <Input
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              required
-            />
-            <Input
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleChange}
-              placeholder="Полное имя"
-              required
-            />
-            <Input
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Телефон"
-              required
-            />
-            <Textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="О себе"
-            />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-medium mb-2">Статистика</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-2xl font-medium mb-4 text-gray-800">
+            Личная информация
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Elo рейтинг</p>
+              <p className="text-sm text-muted-foreground mb-1">Email</p>
               <Input
-                type="number"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                required
+              />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Полное имя</p>
+              <Input
+                name="full_name"
+                value={formData.full_name}
+                onChange={handleChange}
+                placeholder="Полное имя"
+                required
+              />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Телефон</p>
+              <Input
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Телефон"
+                required
+              />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">О себе</p>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="О себе"
+                rows={4}
+              />
+            </div>
+            <div className="col-span-1 md:col-span-2">
+              <p className="text-sm text-muted-foreground mb-1">Аватар</p>
+              <input
+                type="file"
+                name="avatar"
+                onChange={handleAvatarChange}
+                accept="image/*"
+                className="border rounded-md p-2 w-full"
+              />
+            </div>
+            <div className="col-span-1 md:col-span-2">
+              <p className="text-sm text-muted-foreground mb-1">ELO рейтинг</p>
+              <Input
                 name="elo_rating"
                 value={formData.elo_rating}
                 onChange={handleChange}
+                placeholder="ELO рейтинг"
               />
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-muted-foreground mb-1">
-                Турниров завершено
+                Завершенные турниры
               </p>
               <Input
-                type="number"
                 name="tournaments_completed"
                 value={formData.tournaments_completed}
                 onChange={handleChange}
+                placeholder="Завершенные турниры"
               />
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-muted-foreground mb-1">
-                Средний спикерский балл
+                Средний балл за спич
               </p>
               <Input
-                type="number"
-                step="0.1"
                 name="avg_speech"
                 value={formData.avg_speech}
                 onChange={handleChange}
+                placeholder="Средний балл"
               />
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-muted-foreground mb-1">
-                Станд. отклонение
+                Стандартное отклонение
               </p>
               <Input
-                type="number"
-                step="0.1"
                 name="std_deviation"
                 value={formData.std_deviation}
                 onChange={handleChange}
+                placeholder="Стандартное отклонение"
               />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 md:col-span-2">
               <p className="text-sm text-muted-foreground mb-1">
-                Достижений всего
+                Общее количество достижений
               </p>
               <Input
-                type="number"
                 name="total_achievements"
                 value={formData.total_achievements}
                 onChange={handleChange}
+                placeholder="Общее количество достижений"
               />
             </div>
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Сохранить
+        <Button
+          type="submit"
+          className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
+        >
+          Сохранить изменения
         </Button>
       </form>
+
+      <div className="mt-12">
+        <h2 className="text-2xl font-medium mb-6 text-gray-800">
+          Добавить достижение
+        </h2>
+        <form onSubmit={handleAddAchievement} className="space-y-6">
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">
+              Название достижения
+            </p>
+            <Input
+              name="title"
+              value={achievementData.title}
+              onChange={handleAchievementChange}
+              placeholder="Введите название"
+              required
+            />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">
+              ID турнира (опционально)
+            </p>
+            <Input
+              name="tournament_id"
+              value={achievementData.tournament_id}
+              onChange={handleAchievementChange}
+              placeholder="Введите ID турнира"
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
+          >
+            Добавить достижение
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };
