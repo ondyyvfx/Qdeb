@@ -11,6 +11,8 @@ type SpeakerCardProps = {
   avatar: string;
   elo_rating: number;
   achievements?: Achievement[];
+  avg_speech: number; // Добавляем новый пропс avg_speech
+  total_achievements: number; // Добавляем новый пропс total_achievements
 };
 
 const SpeakerCard = ({
@@ -18,6 +20,8 @@ const SpeakerCard = ({
   avatar,
   elo_rating,
   achievements,
+  avg_speech,
+  total_achievements,
 }: SpeakerCardProps) => {
   return (
     <Card className="flex items-center gap-4 p-4 bg-primary border-none">
@@ -29,6 +33,11 @@ const SpeakerCard = ({
       <CardContent className="flex flex-col p-0">
         <h3 className="font-semibold text-lg">{full_name}</h3>
         <p className="text-sm mt-1">Рейтинг: {elo_rating}</p>
+        {/* Отображаем avg_speech и total_achievements */}
+        <p className="text-sm mt-1">Средняя речь: {avg_speech}</p>
+        <p className="text-sm mt-1">
+          Общее количество достижений: {total_achievements}
+        </p>
         {achievements && achievements.length > 0 && (
           <div className="text-sm text-muted-foreground mt-1">
             {achievements.map((achievement) => (
