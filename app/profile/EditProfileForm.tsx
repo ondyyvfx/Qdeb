@@ -175,8 +175,9 @@ const EditProfileForm = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8 bg-background shadow-xl rounded-2xl mt-6">
-      <div className="flex items-center justify-between gap-6 mb-8">
+    <div className="max-w-6xl mx-auto p-8 space-y-12 bg-background shadow-xl rounded-2xl mt-6">
+      {/* Аватар + имя и почта */}
+      <div className="flex items-center gap-8 mb-8">
         {user?.avatar ? (
           <div className="w-24 h-24 relative rounded-full overflow-hidden border border-gray-300">
             <Image
@@ -191,7 +192,7 @@ const EditProfileForm = () => {
             {user?.full_name?.charAt(0).toUpperCase()}
           </div>
         )}
-        <div className="flex-grow">
+        <div>
           <h1 className="text-3xl font-semibold text-gray-800">
             {user?.full_name || "Имя пользователя"}
           </h1>
@@ -199,14 +200,17 @@ const EditProfileForm = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Основная форма */}
+      <form onSubmit={handleSubmit} className="space-y-10">
         <div>
-          <h2 className="text-2xl font-medium mb-4 text-gray-800">
+          <h2 className="text-2xl font-medium mb-6 text-gray-800">
             Личная информация
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Email</p>
+
+          <div className="grid grid-cols-2 gap-8">
+            {/* Email и Полное имя */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Email</p>
               <Input
                 name="email"
                 value={formData.email}
@@ -215,8 +219,9 @@ const EditProfileForm = () => {
                 required
               />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Полное имя</p>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Полное имя</p>
               <Input
                 name="full_name"
                 value={formData.full_name}
@@ -225,8 +230,10 @@ const EditProfileForm = () => {
                 required
               />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Телефон</p>
+
+            {/* Телефон и О себе */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Телефон</p>
               <Input
                 name="phone"
                 value={formData.phone}
@@ -235,8 +242,9 @@ const EditProfileForm = () => {
                 required
               />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">О себе</p>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">О себе</p>
               <Textarea
                 name="description"
                 value={formData.description}
@@ -245,18 +253,22 @@ const EditProfileForm = () => {
                 rows={4}
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">Аватар</p>
+
+            {/* Аватар */}
+            <div className="flex flex-col gap-2 col-span-2">
+              <p className="text-sm text-muted-foreground">Аватар</p>
               <input
                 type="file"
                 name="avatar"
                 onChange={handleAvatarChange}
                 accept="image/*"
-                className="border rounded-md p-2 w-full"
+                className="border rounded-md p-2"
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">ELO рейтинг</p>
+
+            {/* Остальные поля */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">ELO рейтинг</p>
               <Input
                 name="elo_rating"
                 value={formData.elo_rating}
@@ -264,8 +276,9 @@ const EditProfileForm = () => {
                 placeholder="ELO рейтинг"
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">
                 Завершенные турниры
               </p>
               <Input
@@ -275,8 +288,9 @@ const EditProfileForm = () => {
                 placeholder="Завершенные турниры"
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">
                 Средний балл за спич
               </p>
               <Input
@@ -286,8 +300,9 @@ const EditProfileForm = () => {
                 placeholder="Средний балл"
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">
+
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">
                 Стандартное отклонение
               </p>
               <Input
@@ -297,8 +312,9 @@ const EditProfileForm = () => {
                 placeholder="Стандартное отклонение"
               />
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-sm text-muted-foreground mb-1">
+
+            <div className="flex flex-col gap-2 col-span-2">
+              <p className="text-sm text-muted-foreground">
                 Общее количество достижений
               </p>
               <Input
@@ -311,6 +327,7 @@ const EditProfileForm = () => {
           </div>
         </div>
 
+        {/* Кнопка сохранить */}
         <Button
           type="submit"
           className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
@@ -319,15 +336,18 @@ const EditProfileForm = () => {
         </Button>
       </form>
 
-      <div className="mt-12">
+      {/* Добавление достижения */}
+      <div className="mt-16">
         <h2 className="text-2xl font-medium mb-6 text-gray-800">
           Добавить достижение
         </h2>
-        <form onSubmit={handleAddAchievement} className="space-y-6">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">
-              Название достижения
-            </p>
+
+        <form
+          onSubmit={handleAddAchievement}
+          className="grid grid-cols-2 gap-8"
+        >
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Название достижения</p>
             <Input
               name="title"
               value={achievementData.title}
@@ -336,8 +356,9 @@ const EditProfileForm = () => {
               required
             />
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">
+
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
               ID турнира (опционально)
             </p>
             <Input
@@ -347,12 +368,15 @@ const EditProfileForm = () => {
               placeholder="Введите ID турнира"
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
-          >
-            Добавить достижение
-          </Button>
+
+          <div className="col-span-2">
+            <Button
+              type="submit"
+              className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
+            >
+              Добавить достижение
+            </Button>
+          </div>
         </form>
       </div>
     </div>
