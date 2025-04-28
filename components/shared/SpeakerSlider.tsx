@@ -91,6 +91,8 @@ const SpeakerSlider = () => {
               avatar={speaker.avatar}
               elo_rating={speaker.elo_rating}
               achievements={speaker.achievements}
+              avg_speech={speaker.avg_speech}
+              total_achievements={speaker.total_achievements}
             />
           </SwiperSlide>
         ))}
