@@ -40,6 +40,7 @@ export default function RegisterPage() {
     formData.append("password", password);
     formData.append("full_name", full_name);
     formData.append("phone", phone);
+
     if (avatar) {
       formData.append("avatar", avatar);
     }
