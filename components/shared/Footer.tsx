@@ -3,49 +3,61 @@ import { FaInstagram, FaTelegram } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-background border-t border-white/10 text-gray-400 py-6 mt-10">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-6 gap-4">
-        {/* Логотип и копирайт */}
-        <div className="flex flex-col items-start">
-          <a href="/" className="text-2xl font-bold text-white mb-2">
-            QDeb
+    <footer className="w-full h-[175px] px-5 flex flex-col justify-between items-center bg-background border-t border-white/10 text-gray-400 py-4 pb-7 mt-6">
+      <div className="w-full flex justify-between items-start px-2">
+        {/* Фото слева сверху */}
+        <div className="flex items-start">
+          <Image
+            src="/assets/logo.svg"
+            alt="QDeb Logo"
+            width={50}
+            height={50}
+            className="opacity-75 w-32"
+          />
+        </div>
+
+        {/* Логотип соц. сетей справа сверху */}
+        <div className="flex items-start gap-2">
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
+          >
+            <FaInstagram size={32} color="white" />
           </a>
+          <a
+            href="https://t.me/qdebkz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
+          >
+            <FaTelegram size={32} color="white" />
+          </a>
+        </div>
+      </div>
+
+      <div className="w-full flex justify-between items-center px-2 mt-4">
+        {/* Все права защищены слева снизу */}
+        <div className="flex justify-start">
           <p className="text-sm">© 2025 QDeb. Все права защищены.</p>
         </div>
 
-        {/* Политика конфиденциальности */}
-        <div>
+        {/* Политика конфиденциальности посередине снизу */}
+        <div className="flex justify-center">
           <a href="/privacy-policy" className="text-sm hover:underline">
             Политика конфиденциальности
           </a>
         </div>
 
-        {/* Контакты и соцсети */}
-        <div className="flex flex-col items-end gap-2">
+        {/* Свяжитесь с нами справа снизу */}
+        <div className="flex justify-end">
           <p className="text-sm">
             Свяжитесь с нами:{" "}
             <a href="mailto:qdeb.info@gmail.com" className="hover:underline">
               qdeb.info@gmail.com
             </a>
           </p>
-          <div className="flex gap-3 mt-2">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
-            >
-              <FaInstagram size={18} color="white" />
-            </a>
-            <a
-              href="https://t.me"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
-            >
-              <FaTelegram size={18} color="white" />
-            </a>
-          </div>
         </div>
       </div>
     </footer>
