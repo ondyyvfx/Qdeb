@@ -175,11 +175,12 @@ const EditProfileForm = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-12 bg-background shadow-xl rounded-2xl mt-6">
-      {/* Аватар + имя и почта */}
-      <div className="flex items-center gap-8 mb-8">
+    <div className="max-w-7xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8 flex flex-col gap-12">
+      {/* Верхний блок: Аватар + Инфо */}
+      <div className="flex items-center gap-12">
+        {/* Аватар */}
         {user?.avatar ? (
-          <div className="w-24 h-24 relative rounded-full overflow-hidden border border-gray-300">
+          <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-primary">
             <Image
               src={user.avatar}
               alt="User avatar"
@@ -188,165 +189,155 @@ const EditProfileForm = () => {
             />
           </div>
         ) : (
-          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-3xl font-semibold">
+          <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center text-4xl font-bold">
             {user?.full_name?.charAt(0).toUpperCase()}
           </div>
         )}
-        <div>
-          <h1 className="text-3xl font-semibold text-gray-800">
+
+        {/* Информация */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-bold text-primary">
             {user?.full_name || "Имя пользователя"}
           </h1>
           <p className="text-lg text-muted-foreground">{user?.email}</p>
         </div>
       </div>
 
-      {/* Основная форма */}
-      <form onSubmit={handleSubmit} className="space-y-10">
-        <div>
-          <h2 className="text-2xl font-medium mb-6 text-gray-800">
-            Личная информация
-          </h2>
+      {/* Основная форма: Сетка слева направо */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+        <h2 className="text-3xl font-semibold text-gray-800">
+          Личная информация
+        </h2>
 
-          <div className="grid grid-cols-2 gap-8">
-            {/* Email и Полное имя */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">Email</p>
-              <Input
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-              />
-            </div>
+        <div className="grid grid-cols-3 gap-8">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Email</p>
+            <Input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">Полное имя</p>
-              <Input
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleChange}
-                placeholder="Полное имя"
-                required
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Полное имя</p>
+            <Input
+              name="full_name"
+              value={formData.full_name}
+              onChange={handleChange}
+              placeholder="Полное имя"
+              required
+            />
+          </div>
 
-            {/* Телефон и О себе */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">Телефон</p>
-              <Input
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Телефон"
-                required
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Телефон</p>
+            <Input
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Телефон"
+              required
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">О себе</p>
-              <Textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="О себе"
-                rows={4}
-              />
-            </div>
+          <div className="col-span-2 flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">О себе</p>
+            <Textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="О себе"
+              rows={4}
+            />
+          </div>
 
-            {/* Аватар */}
-            <div className="flex flex-col gap-2 col-span-2">
-              <p className="text-sm text-muted-foreground">Аватар</p>
-              <input
-                type="file"
-                name="avatar"
-                onChange={handleAvatarChange}
-                accept="image/*"
-                className="border rounded-md p-2"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Аватар</p>
+            <input
+              type="file"
+              name="avatar"
+              onChange={handleAvatarChange}
+              accept="image/*"
+              className="border rounded-md p-2"
+            />
+          </div>
 
-            {/* Остальные поля */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">ELO рейтинг</p>
-              <Input
-                name="elo_rating"
-                value={formData.elo_rating}
-                onChange={handleChange}
-                placeholder="ELO рейтинг"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">ELO рейтинг</p>
+            <Input
+              name="elo_rating"
+              value={formData.elo_rating}
+              onChange={handleChange}
+              placeholder="ELO рейтинг"
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">
-                Завершенные турниры
-              </p>
-              <Input
-                name="tournaments_completed"
-                value={formData.tournaments_completed}
-                onChange={handleChange}
-                placeholder="Завершенные турниры"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Завершенные турниры</p>
+            <Input
+              name="tournaments_completed"
+              value={formData.tournaments_completed}
+              onChange={handleChange}
+              placeholder="Завершенные турниры"
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">
-                Средний балл за спич
-              </p>
-              <Input
-                name="avg_speech"
-                value={formData.avg_speech}
-                onChange={handleChange}
-                placeholder="Средний балл"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              Средний балл за спич
+            </p>
+            <Input
+              name="avg_speech"
+              value={formData.avg_speech}
+              onChange={handleChange}
+              placeholder="Средний балл"
+            />
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground">
-                Стандартное отклонение
-              </p>
-              <Input
-                name="std_deviation"
-                value={formData.std_deviation}
-                onChange={handleChange}
-                placeholder="Стандартное отклонение"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              Стандартное отклонение
+            </p>
+            <Input
+              name="std_deviation"
+              value={formData.std_deviation}
+              onChange={handleChange}
+              placeholder="Стандартное отклонение"
+            />
+          </div>
 
-            <div className="flex flex-col gap-2 col-span-2">
-              <p className="text-sm text-muted-foreground">
-                Общее количество достижений
-              </p>
-              <Input
-                name="total_achievements"
-                value={formData.total_achievements}
-                onChange={handleChange}
-                placeholder="Общее количество достижений"
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              Общее количество достижений
+            </p>
+            <Input
+              name="total_achievements"
+              value={formData.total_achievements}
+              onChange={handleChange}
+              placeholder="Общее количество достижений"
+            />
           </div>
         </div>
 
-        {/* Кнопка сохранить */}
         <Button
           type="submit"
-          className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
+          className="self-end px-12 py-3 bg-primary text-white hover:bg-primary-dark transition rounded-xl"
         >
           Сохранить изменения
         </Button>
       </form>
 
-      {/* Добавление достижения */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-medium mb-6 text-gray-800">
+      {/* Блок достижений */}
+      <div className="flex flex-col gap-8">
+        <h2 className="text-3xl font-semibold text-gray-800">
           Добавить достижение
         </h2>
 
-        <form
-          onSubmit={handleAddAchievement}
-          className="grid grid-cols-2 gap-8"
-        >
-          <div className="flex flex-col gap-2">
+        <form onSubmit={handleAddAchievement} className="flex gap-8 items-end">
+          <div className="flex flex-col gap-2 flex-1">
             <p className="text-sm text-muted-foreground">Название достижения</p>
             <Input
               name="title"
@@ -357,7 +348,7 @@ const EditProfileForm = () => {
             />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 flex-1">
             <p className="text-sm text-muted-foreground">
               ID турнира (опционально)
             </p>
@@ -369,14 +360,12 @@ const EditProfileForm = () => {
             />
           </div>
 
-          <div className="col-span-2">
-            <Button
-              type="submit"
-              className="w-full bg-primary text-white hover:bg-primary-dark transition duration-200"
-            >
-              Добавить достижение
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="px-10 py-3 bg-primary text-white hover:bg-primary-dark transition rounded-xl"
+          >
+            Добавить
+          </Button>
         </form>
       </div>
     </div>
