@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useUserStore } from "@/stores/useUserStore";
 import Cookies from "js-cookie";
 import Image from "next/image";
-import Qlogo from "@/public/assets/Q.svg";
 
 const EditProfileForm = () => {
   const user = useUserStore((state) => state.user);
