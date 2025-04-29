@@ -9,10 +9,13 @@ type Event = {
   id: number;
   title: string;
   description: string;
-  cost: number;
+  cost: string; // Стоимость как строка
   city: string;
-  event_datetime: string;
+  start_date: string;
+  end_date: string | null;
   is_registration_open: boolean;
+  registration_link: string | null;
+  categories: string[]; // Категории могут быть динамическими
   formattedDate?: string;
   formattedDay?: string;
   formattedMonth?: string;
@@ -20,14 +23,16 @@ type Event = {
 
 type ClientCalendarProps = {
   events: Record<string, Event[]>;
+  categories: string[]; // Принимаем категории как пропс
 };
 
-const ClientCalendar = ({ events }: ClientCalendarProps) => {
+const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [formattedEvents, setFormattedEvents] = useState<
     Record<string, Event[]>
   >({});
+  const [activeEvent, setActiveEvent] = useState<number | null>(null);
 
   useEffect(() => {
     const formatEvents = () => {
@@ -39,17 +44,20 @@ const ClientCalendar = ({ events }: ClientCalendarProps) => {
       Object.values(events)
         .flat()
         .forEach((event) => {
-          const rawDate = event.event_datetime.split("T")[0];
-          const date = parseISO(rawDate);
+          const rawStartDate = event.start_date.split("T")[0];
+          const rawEndDate = event.end_date?.split("T")[0] ?? rawStartDate; // Если нет даты окончания, используем дату начала
+          const startDate = parseISO(rawStartDate);
+          const endDate = parseISO(rawEndDate);
 
-          const monthKey = format(date, "yyyy-MM");
-          const displayMonth = format(date, "LLLL yyyy", { locale: ru });
-          const formattedDay = format(date, "d");
+          const monthKey = format(startDate, "yyyy-MM");
+          const displayMonth = format(startDate, "LLLL yyyy", { locale: ru });
 
           const formattedEvent: Event = {
             ...event,
-            formattedDate: format(date, "dd.MM.yyyy"),
-            formattedDay,
+            formattedDate: `${format(startDate, "dd.MM.yyyy")} - ${format(
+              endDate,
+              "dd.MM.yyyy"
+            )}`, // Форматируем дату с учётом окончания
             formattedMonth: displayMonth,
           };
 
@@ -78,8 +86,7 @@ const ClientCalendar = ({ events }: ClientCalendarProps) => {
     ([month, eventsList]) => {
       const sortedEvents = [...eventsList].sort(
         (a, b) =>
-          new Date(a.event_datetime).getTime() -
-          new Date(b.event_datetime).getTime()
+          new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
       );
 
       const filtered = sortedEvents.filter((event) => {
@@ -101,6 +108,17 @@ const ClientCalendar = ({ events }: ClientCalendarProps) => {
     const cities = new Set(allEvents.map((event) => event.city));
     return ["Все", ...Array.from(cities)];
   }, [formattedEvents]);
+
+  const categoryTranslations: Record<string, string> = {
+    students: "Для студентов",
+    offline: "Оффлайн",
+    bpf: "БПФ",
+    school: "Для школьников",
+    online: "Онлайн",
+    apf: "АПФ",
+    wsdc: "WSDC",
+    // Добавьте другие категории по мере необходимости
+  };
 
   return (
     <div>
@@ -167,7 +185,17 @@ const ClientCalendar = ({ events }: ClientCalendarProps) => {
                         className="absolute z-0 top-0 left-0 w-full h-full rounded-lg"
                       />
                       <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-6xl">
-                        {event.formattedDay}
+                        <div className="flex flex-col items-center">
+                          <span>
+                            {format(parseISO(event.start_date), "dd")}
+                          </span>
+                          {event.end_date &&
+                            event.end_date !== event.start_date && (
+                              <span>
+                                {format(parseISO(event.end_date), "dd")}
+                              </span>
+                            )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex-1 space-y-2 text-white mt-4 z-10">
@@ -175,40 +203,68 @@ const ClientCalendar = ({ events }: ClientCalendarProps) => {
                         <div className="text-2xl font-bold">{event.title}</div>
                         <div className="text-xs text-gray-400">
                           {format(
-                            parseISO(event.event_datetime.split("T")[0]),
+                            parseISO(event.start_date.split("T")[0]),
                             "d MMMM, EEEE",
                             { locale: ru }
                           )}
+                          {event.end_date && event.end_date !== event.start_date
+                            ? ` - ${format(
+                                parseISO(event.end_date),
+                                "d MMMM, EEEE",
+                                { locale: ru }
+                              )}`
+                            : null}
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2 text-xs font-medium">
-                        <span className="bg-[#6F462A] px-4 py-1 rounded-sm text-sm font-m">
-                          Для студентов
-                        </span>
-                        <span className="bg-[#2A6F5E] px-4 py-1 rounded-sm text-sm font-m">
-                          Онлайн
-                        </span>
-                        <span className="bg-secondary px-4 py-1 rounded-sm text-sm font-m">
-                          БПФ
-                        </span>
+                        {event.categories.map((category) => (
+                          <span
+                            key={category}
+                            className="bg-[#6F462A] px-4 py-1 rounded-sm text-sm font-m"
+                          >
+                            {categoryTranslations[category] || category}{" "}
+                            {/* Отображаем переведённую категорию */}
+                          </span>
+                        ))}
                       </div>
 
                       <div className="text-sm text-green-400 z-10">
-                        {event.cost === 0 ? "Бесплатно" : `${event.cost} KZT`}
+                        {event.cost === "0" ? "Бесплатно" : `${event.cost}`}
                       </div>
                       <div className="text-sm text-gray-300 max-w-[450px]">
                         {" "}
                         г. {event.city}
                       </div>
-                      <div className="text-sm text-gray-400">
-                        {event.description}
+
+                      {/* Описание с кнопкой Подробнее */}
+                      <div className="text-sm text-gray-400 max-w-[900px]">
+                        {activeEvent === event.id ? event.description : ""}
                       </div>
-                    </div>
-                    <div className="absolute right-4 bottom-6">
-                      <button className="bg-white text-black mx-4 px-6 py-2 rounded-md font-semibold">
-                        Подробнее
-                      </button>
+
+                      <div className="absolute right-4 bottom-6 flex gap-2">
+                        {event.is_registration_open &&
+                          event.registration_link && (
+                            <a
+                              href={event.registration_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-green-400 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-500 transition"
+                            >
+                              Зарегистрироваться
+                            </a>
+                          )}
+                        <button
+                          className="bg-white text-black px-6 py-2 rounded-md font-semibold"
+                          onClick={() =>
+                            setActiveEvent(
+                              activeEvent === event.id ? null : event.id
+                            )
+                          }
+                        >
+                          Подробнее
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
