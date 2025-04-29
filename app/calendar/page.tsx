@@ -2,6 +2,7 @@ import Navbar from "@/components/shared/Navbar";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import ClientCalendar from "./ClientCalendar";
+import Footer from "@/components/shared/Footer";
 
 type Event = {
   id: number;
@@ -60,6 +61,7 @@ export default async function CalendarPage() {
         <h1 className="text-3xl font-bold mb-6">Календарь мероприятий</h1>
         <ClientCalendar events={groupedByMonth} categories={categories} />
       </div>
+      <Footer />
     </div>
   );
 }
