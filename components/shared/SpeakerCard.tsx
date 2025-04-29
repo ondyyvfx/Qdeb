@@ -11,8 +11,8 @@ type SpeakerCardProps = {
   avatar: string;
   elo_rating: number;
   achievements?: Achievement[];
-  avg_speech: number; // Добавляем новый пропс avg_speech
-  total_achievements: number; // Добавляем новый пропс total_achievements
+  avg_speech: number;
+  total_achievements: number;
 };
 
 const SpeakerCard = ({
@@ -23,17 +23,17 @@ const SpeakerCard = ({
   avg_speech,
   total_achievements,
 }: SpeakerCardProps) => {
+  console.log("Avatar src:", avatar);
   return (
     <Card className="flex items-center gap-4 p-4 bg-primary border-none">
       <img
-        src={avatar || "/assets/default-avatar.png"}
+        src={avatar}
         alt={full_name}
         className="w-16 h-16 rounded-full object-cover"
       />
       <CardContent className="flex flex-col p-0">
         <h3 className="font-semibold text-lg">{full_name}</h3>
         <p className="text-sm mt-1">Рейтинг: {elo_rating}</p>
-        {/* Отображаем avg_speech и total_achievements */}
         <p className="text-sm mt-1">Средняя речь: {avg_speech}</p>
         <p className="text-sm mt-1">
           Общее количество достижений: {total_achievements}
