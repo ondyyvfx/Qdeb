@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import "./styles/globals.css";
 import { Montserrat } from "next/font/google";
 import { AppWrapper } from "@/components/shared/AppWrapper";
-import 'keen-slider/keen-slider.min.css';
-
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-montserrat",
-})
+});
 
 export const metadata: Metadata = {
   title: "Qdeb",
@@ -24,12 +22,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${montserrat.variable}`}
-      >
-        <AppWrapper>
-        {children}
-        </AppWrapper>
+      <body className={`${montserrat.variable}`}>
+        <AppWrapper>{children}</AppWrapper>
       </body>
     </html>
   );
