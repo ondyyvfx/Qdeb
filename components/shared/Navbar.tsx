@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/useUserStore";
 import Cookies from "js-cookie";
+import Link from "next/link";
 
 const Navbar = () => {
   const router = useRouter();
@@ -41,27 +42,25 @@ const Navbar = () => {
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
       <div className="w-full my-3.5 py-4 flex items-center justify-between mx-19">
         <div className="flex">
-          <a href="/">
+          <Link href="/" passHref>
             <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
-          </a>
+          </Link>
         </div>
 
+        {/* Навигационные ссылки */}
         <nav className="hidden md:flex gap-8 text-sm font-medium">
-          <a
+          <Link
             href="/calendar"
             className="hover:text-accent transition-colors mx-4"
           >
             Календарь мероприятий
-          </a>
-          <a
-            href="/rating"
-            className="hover:text-accent transition-colors mx-4"
-          >
+          </Link>
+          <Link href="#" className="hover:text-accent transition-colors mx-4">
             Рейтинг спикеров
-          </a>
-          <a href="#" className="hover:text-accent transition-colors mx-4">
+          </Link>
+          <Link href="#" className="hover:text-accent transition-colors mx-4">
             О нас
-          </a>
+          </Link>
         </nav>
 
         <div className="flex-shrink-0 relative" ref={menuRef}>
