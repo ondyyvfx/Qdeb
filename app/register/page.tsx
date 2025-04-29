@@ -4,9 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [full_name, setFull_name] = useState("");
@@ -55,17 +58,16 @@ export default function RegisterPage() {
     });
 
     if (res.ok) {
-      const data = await res.json();
-      console.log("Успешная регистрация:", data);
+      alert("Регистрация прошла успешно!");
+      router.push("/");
     } else {
       const error = await res.json();
-      console.error("Ошибка:", error);
+      alert("Ошибка: " + (error?.detail || "неизвестная ошибка"));
     }
   };
 
   return (
     <div className="register-form flex h-screen bg-[#070A12] text-foreground">
-      {/* Левая сторона с баннером */}
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
         <div className="w-full h-full relative rounded-2xl overflow-hidden">
           <Image
@@ -77,76 +79,57 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Правая сторона с формой */}
       <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
         <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
           <h1 className="text-2xl font-bold text-center mb-8">Регистрация</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="full_name" className="text-sm font-medium">
-                Full name
-              </Label>
+              <Label htmlFor="full_name">Full name</Label>
               <Input
                 id="full_name"
-                name="full_name"
                 value={full_name}
                 onChange={(e) => setFull_name(e.target.value)}
                 required
-                className="h-12 rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Пароль
-              </Label>
+              <Label htmlFor="password">Пароль</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-12 rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-sm font-medium">
-                Phone number
-              </Label>
+              <Label htmlFor="phone">Phone number</Label>
               <Input
                 id="phone"
-                name="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="h-12 rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="avatar" className="text-sm font-medium">
-                Profile picture
-              </Label>
+              <Label htmlFor="avatar">Profile picture</Label>
               <div className="flex items-center gap-4">
-                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 transition">
+                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-primary/90 transition">
                   Выбрать файл
                   <input
                     type="file"
@@ -155,12 +138,11 @@ export default function RegisterPage() {
                     className="hidden"
                   />
                 </label>
-
                 {preview && (
                   <img
                     src={preview}
                     alt="Preview"
-                    className="h-12 w-12 rounded-full object-cover border"
+                    className="h-25 w-25 rounded-full object-cover border"
                   />
                 )}
               </div>
@@ -168,7 +150,7 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold text-base"
+              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold"
             >
               Зарегистрироваться
             </Button>
