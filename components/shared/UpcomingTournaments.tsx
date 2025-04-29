@@ -43,8 +43,8 @@ const UpcomingTournaments = () => {
 
         if (Array.isArray(data.results)) {
           const formatted = data.results.map((event: any) => {
-            const rawDate = event.event_datetime?.split("T")[0] || "";
-            const [year, month, day] = rawDate.split("-");
+            // const rawDate = event.event_datetime?.split("T")[0] || "";
+            // const [year, month, day] = rawDate.split("-");
             return {
               id: event.id,
               title: event.title,
