@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FaInstagram, FaTelegram } from "react-icons/fa";
 
 const Footer = () => {
@@ -18,22 +19,22 @@ const Footer = () => {
 
         {/* Логотип соц. сетей справа сверху */}
         <div className="flex items-start gap-2">
-          <a
-            href="https://instagram.com"
+          <Link
+            href="https://www.instagram.com/qdebkz?igsh=MWZpM2ltdGo5YXBtdg%3D%3D&utm_source=qr"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
           >
             <FaInstagram size={32} color="white" />
-          </a>
-          <a
+          </Link>
+          <Link
             href="https://t.me/qdebkz"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
           >
             <FaTelegram size={32} color="white" />
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -45,18 +46,18 @@ const Footer = () => {
 
         {/* Политика конфиденциальности посередине снизу */}
         <div className="flex justify-center">
-          <a href="/privacy-policy" className="text-sm hover:underline">
+          <Link href="/privacy-policy" className="text-sm hover:underline">
             Политика конфиденциальности
-          </a>
+          </Link>
         </div>
 
         {/* Свяжитесь с нами справа снизу */}
         <div className="flex justify-end">
           <p className="text-sm">
             Свяжитесь с нами:{" "}
-            <a href="mailto:qdeb.info@gmail.com" className="hover:underline">
-              qdeb.info@gmail.com
-            </a>
+            <Link href="mailto:qdebkz@gmail.com" className="hover:underline">
+              qdebkz@gmail.com
+            </Link>
           </p>
         </div>
       </div>
