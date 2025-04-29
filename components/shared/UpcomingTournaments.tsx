@@ -13,7 +13,8 @@ const NUMBER_OF_EVENTS = 10;
 interface Tournament {
   id: number;
   title: string;
-  date: string;
+  start_date: string;
+  end_date: string;
   cost: number;
   location: string;
   backgroundUrl: string;
@@ -29,17 +30,26 @@ const UpcomingTournaments = () => {
         const res = await fetch(
           `http://localhost:8000/api/events/nearest/${NUMBER_OF_EVENTS}/`
         );
+
+        const contentType = res.headers.get("content-type");
+        if (!res.ok || !contentType?.includes("application/json")) {
+          const text = await res.text();
+          console.error("Ошибка ответа сервера:", res.status, text);
+          throw new Error(`Некорректный ответ сервера: ${res.status}`);
+        }
+
         const data = await res.json();
         console.log("API response:", data);
 
         if (Array.isArray(data.results)) {
           const formatted = data.results.map((event: any) => {
-            const rawDate = event.event_datetime.split("T")[0];
+            const rawDate = event.event_datetime?.split("T")[0] || "";
             const [year, month, day] = rawDate.split("-");
             return {
               id: event.id,
               title: event.title,
-              date: `${day}.${month}.${year}`,
+              start_date: event.start_date,
+              end_date: event.end_date,
               cost: event.cost,
               location: event.city,
               backgroundUrl: "/assets/Q.svg",
