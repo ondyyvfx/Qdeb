@@ -71,13 +71,13 @@ const Navbar = () => {
               onClick={() => setMenuOpen((prev) => !prev)}
             >
               {user.avatar && (
-                <div className="w-10 h-10 rounded-full overflow-hidden">
+                <div className="">
                   <Image
                     src={user.avatar}
                     alt="avatar"
                     width={40}
                     height={40}
-                    className="object-cover"
+                    className="h-10 w-10 rounded-full object-cover border"
                   />
                 </div>
               )}
