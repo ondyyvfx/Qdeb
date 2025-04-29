@@ -159,7 +159,10 @@ export default function LoginPage() {
               <span className="text-muted-foreground">
                 Нет учетной записи?&nbsp;
               </span>
-              <a href="#" className="text-accent hover:underline font-medium">
+              <a
+                href="/register"
+                className="text-accent hover:underline font-medium"
+              >
                 Создайте аккаунт
               </a>
             </div>
