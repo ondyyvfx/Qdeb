@@ -37,13 +37,20 @@ const EditProfileForm = () => {
         full_name: user.full_name || "",
         phone: user.phone || "",
         description: user.description || "",
-        avatar: user.avatar ? null : null, // Если есть аватар, то оставляем null
+        avatar: null, // Всегда ставим null при загрузке юзера
         elo_rating: user.elo_rating?.toString() || "",
         tournaments_completed: user.tournaments_completed?.toString() || "",
         avg_speech: user.avg_speech?.toString() || "",
         std_deviation: user.std_deviation?.toString() || "",
         total_achievements: user.total_achievements?.toString() || "",
       });
+
+      // Обновляем превью старой аватарки, если она есть
+      if (user.avatar) {
+        setPreviewAvatar(user.avatar); // просто ссылка на URL из базы
+      } else {
+        setPreviewAvatar(null);
+      }
     }
   }, [user]);
 
@@ -57,13 +64,20 @@ const EditProfileForm = () => {
     }));
   };
 
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Обновляем форму
       setFormData((prev) => ({
         ...prev,
         avatar: file,
       }));
+
+      // Создаём превью для отображения
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewAvatar(previewUrl);
     }
   };
 
@@ -175,9 +189,9 @@ const EditProfileForm = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8 flex flex-col gap-12">
+    <div className="max-w-7xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8 flex flex-col gap-16">
       {/* Верхний блок: Аватар + Инфо */}
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-10">
         {/* Аватар */}
         {user?.avatar ? (
           <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-primary">
@@ -189,27 +203,25 @@ const EditProfileForm = () => {
             />
           </div>
         ) : (
-          <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center text-4xl font-bold">
+          <div className="w-32 h-32 bg-muted rounded-full flex items-center justify-center text-4xl font-bold text-primary">
             {user?.full_name?.charAt(0).toUpperCase()}
           </div>
         )}
 
         {/* Информация */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold text-primary">
+          <h1 className="text-4xl font-bold text-accent">
             {user?.full_name || "Имя пользователя"}
           </h1>
           <p className="text-lg text-muted-foreground">{user?.email}</p>
         </div>
       </div>
 
-      {/* Основная форма: Сетка слева направо */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        <h2 className="text-3xl font-semibold text-gray-800">
-          Личная информация
-        </h2>
+      {/* Основная форма */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-12">
+        <h2 className="text-3xl font-semibold text-white">Личная информация</h2>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Email</p>
             <Input
@@ -243,7 +255,7 @@ const EditProfileForm = () => {
             />
           </div>
 
-          <div className="col-span-2 flex flex-col gap-2">
+          <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">О себе</p>
             <Textarea
               name="description"
@@ -256,13 +268,41 @@ const EditProfileForm = () => {
 
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Аватар</p>
-            <input
-              type="file"
-              name="avatar"
-              onChange={handleAvatarChange}
-              accept="image/*"
-              className="border rounded-md p-2"
-            />
+
+            {/* Превью выбранного аватара */}
+            {previewAvatar ? (
+              <div className="w-24 h-24 relative rounded-full overflow-hidden border-2 border-primary mb-2">
+                <Image
+                  src={previewAvatar}
+                  alt="Preview avatar"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              user?.avatar && (
+                <div className="w-24 h-24 relative rounded-full overflow-hidden border-2 border-muted mb-2">
+                  <Image
+                    src={user.avatar}
+                    alt="Current avatar"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )
+            )}
+
+            {/* Кастомная кнопка для выбора файла */}
+            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors text-sm w-max">
+              Выбрать файл
+              <input
+                type="file"
+                name="avatar"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </label>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -324,7 +364,7 @@ const EditProfileForm = () => {
 
         <Button
           type="submit"
-          className="self-end px-12 py-3 bg-primary text-white hover:bg-primary-dark transition rounded-xl"
+          className="self-end px-10 py-3 bg-primary text-white hover:bg-primary-dark transition-colors rounded-xl"
         >
           Сохранить изменения
         </Button>
@@ -332,11 +372,14 @@ const EditProfileForm = () => {
 
       {/* Блок достижений */}
       <div className="flex flex-col gap-8">
-        <h2 className="text-3xl font-semibold text-gray-800">
+        <h2 className="text-3xl font-semibold text-white">
           Добавить достижение
         </h2>
 
-        <form onSubmit={handleAddAchievement} className="flex gap-8 items-end">
+        <form
+          onSubmit={handleAddAchievement}
+          className="flex flex-col md:flex-row gap-8 items-end"
+        >
           <div className="flex flex-col gap-2 flex-1">
             <p className="text-sm text-muted-foreground">Название достижения</p>
             <Input
@@ -362,7 +405,7 @@ const EditProfileForm = () => {
 
           <Button
             type="submit"
-            className="px-10 py-3 bg-primary text-white hover:bg-primary-dark transition rounded-xl"
+            className="px-10 py-3 bg-primary text-white hover:bg-primary-dark transition-colors rounded-xl"
           >
             Добавить
           </Button>
