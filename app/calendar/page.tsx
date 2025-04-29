@@ -7,10 +7,13 @@ type Event = {
   id: number;
   title: string;
   description: string;
-  cost: number;
+  cost: string;
   city: string;
-  event_datetime: string;
+  start_date: string;
+  end_date: string;
   is_registration_open: boolean;
+  registration_link: string | null;
+  categories: string[];
 };
 
 export default async function CalendarPage() {
@@ -37,8 +40,9 @@ export default async function CalendarPage() {
 
   const events: Event[] = (data as any).results;
 
+  // Группировка событий по месяцам
   const groupedByMonth = events.reduce((acc: any, event) => {
-    const month = format(new Date(event.event_datetime), "LLLL yyyy", {
+    const month = format(new Date(event.start_date), "LLLL yyyy", {
       locale: ru,
     });
     acc[month] = acc[month] || [];
@@ -46,12 +50,15 @@ export default async function CalendarPage() {
     return acc;
   }, {});
 
+  // Теперь передаем категории из базы данных через пропс
+  const categories = ["Для студентов", "Для профессионалов", "Онлайн"]; // Пример статичного списка категорий, если нужно сделать динамичным, используйте API для получения.
+
   return (
     <div>
       <Navbar />
       <div className="mx-19 my-15">
         <h1 className="text-3xl font-bold mb-6">Календарь мероприятий</h1>
-        <ClientCalendar events={groupedByMonth} />
+        <ClientCalendar events={groupedByMonth} categories={categories} />
       </div>
     </div>
   );
