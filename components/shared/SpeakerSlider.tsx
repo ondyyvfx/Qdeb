@@ -19,10 +19,10 @@ const SpeakerSlider = () => {
           cache: "no-store",
         });
         const data = await res.json();
-        if (Array.isArray(data.results)) {
+        if (data && Array.isArray(data.results)) {
           setSpeakers(data.results);
         } else {
-          console.error("Expected array, got:", data);
+          console.error("Unexpected API format:", data);
         }
       } catch (error) {
         console.error("Error fetching speakers:", error);
@@ -85,7 +85,7 @@ const SpeakerSlider = () => {
         }}
       >
         {speakers.map((speaker) => (
-          <SwiperSlide key={speaker.id}>
+          <SwiperSlide key={speaker.id || speaker.full_name}>
             <SpeakerCard
               full_name={speaker.full_name}
               avatar={speaker.avatar}
