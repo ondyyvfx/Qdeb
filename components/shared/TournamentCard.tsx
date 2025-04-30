@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 export type TournamentCardProps = {
   title: string;
@@ -7,6 +8,7 @@ export type TournamentCardProps = {
   end_date: string;
   cost: number;
   location: string;
+  registrationlink: string | null;
   backgroundUrl: string;
 };
 
@@ -58,7 +60,9 @@ const TournamentCard = (props: TournamentCardProps) => {
     >
       <div className="m-4 text-text rounded-lg p-4 flex flex-col gap-2 mt-6">
         <div className="flex items-baseline">
-          <h2 className="ml-2 text-2xl font-bold mb-0">{props.title}</h2>
+          <h2 className="ml-2 text-2xl font-bold mb-0 truncate">
+            {props.title}
+          </h2>
           <p className="text-sm mb-0 ml-4">
             {formatDateRange(props.start_date, props.end_date)}
           </p>
@@ -71,7 +75,7 @@ const TournamentCard = (props: TournamentCardProps) => {
           className="ml-2 mt-5 text-black bg-white hover:bg-white w-40 h-9 font-bold"
           size="sm"
         >
-          Регистрация
+          <Link href={props.registrationlink || "#"}>Регистрация</Link>
         </Button>
       </div>
     </div>
