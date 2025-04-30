@@ -5,9 +5,8 @@ import { FaInstagram, FaTelegram } from "react-icons/fa";
 const Footer = () => {
   return (
     <footer className="w-full h-[175px] px-5 flex flex-col justify-between items-center bg-background border-t border-white/10 text-gray-400 py-4 pb-7 mt-6">
-      <div className="w-full flex justify-between items-start px-2">
-        {/* Фото слева сверху */}
-        <div className="flex items-start">
+      <div className="w-full flex flex-col md:flex-row justify-between items-center md:items-start px-2 gap-4 md:gap-0">
+        <div className="flex items-center md:items-start">
           <Image
             src="/assets/logo.svg"
             alt="QDeb Logo"
@@ -17,8 +16,7 @@ const Footer = () => {
           />
         </div>
 
-        {/* Логотип соц. сетей справа сверху */}
-        <div className="flex items-start gap-2">
+        <div className="flex items-center md:items-start gap-2">
           <Link
             href="https://www.instagram.com/qdebkz?igsh=MWZpM2ltdGo5YXBtdg%3D%3D&utm_source=qr"
             target="_blank"
@@ -38,21 +36,18 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="w-full flex justify-between items-center px-2 mt-4">
-        {/* Все права защищены слева снизу */}
-        <div className="flex justify-start">
+      <div className="w-full flex flex-col md:flex-row justify-between items-center px-2 mt-4 gap-2 md:gap-0 text-center md:text-left">
+        <div className="flex justify-center md:justify-start w-full md:w-auto">
           <p className="text-sm">© 2025 QDeb. Все права защищены.</p>
         </div>
 
-        {/* Политика конфиденциальности посередине снизу */}
-        <div className="flex justify-center">
+        <div className="flex justify-center w-full md:w-auto">
           <Link href="/privacy-policy" className="text-sm hover:underline">
             Политика конфиденциальности
           </Link>
         </div>
 
-        {/* Свяжитесь с нами справа снизу */}
-        <div className="flex justify-end">
+        <div className="flex justify-center md:justify-end w-full md:w-auto">
           <p className="text-sm">
             Свяжитесь с нами:{" "}
             <Link href="mailto:qdebkz@gmail.com" className="hover:underline">
