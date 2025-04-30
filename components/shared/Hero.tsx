@@ -58,15 +58,28 @@ const Hero = () => {
           >
             {slidesData.map((slide) => (
               <SwiperSlide key={slide.id}>
-                <div className="relative px-5 py-8 md:px-8 md:py-10 lg:pr-20 flex flex-col md:flex-row justify-between items-center min-h-[250px] md:min-h-[280px]">
+                <div className="relative px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:pr-20 flex flex-col md:flex-row justify-between items-center min-h-[220px] sm:min-h-[240px] md:min-h-[280px]">
                   {slide.id === 1 && (
-                    <Image
-                      src="/assets/banner-hedgehog.png"
-                      alt="Hedgehog Background"
-                      fill
-                      className="object-cover z-0"
-                      priority
-                    />
+                    <>
+                      <Image
+                        src="/assets/banner-hedgehog.png"
+                        alt="Hedgehog Background"
+                        fill
+                        className="object-cover z-0 hidden sm:block"
+                        priority
+                      />
+
+                      <div className="absolute inset-0 flex ml-26 justify-center items-center sm:hidden z-0">
+                        <Image
+                          src="/assets/banner-hedgehog.png"
+                          alt="Hedgehog Background"
+                          width={220}
+                          height={220}
+                          className="object-contain"
+                          priority
+                        />
+                      </div>
+                    </>
                   )}
                   {(slide.id === 2 || slide.id === 3) && (
                     <Image
@@ -78,7 +91,7 @@ const Hero = () => {
                     />
                   )}
                   <div className="md:w-[70%] w-full space-y-4 text-center md:text-left relative z-10">
-                    <h1 className="text-white text-[32px] md:text-[36px] font-bold leading-tight tracking-tight mb-6">
+                    <h1 className="text-white text-[22px] sm:text-[28px] md:text-[36px] font-bold leading-snug tracking-tight mb-6">
                       {slide.logo && (
                         <span className="inline-flex items-center gap-3 mb-2">
                           <Image
@@ -101,7 +114,7 @@ const Hero = () => {
                       <br />
                       {slide.titleLine3}
                     </h1>
-                    <Button className="bg-[#FF6A1D] hover:bg-[#ff7d3b] text-white text-sm font-semibold px-5 py-3 rounded-md">
+                    <Button className="bg-[#FF6A1D] hover:bg-[#ff7d3b] text-white text-sm font-semibold px-5 py-3 rounded-md w-full sm:w-auto">
                       {slide.buttonText}
                     </Button>
                   </div>
@@ -110,7 +123,6 @@ const Hero = () => {
             ))}
           </Swiper>
 
-          {/* Custom pagination - снизу по центру */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row space-x-2">
             {slidesData.map((_, index) => {
               const isActive = activeIndex === index;
