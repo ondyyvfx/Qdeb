@@ -123,7 +123,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
   return (
     <div>
       {/* Фильтры */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
         <input
           type="text"
           placeholder="Поиск по названию"
@@ -142,6 +142,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
               key={city}
               value={city === "Все" ? "" : city}
               style={{ color: "#fff" }}
+              className="sm:w-[100px]"
             >
               {city}
             </option>
@@ -161,24 +162,24 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="relative bg-primary p-6 py-4 rounded-2xl shadow-lg flex gap-6"
+                    className="relative bg-primary p-6 py-4 rounded-2xl shadow-lg flex flex-col md:flex-row gap-6"
                   >
                     {event.is_registration_open && (
-                      <div className="border-[0.5px] mx-4 px-4 py-2 rounded-sm absolute top-9 right-4 text-sm font-medium text-green-400 z-10">
+                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-green-400 z-10 px-2 py-1 top-4 right-2 text-xs">
                         Регистрация открыта
                       </div>
                     )}
                     {!event.is_registration_open && (
-                      <div className="border-[0.5px] mx-4 px-4 py-2 rounded-sm absolute top-9 right-4 text-sm font-medium text-red-400 z-10">
+                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-red-400 z-10 px-2 py-1 top-4 right-2 text-xs">
                         Регистрация закрыта
                       </div>
                     )}
                     {event.is_registration_open === null && (
-                      <div className="border-[0.5px] mx-4 px-4 py-2 rounded-sm absolute top-9 right-4 text-sm font-medium text-yellow-400 z-10">
+                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-yellow-400 z-10 px-2 py-1 top-4 right-2 text-xs">
                         Неизвестно
                       </div>
                     )}
-                    <div className="z-0 relative w-50 h-50 flex-shrink-0 m-0 p-0 -ml-6 -mr-8">
+                    <div className="relative w-28 h-28 md:w-50 md:h-50 flex-shrink-0 m-0 p-0 -ml-6 md:-mr-8">
                       <img
                         src="/assets/Qback.svg"
                         alt="logo"
@@ -216,46 +217,46 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                             : null}
                         </div>
                       </div>
+                      <div className="sm:flex flex-col gap-2 mt-4 hidden">
+                        <div className="flex flex-wrap gap-2 text-xs font-medium">
+                          {event.categories.map((category) => (
+                            <span
+                              key={category}
+                              className="bg-[#6F462A] px-4 py-1 rounded-sm text-sm font-m"
+                            >
+                              {categoryTranslations[category] || category}{" "}
+                            </span>
+                          ))}
+                        </div>
 
-                      <div className="flex flex-wrap gap-2 text-xs font-medium">
-                        {event.categories.map((category) => (
-                          <span
-                            key={category}
-                            className="bg-[#6F462A] px-4 py-1 rounded-sm text-sm font-m"
-                          >
-                            {categoryTranslations[category] || category}{" "}
-                            {/* Отображаем переведённую категорию */}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="text-sm text-green-400 z-10">
-                        {event.cost === "0" ? "Бесплатно" : `${event.cost}`}
-                      </div>
-                      <div className="text-sm text-gray-300 max-w-[450px]">
-                        {" "}
-                        г. {event.city}
+                        <div className="text-sm text-green-400 z-10">
+                          {event.cost === "0" ? "Бесплатно" : `${event.cost}`}
+                        </div>
+                        <div className="text-sm text-gray-300 max-w-[450px]">
+                          {" "}
+                          г. {event.city}
+                        </div>
                       </div>
 
                       {/* Описание с кнопкой Подробнее */}
-                      <div className="text-sm text-gray-400 max-w-[900px]">
+                      <div className="text-sm text-gray-300 max-w-[900px] md:max-w-[450px]">
                         {activeEvent === event.id ? event.description : ""}
                       </div>
 
-                      <div className="absolute right-4 bottom-6 flex gap-2">
+                      <div className="absolute right-4 bottom-6 md:static flex flex-col justify-end md:flex-row gap-2 mt-4 md:mt-0">
                         {event.is_registration_open &&
                           event.registration_link && (
                             <a
                               href={event.registration_link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-green-400 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-500 transition"
+                              className="bg-green-400 text-white px-3 py-1 text-sm sm:text-[16px] sm:px-4 sm:py-2 rounded-md font-semibold hover:bg-green-500 transition"
                             >
                               Зарегистрироваться
                             </a>
                           )}
                         <button
-                          className="bg-white text-black px-6 py-2 rounded-md font-semibold"
+                          className="bg-white text-black px-3 py-1 text-sm sm:text-[16px] sm:px-6 sm:py-2 rounded-md font-semibold"
                           onClick={() =>
                             setActiveEvent(
                               activeEvent === event.id ? null : event.id
