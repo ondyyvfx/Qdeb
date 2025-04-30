@@ -62,6 +62,10 @@ const SpeakerSlider = () => {
         observeParents={true}
         updateOnWindowResize={true}
         breakpoints={{
+          0: {
+            slidesPerView: 1.05,
+            spaceBetween: 16,
+          },
           640: {
             slidesPerView: 1.8,
             spaceBetween: 24,
