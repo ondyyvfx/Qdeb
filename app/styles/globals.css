@@ -19,6 +19,10 @@
   overflow: hidden;
 }
 
+.swiper {
+  overflow: hidden;
+}
+
 @layer utilities {
   .animate-fade-in {
     @apply opacity-0 animate-[fadeIn_0.8s_ease-out_forwards];
