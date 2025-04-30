@@ -25,11 +25,11 @@ const SpeakerCard = ({
 }: SpeakerCardProps) => {
   console.log("Avatar src:", avatar);
   return (
-    <Card className="flex items-center gap-4 p-4 bg-primary border-none">
+    <Card className="flex flex-col sm:flex-row items-start sm:items-center gap-10 p-10 bg-primary border-none">
       <img
         src={avatar}
         alt={full_name}
-        className="w-16 h-16 rounded-full object-cover"
+        className="w-24 h-24 sm:w-16 sm:h-16 rounded-full object-cover"
       />
       <CardContent className="flex flex-col p-0">
         <h3 className="font-semibold text-lg">{full_name}</h3>
