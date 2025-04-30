@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Swiper as SwiperCore } from "swiper";
 import { Navigation } from "swiper/modules";
+import MobileTournamentSlider from "./MobileTournamentSlider";
 
 const NUMBER_OF_EVENTS = 10;
 
@@ -17,6 +18,7 @@ interface Tournament {
   end_date: string;
   cost: number;
   location: string;
+  registrationlink: string | null;
   backgroundUrl: string;
 }
 
@@ -42,19 +44,16 @@ const UpcomingTournaments = () => {
         console.log("API response:", data);
 
         if (Array.isArray(data.results)) {
-          const formatted = data.results.map((event: any) => {
-            // const rawDate = event.event_datetime?.split("T")[0] || "";
-            // const [year, month, day] = rawDate.split("-");
-            return {
-              id: event.id,
-              title: event.title,
-              start_date: event.start_date,
-              end_date: event.end_date,
-              cost: event.cost,
-              location: event.city,
-              backgroundUrl: "/assets/Q.svg",
-            };
-          });
+          const formatted = data.results.map((event: any) => ({
+            id: event.id,
+            title: event.title,
+            start_date: event.start_date,
+            end_date: event.end_date,
+            cost: event.cost,
+            location: event.city,
+            registrationlink: event.registration_link,
+            backgroundUrl: "/assets/Q.svg",
+          }));
           setCards(formatted);
         } else {
           console.error("Ожидался массив, но получено:", data);
@@ -83,12 +82,18 @@ const UpcomingTournaments = () => {
         </a>
       </div>
 
-      <div className="relative">
-        <div className="swiper-button-prev-tournaments absolute -left-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+      {/* Мобильная версия */}
+      <div className="md:hidden">
+        <MobileTournamentSlider />
+      </div>
+
+      {/* Десктопная версия */}
+      <div className="relative hidden md:block">
+        <div className="swiper-button-prev-tournaments absolute -left-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition">
           <ChevronLeft className="w-6 h-6 text-white" />
         </div>
 
-        <div className="swiper-button-next-tournaments absolute -right-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition hidden md:flex">
+        <div className="swiper-button-next-tournaments absolute -right-8 z-10 bg-transparent border shadow-lg p-3 rounded-full top-1/2 -translate-y-1/2 hover:bg-white transition">
           <ChevronRight className="w-6 h-6 text-white" />
         </div>
 
