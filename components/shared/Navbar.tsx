@@ -59,7 +59,7 @@ const Navbar = () => {
           >
             Календарь мероприятий
           </Link>
-          <Link href="#" className="hover:text-accent transition-colors">
+          <Link href="/rating" className="hover:text-accent transition-colors">
             Рейтинг спикеров
           </Link>
           <Link href="#" className="hover:text-accent transition-colors">
