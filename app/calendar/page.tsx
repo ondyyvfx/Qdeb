@@ -57,7 +57,7 @@ export default async function CalendarPage() {
   return (
     <div>
       <Navbar />
-      <div className="mx-19 my-15">
+      <div className="mx-5 sm:mx-19 my-15">
         <h1 className="text-3xl font-bold mb-6">Календарь мероприятий</h1>
         <ClientCalendar events={groupedByMonth} categories={categories} />
       </div>
