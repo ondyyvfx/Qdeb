@@ -26,10 +26,13 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
       </DrawerHeader>
 
       <div className="flex flex-col gap-4 p-4">
+        <Link href="/" onClick={() => onNavigate("/calendar")}>
+          Главная
+        </Link>
         <Link href="/calendar" onClick={() => onNavigate("/calendar")}>
           Календарь мероприятий
         </Link>
-        <Link href="#" onClick={() => onNavigate("/speakers")}>
+        <Link href="/rating" onClick={() => onNavigate("/speakers")}>
           Рейтинг спикеров
         </Link>
         <Link href="#" onClick={() => onNavigate("/about")}>
