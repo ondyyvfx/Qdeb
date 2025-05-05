@@ -29,7 +29,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     const getCsrfToken = async () => {
-      const res = await fetch("http://localhost:8000/api/csrf/", {
+      const res = await fetch("https://qdeb.kz/api/csrf/", {
         credentials: "include",
       });
       const data = await res.json();
@@ -48,7 +48,7 @@ export default function RegisterPage() {
       formData.append("avatar", avatar);
     }
 
-    const res = await fetch("http://localhost:8000/api/auth/register/", {
+    const res = await fetch("https://qdeb.kz/api/auth/register/", {
       method: "POST",
       credentials: "include",
       headers: {
