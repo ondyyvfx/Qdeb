@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const fetchProfile = async (accessToken: string) => {
-    const res = await fetch("http://localhost:8000/api/auth/profile/", {
+    const res = await fetch("https://qdeb.kz/api/auth/profile/", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -37,7 +37,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     const getCsrfToken = async () => {
-      const res = await fetch("http://localhost:8000/api/csrf/", {
+      const res = await fetch("https://qdeb.kz/api/csrf/", {
         credentials: "include",
       });
       const data = await res.json();
@@ -46,7 +46,7 @@ export default function LoginPage() {
 
     const csrfToken = await getCsrfToken();
 
-    const res = await fetch("http://localhost:8000/api/auth/login/", {
+    const res = await fetch("https://qdeb.kz/api/auth/login/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
