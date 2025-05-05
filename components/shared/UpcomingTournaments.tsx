@@ -30,7 +30,7 @@ const UpcomingTournaments = () => {
     const fetchEvents = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8000/api/events/nearest/${NUMBER_OF_EVENTS}/`
+          `https://qdeb.kz/api/events/nearest/${NUMBER_OF_EVENTS}/`
         );
 
         const contentType = res.headers.get("content-type");
