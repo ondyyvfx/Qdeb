@@ -16,7 +16,7 @@ const EditProfileForm = () => {
     full_name: "",
     phone: "",
     description: "",
-    avatar: null as File | null, // Изменено на File
+    avatar: null as File | null,
     elo_rating: "",
     tournaments_completed: "",
     avg_speech: "",
@@ -36,7 +36,7 @@ const EditProfileForm = () => {
         full_name: user.full_name || "",
         phone: user.phone || "",
         description: user.description || "",
-        avatar: null, // Всегда ставим null при загрузке юзера
+        avatar: null,
         elo_rating: user.elo_rating?.toString() || "",
         tournaments_completed: user.tournaments_completed?.toString() || "",
         avg_speech: user.avg_speech?.toString() || "",
@@ -44,9 +44,8 @@ const EditProfileForm = () => {
         total_achievements: user.total_achievements?.toString() || "",
       });
 
-      // Обновляем превью старой аватарки, если она есть
       if (user.avatar) {
-        setPreviewAvatar(user.avatar); // просто ссылка на URL из базы
+        setPreviewAvatar(user.avatar);
       } else {
         setPreviewAvatar(null);
       }
@@ -68,13 +67,11 @@ const EditProfileForm = () => {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Обновляем форму
       setFormData((prev) => ({
         ...prev,
         avatar: file,
       }));
 
-      // Создаём превью для отображения
       const previewUrl = URL.createObjectURL(file);
       setPreviewAvatar(previewUrl);
     }
@@ -123,18 +120,17 @@ const EditProfileForm = () => {
       formData.total_achievements ? formData.total_achievements : ""
     );
 
-    // Добавляем аватар, если выбран файл
     if (formData.avatar) {
       formDataToSend.append("avatar", formData.avatar);
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/auth/profile/", {
+      const res = await fetch("https://qdeb.kz/api/auth/profile/", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formDataToSend, // Отправляем FormData, не JSON
+        body: formDataToSend,
       });
 
       if (!res.ok) throw new Error("Ошибка обновления профиля");
@@ -162,17 +158,14 @@ const EditProfileForm = () => {
           : null,
       };
 
-      const res = await fetch(
-        "http://localhost:8000/api/auth/add_achievement/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch("https://qdeb.kz/api/auth/add_achievement/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) throw new Error("Ошибка добавления достижения");
 
@@ -189,9 +182,7 @@ const EditProfileForm = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8 flex flex-col gap-16">
-      {/* Верхний блок: Аватар + Инфо */}
       <div className="flex items-center gap-10">
-        {/* Аватар */}
         {user?.avatar ? (
           <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-primary">
             <Image
@@ -207,7 +198,6 @@ const EditProfileForm = () => {
           </div>
         )}
 
-        {/* Информация */}
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-bold text-accent">
             {user?.full_name || "Имя пользователя"}
@@ -216,7 +206,6 @@ const EditProfileForm = () => {
         </div>
       </div>
 
-      {/* Основная форма */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-12">
         <h2 className="text-3xl font-semibold text-white">Личная информация</h2>
 
@@ -268,7 +257,6 @@ const EditProfileForm = () => {
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">Аватар</p>
 
-            {/* Превью выбранного аватара */}
             {previewAvatar ? (
               <div className="w-24 h-24 relative rounded-full overflow-hidden border-2 border-primary mb-2">
                 <Image
@@ -291,7 +279,6 @@ const EditProfileForm = () => {
               )
             )}
 
-            {/* Кастомная кнопка для выбора файла */}
             <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors text-sm w-max">
               Выбрать файл
               <input
