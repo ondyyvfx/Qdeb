@@ -7,6 +7,11 @@ module.exports = {
         port: "8000",
         pathname: "/media/**",
       },
+      {
+        protocol: "https",
+        hostname: "qdeb.kz",
+        pathname: "/media/**",
+      },
     ],
   },
   eslint: {

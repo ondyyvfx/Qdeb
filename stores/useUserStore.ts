@@ -31,4 +31,4 @@ export const useUserStore = create<State>()(
       name: 'user-storage', // название ключа в localStorage
     }
   )
-);
+); 
