@@ -11,6 +11,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import Image from "next/image";
 import { X } from "lucide-react";
 import Link from "next/link";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -46,41 +47,48 @@ export default function LoginPage() {
       return data.csrfToken;
     };
 
-    const csrfToken = await getCsrfToken();
+    try {
+      const csrfToken = await getCsrfToken();
 
-    const res = await fetch("https://qdeb.kz/api/auth/login/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      console.log("Успешный вход:", data);
-
-      Cookies.set("accessToken", data.access, {
-        expires: rememberDevice ? 7 : 1,
+      const res = await fetch("https://qdeb.kz/api/auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
-      Cookies.set("refreshToken", data.refresh, { expires: 7 });
 
-      await fetchProfile(data.access);
+      if (res.ok) {
+        const data = await res.json();
 
-      router.push("/");
-    } else {
-      const error = await res.json();
-      console.error("Ошибка входа:", error);
+        toast.success("Успешный вход!");
+
+        Cookies.set("accessToken", data.access, {
+          expires: rememberDevice ? 7 : 1,
+        });
+        Cookies.set("refreshToken", data.refresh, { expires: 7 });
+
+        await fetchProfile(data.access);
+
+        router.push("/");
+      } else {
+        const error = await res.json();
+        toast.error(error?.detail || "Ошибка входа. Проверьте данные.");
+      }
+    } catch (err) {
+      toast.error("Произошла ошибка. Попробуйте снова.");
+      console.error(err);
     }
   };
 
   return (
     <div className="login-form flex min-h-screen bg-[#070A12] text-foreground">
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Левая сторона с картинкой */}
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
         <div className="relative w-full h-full bg-primary rounded-2xl overflow-hidden">
@@ -97,7 +105,7 @@ export default function LoginPage() {
       <div className="flex w-full md:w-1/2 items-center justify-center p-12 md:p-24 animate-fade-in">
         <div className="w-full">
           <Link href="/" className="">
-            <X className="absolute right-[12%] top-[7%] w-5 h-5 text-white" />
+            <X className="absolute right-[5%] top-[7%] w-5 h-5 text-white" />
           </Link>
           <h1 className="text-4xl text-center mb-10">Войдите в аккаунт</h1>
           <form onSubmit={handleLogin} className="space-y-8">
