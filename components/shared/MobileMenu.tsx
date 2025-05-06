@@ -57,9 +57,14 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             </Button>
           </>
         ) : (
-          <Button className="w-full" onClick={() => onNavigate("/login")}>
-            Войти
-          </Button>
+          <>
+            <Button className="w-full" onClick={() => onNavigate("/login")}>
+              Войти
+            </Button>
+            <Button className="w-full" onClick={() => onNavigate("/register")}>
+              Зарегистрироваться
+            </Button>
+          </>
         )}
       </div>
     </>
