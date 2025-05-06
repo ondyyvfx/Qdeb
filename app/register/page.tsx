@@ -12,6 +12,7 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [full_name, setFull_name] = useState("");
   const [phone, setPhone] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
@@ -25,8 +26,36 @@ export default function RegisterPage() {
     }
   };
 
+  const validateEmail = (email: string) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    const re =
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/;
+    return re.test(password);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateEmail(email)) {
+      alert("Введите корректный email.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      alert(
+        "Пароль должен быть не менее 8 символов, содержать хотя бы одну заглавную латинскую букву, один специальный символ и использовать только латинские буквы."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Пароли не совпадают.");
+      return;
+    }
 
     const getCsrfToken = async () => {
       const res = await fetch("https://qdeb.kz/api/csrf/", {
@@ -81,7 +110,7 @@ export default function RegisterPage() {
 
       <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
         <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
-          <h1 className="text-2xl font-bold text-center mb-8">Регистрация</h1>
+          <h1 className="text-2xl font-bold text-center mb-7">Регистрация</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -90,6 +119,7 @@ export default function RegisterPage() {
                 id="full_name"
                 value={full_name}
                 onChange={(e) => setFull_name(e.target.value)}
+                placeholder="Full name"
                 required
               />
             </div>
@@ -101,6 +131,7 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@gmail.com"
                 required
               />
             </div>
@@ -112,6 +143,19 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password">Подтвердите пароль</Label>
+              <Input
+                id="confirm_password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm Password"
                 required
               />
             </div>
@@ -123,6 +167,7 @@ export default function RegisterPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                placeholder="+7 (777) 777-77-77"
               />
             </div>
 
