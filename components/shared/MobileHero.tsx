@@ -69,7 +69,7 @@ const MobileHero = () => {
                             {slide.titleLine1}
                           </span>
                         )}
-                        {slide.titleLine2} <br />
+                        {slide.titleLine2}
                         {slide.titleLine3}
                       </h1>
                     </div>

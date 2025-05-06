@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { X } from "lucide-react";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -109,6 +111,9 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
+        <Link href="/" className="">
+          <X className="absolute right-[12%] top-[7%] w-5 h-5 text-white" />
+        </Link>
         <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
           <h1 className="text-2xl font-bold text-center mb-7">Регистрация</h1>
 
