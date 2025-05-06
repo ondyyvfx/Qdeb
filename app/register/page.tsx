@@ -25,6 +25,7 @@ export default function RegisterPage() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,6 +66,8 @@ export default function RegisterPage() {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       // Получение CSRF токена
       const getCsrfToken = async () => {
@@ -82,7 +85,11 @@ export default function RegisterPage() {
       formData.append("password", password);
       formData.append("full_name", full_name);
       formData.append("phone", phone);
-      if (avatar) formData.append("avatar", avatar);
+      if (avatar) {
+        formData.append("avatar", avatar);
+      } else {
+        formData.append("avatar", "");
+      }
 
       // Регистрация
       const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
@@ -275,9 +282,33 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold"
+              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold flex items-center justify-center"
+              disabled={isLoading}
             >
-              Зарегистрироваться
+              {isLoading ? (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+              ) : (
+                "Зарегистрироваться"
+              )}
             </Button>
           </form>
         </div>
