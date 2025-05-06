@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X } from "lucide-react";
 import Link from "next/link";
+import { Toaster, toast } from "react-hot-toast";
+import Cookies from "js-cookie";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,6 +22,9 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,62 +49,113 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!validateEmail(email)) {
-      alert("Введите корректный email.");
+      toast.error("Введите корректный email.");
       return;
     }
 
     if (!validatePassword(password)) {
-      alert(
-        "Пароль должен быть не менее 8 символов, содержать хотя бы одну заглавную латинскую букву, один специальный символ и использовать только латинские буквы."
+      toast.error(
+        "Пароль должен быть не менее 8 символов, содержать заглавную латинскую букву и спецсимвол."
       );
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Пароли не совпадают.");
+      toast.error("Пароли не совпадают.");
       return;
     }
 
-    const getCsrfToken = async () => {
-      const res = await fetch("https://qdeb.kz/api/csrf/", {
+    try {
+      // Получение CSRF токена
+      const getCsrfToken = async () => {
+        const res = await fetch("https://qdeb.kz/api/csrf/", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        return data.csrfToken;
+      };
+
+      const csrfToken = await getCsrfToken();
+
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("full_name", full_name);
+      formData.append("phone", phone);
+      if (avatar) formData.append("avatar", avatar);
+
+      // Регистрация
+      const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
+        method: "POST",
         credentials: "include",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+        body: formData,
       });
-      const data = await res.json();
-      return data.csrfToken;
-    };
 
-    const csrfToken = await getCsrfToken();
+      if (!registerRes.ok) {
+        const errorData = await registerRes.json();
+        const errorMessage =
+          errorData?.email?.[0] ||
+          errorData?.password?.[0] ||
+          errorData?.detail ||
+          "Ошибка регистрации";
+        toast.error(errorMessage);
+        return;
+      }
 
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("full_name", full_name);
-    formData.append("phone", phone);
+      toast.success("Регистрация успешна!");
 
-    if (avatar) {
-      formData.append("avatar", avatar);
-    }
+      // Логин
+      const loginRes = await fetch("https://qdeb.kz/api/auth/login/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const res = await fetch("https://qdeb.kz/api/auth/register/", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "X-CSRFToken": csrfToken,
-      },
-      body: formData,
-    });
+      if (!loginRes.ok) {
+        toast.error(
+          "Регистрация прошла, но вход не выполнен. Войдите вручную."
+        );
+        router.push("/login");
+        return;
+      }
 
-    if (res.ok) {
-      alert("Регистрация прошла успешно!");
+      const loginData = await loginRes.json();
+      Cookies.set("accessToken", loginData.access, { expires: 1 });
+      Cookies.set("refreshToken", loginData.refresh, { expires: 7 });
+
+      // Получение профиля
+      const profileRes = await fetch("https://qdeb.kz/api/auth/profile/", {
+        headers: {
+          Authorization: `Bearer ${loginData.access}`,
+        },
+      });
+
+      if (!profileRes.ok) {
+        toast.error("Не удалось получить профиль.");
+        return;
+      }
+
+      const profile = await profileRes.json();
+      useUserStore.getState().setUser(profile);
+
+      toast.success("Добро пожаловать!");
       router.push("/");
-    } else {
-      const error = await res.json();
-      alert("Ошибка: " + (error?.detail || "неизвестная ошибка"));
+    } catch (error) {
+      console.error("Ошибка регистрации:", error);
+      toast.error("Ошибка при подключении к серверу.");
     }
   };
 
   return (
-    <div className="register-form flex h-screen bg-[#070A12] text-foreground">
+    <div className="register-form flex h-screen bg-[#070A12] text-foreground selection:text-accent">
+      <Toaster position="top-center" />
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
         <div className="w-full h-full relative rounded-2xl overflow-hidden">
           <Image
@@ -111,7 +168,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
-        <Link href="/" className="">
+        <Link href="/">
           <X className="absolute right-[12%] top-[7%] w-5 h-5 text-white" />
         </Link>
         <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
@@ -136,9 +193,16 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setEmailTouched(true)}
                 placeholder="example@gmail.com"
                 required
               />
+              {emailTouched && !validateEmail(email) && (
+                <p className="text-red-500 text-sm mt-1">
+                  Пожалуйста, введите корректный email (например,
+                  example@gmail.com)
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -148,9 +212,16 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setPasswordTouched(true)}
                 placeholder="Password"
                 required
               />
+              {passwordTouched && !validatePassword(password) && (
+                <p className="text-red-500 text-sm mt-1">
+                  Пароль должен быть не менее 8 символов, заглавную букву и
+                  спецсимвол
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -160,9 +231,13 @@ export default function RegisterPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onBlur={() => setConfirmPasswordTouched(true)}
                 placeholder="Confirm Password"
                 required
               />
+              {confirmPasswordTouched && password !== confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">Пароли не совпадают</p>
+              )}
             </div>
 
             <div className="space-y-2">
