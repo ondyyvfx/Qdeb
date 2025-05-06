@@ -246,7 +246,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                         </div>
                         <div className="text-sm text-gray-300 max-w-[450px]">
                           {" "}
-                          г. {event.city}
+                          {event.city}
                         </div>
                       </div>
 
