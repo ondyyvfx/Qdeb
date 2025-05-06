@@ -34,7 +34,7 @@ const SpeakerCard = ({
       <CardContent className="flex flex-col p-0">
         <h3 className="font-semibold text-lg">{full_name}</h3>
         <p className="text-sm mt-1">Рейтинг: {elo_rating}</p>
-        <p className="text-sm mt-1">Средняя речь: {avg_speech}</p>
+        <p className="text-sm mt-1">Средний балл: {avg_speech}</p>
         <p className="text-sm mt-1">
           Общее количество достижений: {total_achievements}
         </p>
