@@ -264,7 +264,7 @@ export default function RegisterPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+7(777)1234567"
+                placeholder="+77471234567"
               />
             </div>
 
