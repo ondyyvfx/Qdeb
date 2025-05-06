@@ -50,7 +50,7 @@ const TournamentCard = (props: TournamentCardProps) => {
 
   return (
     <div
-      className="bg-primary rounded-lg text-white p-0 flex flex-col justify-between w-full h-[200px] md:h-[220px] lg:h-[230px]" // Увеличиваем высоту карточки
+      className="bg-primary rounded-lg text-white p-0 flex flex-col justify-between w-full h-[220px] md:h-[220px] lg:h-[230px]" // Увеличиваем высоту карточки
       style={{
         backgroundImage: `url(${props.backgroundUrl})`,
         backgroundPosition: "left top", // Фото теперь в левом верхнем углу
