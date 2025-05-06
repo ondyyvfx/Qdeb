@@ -130,7 +130,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-11 right-4 text-gray-400 hover:text-gray-300"
+                className="absolute top-14 right-4 text-gray-400 hover:text-gray-300"
               >
                 {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
