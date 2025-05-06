@@ -26,12 +26,14 @@ export default function RegisterPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setAvatar(file);
       setPreview(URL.createObjectURL(file));
+      setAvatarError(false);
     }
   };
 
@@ -64,6 +66,14 @@ export default function RegisterPage() {
     if (password !== confirmPassword) {
       toast.error("Пароли не совпадают.");
       return;
+    }
+
+    if (!avatar) {
+      setAvatarError(true);
+      toast.error("Пожалуйста, загрузите аватар.");
+      return;
+    } else {
+      setAvatarError(false);
     }
 
     setIsLoading(true);
@@ -254,7 +264,7 @@ export default function RegisterPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+7 (777) 777-77-77"
+                placeholder="+7(777)1234567"
               />
             </div>
 
@@ -310,6 +320,11 @@ export default function RegisterPage() {
                 "Зарегистрироваться"
               )}
             </Button>
+            {avatarError && (
+              <p className="text-red-500 text-sm mt-2 text-center">
+                Пожалуйста, загрузите аватар.
+              </p>
+            )}
           </form>
         </div>
       </div>
