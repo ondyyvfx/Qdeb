@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/stores/useUserStore";
 import Image from "next/image";
+import { X } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -94,6 +96,9 @@ export default function LoginPage() {
       {/* Правая сторона с формой */}
       <div className="flex w-full md:w-1/2 items-center justify-center p-12 md:p-24 animate-fade-in">
         <div className="w-full">
+          <Link href="/" className="">
+            <X className="absolute right-[12%] top-[7%] w-5 h-5 text-white" />
+          </Link>
           <h1 className="text-4xl text-center mb-10">Войдите в аккаунт</h1>
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
