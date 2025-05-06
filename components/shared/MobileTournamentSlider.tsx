@@ -58,7 +58,7 @@ const MobileTournamentSlider = () => {
   }, []);
 
   return (
-    <div className="my-14 px-4 xl:px-20">
+    <div className="my-14 px-2 xl:px-20">
       <Swiper
         spaceBetween={16}
         slidesPerView={1}
