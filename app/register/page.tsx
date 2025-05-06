@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +75,14 @@ export default function RegisterPage() {
       return;
     } else {
       setAvatarError(false);
+    }
+
+    if (!phone) {
+      setPhoneError(true);
+      toast.error("Пожалуйста, введите номер телефона.");
+      return;
+    } else {
+      setPhoneError(false);
     }
 
     setIsLoading(true);
@@ -266,6 +275,11 @@ export default function RegisterPage() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+77471234567"
               />
+              {phoneError && (
+                <p className="text-red-500 text-sm mt-2 text-center">
+                  Пожалуйста, введите номер.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
