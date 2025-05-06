@@ -41,7 +41,7 @@ const Navbar = () => {
 
   const handleNavigate = (path: string) => {
     router.push(path);
-    setDrawerOpen(false); // закрыть Drawer при переходе
+    setDrawerOpen(false);
   };
 
   return (
@@ -88,13 +88,22 @@ const Navbar = () => {
               </span>
             </div>
           ) : (
-            <Button
-              onClick={() => router.push("/login")}
-              variant="default"
-              className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6"
-            >
-              Войти
-            </Button>
+            <>
+              <Button
+                onClick={() => router.push("/login")}
+                variant="default"
+                className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6"
+              >
+                Sign in
+              </Button>
+              <Button
+                onClick={() => router.push("/register")}
+                variant="default"
+                className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6 ml-2"
+              >
+                Sign up
+              </Button>
+            </>
           )}
 
           {menuOpen && user && (
