@@ -14,7 +14,7 @@ const MobileHero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="w-full py-4 relative xl:hidden">
+    <section className="w-full py-4 relative mobilehero">
       <div className="px-3 md:px-10">
         <div className="relative rounded-2xl overflow-hidden bg-primary">
           <Swiper
