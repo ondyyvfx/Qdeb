@@ -6,15 +6,15 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
+    screens: {
+      xs: '480px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1450px',
+      '2xl': '1536px',
+    },
     extend: {
-      screens: {
-        xs: '480px',
-        sm: '640px',
-        md: '768px',
-        lg: '1024px',
-        xl: '1290px',
-        '2xl': '1536px',
-      },
       fontFamily: {
         montserrat: ['var(--font-montserrat)', 'sans-serif'],
       },
