@@ -14,7 +14,7 @@ const Hero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="w-full py-8 relative hidden md:block">
+    <section className="w-full py-8 relative hidden xl:block">
       <div className="px-4 md:px-10 lg:px-20">
         <div className="relative">
           <Swiper
@@ -80,15 +80,15 @@ const Hero = () => {
             ))}
           </Swiper>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row space-x-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row space-x-1">
             {slidesData.map((_, index) => (
               <button
                 key={index}
                 onClick={() => swiperRef.current?.slideToLoop(index)}
                 className={`transition-all duration-300 bg-white rounded-full ${
                   activeIndex === index
-                    ? "w-3 h-3 opacity-100"
-                    : "w-10 h-2 opacity-50"
+                    ? "w-20 h-1 opacity-100"
+                    : "w-20 h-1 opacity-25"
                 }`}
               />
             ))}
