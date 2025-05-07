@@ -46,7 +46,7 @@ const Navbar = () => {
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
-      <div className="w-full my-3.5 py-4 flex items-center justify-between px-4 md:px-20">
+      <div className="w-full my-3.5 py-4 flex items-center justify-between px-3 md:px-10 xl:px-19">
         <Link href="/" passHref>
           <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
         </Link>
