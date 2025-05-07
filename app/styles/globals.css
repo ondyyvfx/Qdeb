@@ -40,6 +40,18 @@
   }
 }
 
+.mobilehero {
+  @media (width > 1449px) {
+    display: none;
+  }
+}
+
+.hero {
+  @media (width < 1450px) {
+    display: none;
+  }
+}
+
 @theme {
   --color-primary: #0e1425;
   --color-secondary: #2a3b6f;
