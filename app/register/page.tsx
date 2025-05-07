@@ -106,10 +106,7 @@ export default function RegisterPage() {
       formData.append("phone", phone);
       if (avatar) {
         formData.append("avatar", avatar);
-      } else {
-        formData.append("avatar", "");
       }
-
       // Регистрация
       const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
         method: "POST",
