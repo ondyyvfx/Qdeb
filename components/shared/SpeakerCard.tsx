@@ -38,13 +38,13 @@ const SpeakerCard = ({
         <p className="text-sm mt-1">
           Общее количество достижений: {total_achievements}
         </p>
-        {achievements && achievements.length > 0 && (
+        {/* {achievements && achievements.length > 0 && (
           <div className="text-sm text-muted-foreground mt-1">
             {achievements.map((achievement) => (
               <p key={achievement.tournament_id}>{achievement.title}</p>
             ))}
           </div>
-        )}
+        )} */}
       </CardContent>
     </Card>
   );
