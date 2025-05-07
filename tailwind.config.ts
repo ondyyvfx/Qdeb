@@ -17,6 +17,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         montserrat: ['var(--font-montserrat)', 'sans-serif'],
+        involve: ['Involve', 'sans-serif'],
       },
       colors: {
         primary: 'var(--color-primary)',
