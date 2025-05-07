@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaInstagram, FaTelegram } from "react-icons/fa";
+import inst from "../../public/assets/inst.svg";
+import telegram from "../../public/assets/telegram.svg";
 
 const Footer = () => {
   return (
@@ -21,17 +22,23 @@ const Footer = () => {
             href="https://www.instagram.com/qdebkz?igsh=MWZpM2ltdGo5YXBtdg%3D%3D&utm_source=qr"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
+            className="bg-white hover:bg-white/70 w-9 h-9 rounded-full p-2 transition"
           >
-            <FaInstagram size={32} color="white" />
+            <Image src={inst} alt="Insta" width={22} height={22} className="" />
           </Link>
           <Link
             href="https://t.me/qdebkz"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-gray-700 hover:bg-gray-600 rounded-full p-2 transition"
+            className="bg-white hover:bg-white/70 w-9 h-9 rounded-full flex items-center justify-center p-2 transition"
           >
-            <FaTelegram size={32} color="white" />
+            <Image
+              src={telegram}
+              alt="Telegram"
+              width={22}
+              height={22}
+              className=""
+            />
           </Link>
         </div>
       </div>
