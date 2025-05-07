@@ -3,6 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: "Involve";
+  src: url("../../public/fonts/Involve-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-involve {
+  font-family: "Involve", sans-serif !important;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
