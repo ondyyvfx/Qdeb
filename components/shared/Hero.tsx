@@ -35,7 +35,7 @@ const Hero = () => {
                       src="/assets/banner-hedgehog.png"
                       alt="Hedgehog Background"
                       fill
-                      className="object-cover z-0"
+                      className=""
                       priority
                     />
                   )}
