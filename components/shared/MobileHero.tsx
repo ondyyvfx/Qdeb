@@ -60,12 +60,12 @@ const MobileHero = () => {
                               height={80}
                               className="shrink-0 m-0 p-0 align-middle"
                             /> */}
-                            <span className="text-white text-[22px] md:text-[34px] font-semibold leading-snug tracking-tight">
+                            <span className="text-white text-[22px] md:text-[34px] font-bold leading-snug tracking-tight">
                               {`QDeb ${slide.titleLine1}`}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-white text-[22px] md:text-[34px] font-semibold leading-snug tracking-tight">
+                          <span className="text-white text-[22px] md:text-[34px] font-bold leading-snug tracking-tight">
                             {slide.titleLine1}
                           </span>
                         )}
@@ -75,7 +75,7 @@ const MobileHero = () => {
                     </div>
 
                     <div className="w-full max-w-[280px] mb-2">
-                      <Button className="bg-[#FF6A1D] hover:bg-[#ff7d3b] text-white text-sm font-semibold px-5 py-3 rounded-md w-full">
+                      <Button className="bg-[#FF6A1D] hover:bg-[#ff7d3b] text-white text-sm font-bold px-5 py-3 rounded-md w-full">
                         {slide.buttonText}
                       </Button>
                     </div>
