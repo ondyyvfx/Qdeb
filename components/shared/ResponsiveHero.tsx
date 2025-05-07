@@ -9,7 +9,7 @@ const ResponsiveHero = () => {
 
   useEffect(() => {
     const checkScreen = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1280);
     };
     checkScreen();
     window.addEventListener("resize", checkScreen);
