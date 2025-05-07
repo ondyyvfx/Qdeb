@@ -14,8 +14,8 @@ const MobileHero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="w-full py-4 relative md:hidden">
-      <div className="px-3">
+    <section className="w-full py-4 relative xl:hidden">
+      <div className="px-3 md:px-10">
         <div className="relative rounded-2xl overflow-hidden bg-primary">
           <Swiper
             modules={[Autoplay]}
@@ -43,14 +43,14 @@ const MobileHero = () => {
                       alt="Hedgehog"
                       width={160}
                       height={160}
-                      className="absolute bottom-20 right-0 z-10 w-[200px] h-[150px]"
+                      className="absolute bottom-20 right-0 z-10 w-[200px] h-[150px] md:w-[300px] md:bottom-0 md:-right-16 md:h-[200px]"
                     />
                   )}
 
                   {/* Text content */}
                   <div className="relative z-10 w-full flex flex-col flex-grow justify-between items-start text-left">
-                    <div className="space-y-2 max-w-[290px] w-full pt-4">
-                      <h1 className="text-white text-[22px] font-semibold leading-snug tracking-tight">
+                    <div className="space-y-2 max-w-[290px] md:max-w-[900px] w-full pt-4">
+                      <h1 className="text-white text-[22px] md:text-[34px] font-semibold leading-snug tracking-tight">
                         {slide.logo ? (
                           <div className="flex items-center gap-2">
                             {/* <Image
@@ -60,12 +60,12 @@ const MobileHero = () => {
                               height={80}
                               className="shrink-0 m-0 p-0 align-middle"
                             /> */}
-                            <span className="text-white text-[22px] font-semibold leading-snug tracking-tight">
+                            <span className="text-white text-[22px] md:text-[34px] font-semibold leading-snug tracking-tight">
                               {`QDeb ${slide.titleLine1}`}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-white text-[22px] font-semibold leading-snug tracking-tight">
+                          <span className="text-white text-[22px] md:text-[34px] font-semibold leading-snug tracking-tight">
                             {slide.titleLine1}
                           </span>
                         )}
@@ -93,8 +93,8 @@ const MobileHero = () => {
                 onClick={() => swiperRef.current?.slideToLoop(index)}
                 className={`transition-all duration-300 bg-white rounded-full ${
                   activeIndex === index
-                    ? "w-3 h-3 opacity-100"
-                    : "w-8 h-2 opacity-50"
+                    ? "w-20 h-1 opacity-100"
+                    : "w-20 h-1 opacity-50"
                 }`}
               />
             ))}
