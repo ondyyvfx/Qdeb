@@ -89,19 +89,19 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <Button
+              {/* <Button
                 onClick={() => router.push("/login")}
                 variant="default"
                 className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6"
               >
-                Sign in
-              </Button>
+                Вход
+              </Button> */}
               <Button
                 onClick={() => router.push("/register")}
                 variant="default"
                 className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6 ml-2"
               >
-                Sign up
+                Регистрация
               </Button>
             </>
           )}
