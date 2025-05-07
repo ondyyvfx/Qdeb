@@ -14,7 +14,7 @@ const Hero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="w-full py-8 relative hidden xl:block">
+    <section className="hero w-full py-8 relative ">
       <div className="px-4 md:px-10 lg:px-20">
         <div className="relative">
           <Swiper
