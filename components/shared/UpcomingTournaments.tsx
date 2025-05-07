@@ -74,7 +74,7 @@ const UpcomingTournaments = () => {
   }, [cards]);
 
   return (
-    <div className="my-14 px-4 xl:px-20">
+    <div className="my-14 px-3 md:px-10 xl:px-20">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Ближайшие турниры</h1>
         <a href="/calendar" className="text-sm text-blue-500 hover:underline">
