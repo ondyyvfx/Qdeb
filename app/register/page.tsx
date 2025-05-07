@@ -299,6 +299,15 @@ export default function RegisterPage() {
                   />
                 )}
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-white">Уже есть аккаунт?</span>
+                <a
+                  href="/login"
+                  className="text-accent hover:underline font-medium"
+                >
+                  Войдите в аккаунт
+                </a>
+              </div>
             </div>
 
             <Button
