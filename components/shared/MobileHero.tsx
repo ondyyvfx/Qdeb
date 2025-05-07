@@ -61,7 +61,8 @@ const MobileHero = () => {
                               className="shrink-0 m-0 p-0 align-middle"
                             /> */}
                             <span className="text-white text-[22px] md:text-[34px] font-bold leading-snug tracking-tight">
-                              {`QDeb ${slide.titleLine1}`}
+                              <span className="font-involve">QDeb</span>
+                              {slide.titleLine1}
                             </span>
                           </div>
                         ) : (
@@ -69,8 +70,8 @@ const MobileHero = () => {
                             {slide.titleLine1}
                           </span>
                         )}
-                        {slide.titleLine2}
-                        {slide.titleLine3}
+                        <span className="font-bold">{slide.titleLine2}</span>
+                        <span className="font-bold">{slide.titleLine3}</span>
                       </h1>
                     </div>
 
