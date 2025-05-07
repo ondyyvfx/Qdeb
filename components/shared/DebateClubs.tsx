@@ -57,7 +57,7 @@ const debateClubs: DebateClub[] = [
 
 const DebateClubs = () => {
   return (
-    <section className="my-24 mx-5 sm:mx-19">
+    <section className="my-24 mx-3 md:mx-10 sm:mx-19">
       <h2 className="text-3xl font-bold mb-6">Дебатные клубы</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {debateClubs.map((club, index) => (
@@ -83,7 +83,7 @@ const DebateClubs = () => {
                 {/* <p className="text-sm">Количество участников: {club.amount}</p> */}
               </div>
             </div>
-            <Button className="border bg-primary hover:bg-secondary/20 mt-2 w-[150px] h-10 rounded-lg">
+            <Button className="border bg-primary hover:bg-secondary/20 mt-2 w-[150px] h-12 rounded-lg border-white/50">
               Подробнее
             </Button>
           </Card>
