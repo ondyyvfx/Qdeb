@@ -123,18 +123,26 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
   return (
     <div>
       {/* Фильтры */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center mb-6">
-        <input
-          type="text"
-          placeholder="Поиск по названию"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 rounded-lg bg-dark-800 text-white sm:w-full w-1/3"
-        />
+      <div className="flex flex-row gap-4 justify-between items-stretch sm:items-center mb-6">
+        <div className="relative w-full">
+          <img
+            src="/assets/search.svg"
+            width={20}
+            height={20}
+            className="absolute top-[13px] left-2"
+          />
+          <input
+            type="text"
+            placeholder="Поиск по названию"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 pl-8 rounded-lg border bg-dark-800 text-white/50 sm:w-full w-1/2"
+          />
+        </div>
         <select
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
-          className="p-2 rounded-lg bg-primary text-white sm:w-full w-1/3 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+          className="p-2 rounded-lg bg-primary text-white font-montserrat sm:w-full w-1/3 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {uniqueCities.map((city) => (
             <option key={city} value={city === "Все" ? "" : city}>
@@ -159,12 +167,12 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                     className="relative bg-primary p-4 sm:p-6 py-4 rounded-2xl shadow-lg flex flex-col md:flex-row gap-4 sm:gap-6"
                   >
                     {event.is_registration_open && (
-                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-green-400 z-10 px-2 py-1 top-4 right-2 text-xs">
+                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-green-400/75 z-10 px-2 py-1 top-4 right-2 text-xs">
                         Регистрация открыта
                       </div>
                     )}
                     {!event.is_registration_open && (
-                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-red-400 z-10 px-2 py-1 top-4 right-2 text-xs">
+                      <div className="border-[0.5px] mx-4 sm:px-4 sm:py-2 rounded-sm absolute sm:top-9 sm:right-4 sm:text-sm font-medium text-white/50 z-10 px-2 py-1 top-4 right-2 text-xs">
                         Регистрация закрыта
                       </div>
                     )}
@@ -229,19 +237,30 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                             : null}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 mt-4 hiddenn">
+                      <div className="flex flex-col gap-2 hiddenn">
                         <div className="flex flex-wrap gap-2 text-xs font-medium">
-                          {event.categories.map((category) => (
-                            <span
-                              key={category}
-                              className="bg-[#6F462A] px-4 py-1 rounded-sm text-sm font-m"
-                            >
-                              {categoryTranslations[category] || category}{" "}
-                            </span>
-                          ))}
+                          {/* bg colors based on category */}
+                          {event.categories.map((category) => {
+                            let bgColor = "bg-secondary";
+
+                            if (category === "online") {
+                              bgColor = "bg-[#2A6F5E]";
+                            } else if (category === "students") {
+                              bgColor = "bg-[#6F462A]";
+                            }
+
+                            return (
+                              <span
+                                key={category}
+                                className={`${bgColor} px-4 py-1 rounded-sm text-sm font-m text-white`}
+                              >
+                                {categoryTranslations[category] || category}
+                              </span>
+                            );
+                          })}
                         </div>
 
-                        <div className="text-sm text-green-400 z-10">
+                        <div className="text-sm z-10">
                           {event.cost === "0" ? "Бесплатно" : `${event.cost}`}
                         </div>
                         <div className="text-sm text-gray-300 max-w-[450px]">
