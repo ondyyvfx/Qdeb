@@ -52,7 +52,7 @@ const Hero = () => {
                     <h1 className="text-white text-[36px] font-bold leading-snug tracking-tight mb-6">
                       {slide.logo && (
                         <span className="inline-flex items-center gap-3 mb-2">
-                          <span className="font-involve text-4xl">Qdeb</span>
+                          <span className="font-involve text-4xl">QDeb</span>
                           <span>{slide.titleLine1}</span>
                         </span>
                       )}

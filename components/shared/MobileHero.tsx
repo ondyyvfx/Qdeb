@@ -28,7 +28,7 @@ const MobileHero = () => {
           >
             {slidesData.map((slide) => (
               <SwiperSlide key={slide.id}>
-                <div className="relative w-full h-[260px] flex flex-col justify-between items-center text-center px-4 py-4">
+                <div className="relative w-full h-[260px] flex flex-col  overflow-hidden justify-between items-center text-center px-4 py-4">
                   {/* Background */}
                   <Image
                     src="/assets/banner-blue.png"
@@ -43,7 +43,7 @@ const MobileHero = () => {
                       alt="Hedgehog"
                       width={160}
                       height={160}
-                      className="absolute bottom-20 right-0 z-10 w-[200px] h-[150px] md:w-[300px] md:bottom-0 md:-right-16 md:h-[200px]"
+                      className="absolute bottom-20 -right-10 z-10 w-[200px] h-[150px] md:w-[300px] md:bottom-0 md:-right-16 md:h-[200px]"
                     />
                   )}
 
