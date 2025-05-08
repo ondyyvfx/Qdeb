@@ -11,7 +11,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Qdeb",
+  title: "QDeb",
   description: "Qazaq Debate Community",
 };
 
