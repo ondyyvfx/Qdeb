@@ -136,13 +136,13 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
             placeholder="Поиск по названию"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="p-2 pl-8 rounded-lg border bg-dark-800 text-white/50 sm:w-full w-1/2"
+            className="p-2 pl-8 rounded-lg border bg-dark-800 text-white/50 sm:w-full w-[200px]"
           />
         </div>
         <select
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
-          className="p-2 rounded-lg bg-primary text-white font-montserrat sm:w-full w-1/3 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+          className="p-2 rounded-lg bg-primary text-white font-montserrat w-full appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {uniqueCities.map((city) => (
             <option key={city} value={city === "Все" ? "" : city}>
