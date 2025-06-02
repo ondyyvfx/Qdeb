@@ -15,9 +15,12 @@ const SpeakerSlider = () => {
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {
-        const res = await fetch("https://qdeb.kz/api/speakers/", {
-          cache: "no-store",
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/speakers/`,
+          {
+            cache: "no-store",
+          }
+        );
         const data = await res.json();
         if (data && Array.isArray(data.results)) {
           setSpeakers(data.results);

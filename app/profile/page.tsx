@@ -1,3 +1,4 @@
+import Footer from "@/components/shared/Footer";
 import EditProfileForm from "./EditProfileForm";
 import Navbar from "@/components/shared/Navbar";
 
@@ -9,6 +10,7 @@ export default function ProfilePage() {
         Редактирование профиля
       </h1>
       <EditProfileForm />
+      <Footer />
     </div>
   );
 }

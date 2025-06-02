@@ -22,7 +22,9 @@ const MobileTournamentSlider = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`https://qdeb.kz/api/events/nearest/10/`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/events/nearest/10/`
+        );
 
         const contentType = res.headers.get("content-type");
         if (!res.ok || !contentType?.includes("application/json")) {
