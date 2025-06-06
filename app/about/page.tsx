@@ -1,6 +1,6 @@
 import Navbar from "@/components/shared/Navbar"
 
-export default function RatingPage() {
+export default function AboutPage() {
   return (
     <div>
       <Navbar />

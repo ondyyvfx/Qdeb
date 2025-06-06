@@ -1,48 +1,48 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
-import logoImage from "../../public/assets/logo.svg";
-import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
-import { useUserStore } from "@/stores/useUserStore";
-import Cookies from "js-cookie";
-import Link from "next/link";
-import { Menu } from "lucide-react";
-import MobileMenu from "./MobileMenu";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import Image from "next/image"
+import React, { useState, useRef, useEffect } from "react"
+import logoImage from "../../public/assets/logo.svg"
+import { Button } from "../ui/button"
+import { useRouter } from "next/navigation"
+import { useUserStore } from "@/stores/useUserStore"
+import Cookies from "js-cookie"
+import Link from "next/link"
+import { Menu } from "lucide-react"
+import MobileMenu from "./MobileMenu"
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 
 const Navbar = () => {
-  const router = useRouter();
-  const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter()
+  const user = useUserStore((state) => state.user)
+  const setUser = useUserStore((state) => state.setUser)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
+        setMenuOpen(false)
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
+    }
+    document.addEventListener("mousedown", handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const handleLogout = () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
-    setUser(null);
-    router.push("/");
-  };
+    Cookies.remove("accessToken")
+    Cookies.remove("refreshToken")
+    setUser(null)
+    router.push("/")
+  }
 
   const handleNavigate = (path: string) => {
-    router.push(path);
-    setDrawerOpen(false);
-  };
+    router.push(path)
+    setDrawerOpen(false)
+  }
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
@@ -62,7 +62,7 @@ const Navbar = () => {
           <Link href="/rating" className="hover:text-accent transition-colors">
             Рейтинг спикеров
           </Link>
-          <Link href="#" className="hover:text-accent transition-colors">
+          <Link href="/about" className="hover:text-accent transition-colors">
             О нас
           </Link>
         </nav>
@@ -99,7 +99,7 @@ const Navbar = () => {
               <Button
                 onClick={() => router.push("/register")}
                 variant="default"
-                className="border border-accent bg-background text-white hover:bg-orange-500 transition-colors py-5 px-6 ml-2"
+                className="border border-gray-600 bg-background text-white hover:bg-orange-500 hover:border-accent transition-colors py-5 px-6 ml-2"
               >
                 Регистрация
               </Button>
@@ -110,8 +110,8 @@ const Navbar = () => {
             <div className="absolute -right-5 mt-[150px] bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
               <button
                 onClick={() => {
-                  router.push("/profile");
-                  setMenuOpen(false);
+                  router.push("/profile")
+                  setMenuOpen(false)
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
               >
@@ -146,7 +146,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

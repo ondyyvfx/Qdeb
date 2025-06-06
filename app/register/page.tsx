@@ -1,111 +1,113 @@
-"use client";
+"use client"
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { X } from "lucide-react";
-import Link from "next/link";
-import { Toaster, toast } from "react-hot-toast";
-import Cookies from "js-cookie";
-import { useUserStore } from "@/stores/useUserStore";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { X } from "lucide-react"
+import Link from "next/link"
+import { Toaster, toast } from "react-hot-toast"
+import Cookies from "js-cookie"
+import { useUserStore } from "@/stores/useUserStore"
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [full_name, setFull_name] = useState("");
-  const [phone, setPhone] = useState("");
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
-  const [phoneError, setPhoneError] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [full_name, setFull_name] = useState("")
+  const [phone, setPhone] = useState("")
+  const [avatar, setAvatar] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [emailTouched, setEmailTouched] = useState(false)
+  const [passwordTouched, setPasswordTouched] = useState(false)
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false)
+  const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [avatarError, setAvatarError] = useState(false)
+  const [phoneError, setPhoneError] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
-      setAvatar(file);
-      setPreview(URL.createObjectURL(file));
-      setAvatarError(false);
+      setAvatar(file)
+      setPreview(URL.createObjectURL(file))
+      setAvatarError(false)
     }
-  };
+  }
 
   const validateEmail = (email: string) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(email);
-  };
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    return re.test(email)
+  }
 
   const validatePassword = (password: string) => {
     const re =
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/;
-    return re.test(password);
-  };
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/
+    return re.test(password)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateEmail(email)) {
-      toast.error("Введите корректный email.");
-      return;
+      toast.error("Введите корректный email.")
+      return
     }
 
     if (!validatePassword(password)) {
       toast.error(
         "Пароль должен быть не менее 8 символов, содержать заглавную латинскую букву и спецсимвол."
-      );
-      return;
+      )
+      return
     }
 
     if (password !== confirmPassword) {
-      toast.error("Пароли не совпадают.");
-      return;
+      toast.error("Пароли не совпадают.")
+      return
     }
 
     if (!avatar) {
-      setAvatarError(true);
-      toast.error("Пожалуйста, загрузите аватар.");
-      return;
+      setAvatarError(true)
+      toast.error("Пожалуйста, загрузите аватар.")
+      return
     } else {
-      setAvatarError(false);
+      setAvatarError(false)
     }
 
     if (!phone) {
-      setPhoneError(true);
-      toast.error("Пожалуйста, введите номер телефона.");
-      return;
+      setPhoneError(true)
+      toast.error("Пожалуйста, введите номер телефона.")
+      return
     } else {
-      setPhoneError(false);
+      setPhoneError(false)
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
       // Получение CSRF токена
       const getCsrfToken = async () => {
         const res = await fetch("https://qdeb.kz/api/csrf/", {
           credentials: "include",
-        });
-        const data = await res.json();
-        return data.csrfToken;
-      };
+        })
+        const data = await res.json()
+        return data.csrfToken
+      }
 
-      const csrfToken = await getCsrfToken();
+      const csrfToken = await getCsrfToken()
 
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("full_name", full_name);
-      formData.append("phone", phone);
+      const formData = new FormData()
+      formData.append("email", email)
+      formData.append("password", password)
+      formData.append("full_name", full_name)
+      formData.append("phone", phone)
       if (avatar) {
-        formData.append("avatar", avatar);
+        formData.append("avatar", avatar)
       }
       // Регистрация
       const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
@@ -115,20 +117,20 @@ export default function RegisterPage() {
           "X-CSRFToken": csrfToken,
         },
         body: formData,
-      });
+      })
 
       if (!registerRes.ok) {
-        const errorData = await registerRes.json();
+        const errorData = await registerRes.json()
         const errorMessage =
           errorData?.email?.[0] ||
           errorData?.password?.[0] ||
           errorData?.detail ||
-          "Ошибка регистрации";
-        toast.error(errorMessage);
-        return;
+          "Ошибка регистрации"
+        toast.error(errorMessage)
+        return
       }
 
-      toast.success("Регистрация успешна!");
+      toast.success("Регистрация успешна!")
 
       // Логин
       const loginRes = await fetch("https://qdeb.kz/api/auth/login/", {
@@ -139,42 +141,40 @@ export default function RegisterPage() {
           "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({ email, password }),
-      });
+      })
 
       if (!loginRes.ok) {
-        toast.error(
-          "Регистрация прошла, но вход не выполнен. Войдите вручную."
-        );
-        router.push("/login");
-        return;
+        toast.error("Регистрация прошла, но вход не выполнен. Войдите вручную.")
+        router.push("/login")
+        return
       }
 
-      const loginData = await loginRes.json();
-      Cookies.set("accessToken", loginData.access, { expires: 1 });
-      Cookies.set("refreshToken", loginData.refresh, { expires: 7 });
+      const loginData = await loginRes.json()
+      Cookies.set("accessToken", loginData.access, { expires: 1 })
+      Cookies.set("refreshToken", loginData.refresh, { expires: 7 })
 
       // Получение профиля
       const profileRes = await fetch("https://qdeb.kz/api/auth/profile/", {
         headers: {
           Authorization: `Bearer ${loginData.access}`,
         },
-      });
+      })
 
       if (!profileRes.ok) {
-        toast.error("Не удалось получить профиль.");
-        return;
+        toast.error("Не удалось получить профиль.")
+        return
       }
 
-      const profile = await profileRes.json();
-      useUserStore.getState().setUser(profile);
+      const profile = await profileRes.json()
+      useUserStore.getState().setUser(profile)
 
-      toast.success("Добро пожаловать!");
-      router.push("/");
+      toast.success("Добро пожаловать!")
+      router.push("/")
     } catch (error) {
-      console.error("Ошибка регистрации:", error);
-      toast.error("Ошибка при подключении к серверу.");
+      console.error("Ошибка регистрации:", error)
+      toast.error("Ошибка при подключении к серверу.")
     }
-  };
+  }
 
   return (
     <div className="register-form flex h-screen bg-[#070A12] text-foreground selection:text-accent">
@@ -192,25 +192,32 @@ export default function RegisterPage() {
 
       <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
         <Link href="/">
-          <X className="absolute right-[12%] top-[7%] w-5 h-5 text-white" />
+          <X className="absolute right-[5%] top-[7%] w-5 h-5 text-white" />
         </Link>
-        <div className="w-full max-w-md p-10 rounded-3xl shadow-lg bg-muted">
-          <h1 className="text-2xl font-bold text-center mb-7">Регистрация</h1>
+        <div className="w-full p-16 rounded-3xl shadow-lg bg-muted">
+          <h1 className="text-4xl font-bold text-center mb-7">
+            Создайте аккаунт
+          </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full name</Label>
+              <Label htmlFor="full_name" className="text-lg">
+                Полное имя
+              </Label>
               <Input
                 id="full_name"
                 value={full_name}
                 onChange={(e) => setFull_name(e.target.value)}
-                placeholder="Full name"
+                placeholder="Имя и Фамилия"
                 required
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-lg">
+                Электронная почта
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -219,6 +226,7 @@ export default function RegisterPage() {
                 onBlur={() => setEmailTouched(true)}
                 placeholder="example@gmail.com"
                 required
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
               {emailTouched && !validateEmail(email) && (
                 <p className="text-red-500 text-sm mt-1">
@@ -229,15 +237,18 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password" className="text-lg">
+                Пароль
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={() => setPasswordTouched(true)}
-                placeholder="Password"
+                placeholder="Придумайте пароль"
                 required
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
               {passwordTouched && !validatePassword(password) && (
                 <p className="text-red-500 text-sm mt-1">
@@ -245,18 +256,15 @@ export default function RegisterPage() {
                   спецсимвол
                 </p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirm_password">Подтвердите пароль</Label>
               <Input
                 id="confirm_password"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onBlur={() => setConfirmPasswordTouched(true)}
-                placeholder="Confirm Password"
+                placeholder="Подтвердите пароль"
                 required
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
               {confirmPasswordTouched && password !== confirmPassword && (
                 <p className="text-red-500 text-sm mt-1">Пароли не совпадают</p>
@@ -264,13 +272,16 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone number</Label>
+              <Label htmlFor="phone" className="text-lg">
+                Номер телефона
+              </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+77471234567 <- без пробелов"
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
               {phoneError && (
                 <p className="text-red-500 text-sm mt-2 text-center">
@@ -280,9 +291,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="avatar">Profile picture</Label>
+              <Label htmlFor="avatar" className="text-lg">
+                Фото профиля
+              </Label>
               <div className="flex items-center gap-4">
-                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-primary/90 transition">
+                <label className="cursor-pointer rounded-lg  bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
                   Выбрать файл
                   <input
                     type="file"
@@ -299,20 +312,24 @@ export default function RegisterPage() {
                   />
                 )}
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white">Уже есть аккаунт?</span>
-                <a
-                  href="/login"
-                  className="text-accent hover:underline font-medium"
-                >
-                  Войдите в аккаунт
+            </div>
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="remember"
+                checked={isAgreedWithPolicy}
+                onCheckedChange={(checked) => setIsAgreedWithPolicy(!!checked)}
+              />
+              <Label htmlFor="remember" className="text-md">
+                Я согласен(-на) с{" "}
+                <a href="/privacy-policy" className="">
+                  Условиями пользования
                 </a>
-              </div>
+              </Label>
             </div>
 
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold flex items-center justify-center"
+              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white text-lg font-semibold flex items-center justify-center"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -340,6 +357,17 @@ export default function RegisterPage() {
                 "Зарегистрироваться"
               )}
             </Button>
+            <div className="flex justify-center text-base">
+              <span className="text-muted-foreground">
+                Уже есть аккаунт?&nbsp;
+              </span>
+              <a
+                href="/login"
+                className="text-accent hover:underline font-medium"
+              >
+                Войти в аккаунт
+              </a>
+            </div>
             {avatarError && (
               <p className="text-red-500 text-sm mt-2 text-center">
                 Пожалуйста, загрузите аватар.
@@ -349,5 +377,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
