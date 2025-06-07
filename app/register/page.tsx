@@ -87,10 +87,14 @@ export default function RegisterPage() {
       setPhoneError(false)
     }
 
+    if (!isAgreedWithPolicy) {
+      toast.error("Вам нужно согласиться с Условиями пользования")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      // Получение CSRF токена
       const getCsrfToken = async () => {
         const res = await fetch("https://qdeb.kz/api/csrf/", {
           credentials: "include",
@@ -109,7 +113,7 @@ export default function RegisterPage() {
       if (avatar) {
         formData.append("avatar", avatar)
       }
-      // Регистрация
+
       const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
         method: "POST",
         credentials: "include",
@@ -132,7 +136,6 @@ export default function RegisterPage() {
 
       toast.success("Регистрация успешна!")
 
-      // Логин
       const loginRes = await fetch("https://qdeb.kz/api/auth/login/", {
         method: "POST",
         credentials: "include",
@@ -153,7 +156,6 @@ export default function RegisterPage() {
       Cookies.set("accessToken", loginData.access, { expires: 1 })
       Cookies.set("refreshToken", loginData.refresh, { expires: 7 })
 
-      // Получение профиля
       const profileRes = await fetch("https://qdeb.kz/api/auth/profile/", {
         headers: {
           Authorization: `Bearer ${loginData.access}`,
@@ -177,29 +179,35 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="register-form flex h-screen bg-[#070A12] text-foreground selection:text-accent">
+    <div className="flex min-h-screen flex-col md:flex-row bg-[#070A12] text-foreground selection:text-accent">
       <Toaster position="top-center" />
-      <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
+
+      {/* Левый баннер */}
+      <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden p-6">
         <div className="w-full h-full relative rounded-2xl overflow-hidden">
           <Image
             src="/assets/banner.png"
             alt="Banner"
             fill
-            className="object-cover w-full h-full"
+            className="object-cover"
           />
         </div>
       </div>
 
-      <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
-        <Link href="/">
-          <X className="absolute right-[5%] top-[7%] w-5 h-5 text-white" />
+      {/* Форма регистрации */}
+      <div className="relative flex w-full md:w-1/2 items-center justify-center px-4 py-2 sm:px-6 lg:px-12">
+        <Link href="/" className="absolute right-4 top-4 text-white">
+          <X className="w-6 h-6" />
         </Link>
-        <div className="w-full p-16 rounded-3xl shadow-lg bg-muted">
-          <h1 className="text-4xl font-bold text-center mb-7">
+
+        <div className="w-full rounded-2xl shadow-lg bg-muted lg:p-6 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center mb-6">
             Создайте аккаунт
           </h1>
 
+          {/* Форма */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full name */}
             <div className="space-y-2">
               <Label htmlFor="full_name" className="text-lg">
                 Полное имя
@@ -210,10 +218,11 @@ export default function RegisterPage() {
                 onChange={(e) => setFull_name(e.target.value)}
                 placeholder="Имя и Фамилия"
                 required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                className="bg-gray-900 border-gray-700 focus-visible:border-accent focus-visible:ring-accent h-[56px] rounded-xl"
               />
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-lg">
                 Электронная почта
@@ -226,16 +235,14 @@ export default function RegisterPage() {
                 onBlur={() => setEmailTouched(true)}
                 placeholder="example@gmail.com"
                 required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                className="bg-gray-900 border-gray-700 focus-visible:border-accent focus-visible:ring-accent h-[56px] rounded-xl"
               />
               {emailTouched && !validateEmail(email) && (
-                <p className="text-red-500 text-sm mt-1">
-                  Пожалуйста, введите корректный email (например,
-                  example@gmail.com)
-                </p>
+                <p className="text-red-500 text-sm">Введите корректный email</p>
               )}
             </div>
 
+            {/* Passwords */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-lg">
                 Пароль
@@ -248,14 +255,15 @@ export default function RegisterPage() {
                 onBlur={() => setPasswordTouched(true)}
                 placeholder="Придумайте пароль"
                 required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                className="bg-gray-900 border-gray-700 focus-visible:border-accent focus-visible:ring-accent h-[56px] rounded-xl"
               />
               {passwordTouched && !validatePassword(password) && (
-                <p className="text-red-500 text-sm mt-1">
-                  Пароль должен быть не менее 8 символов, заглавную букву и
+                <p className="text-red-500 text-sm">
+                  Пароль должен содержать минимум 8 символов, заглавную букву и
                   спецсимвол
                 </p>
               )}
+
               <Input
                 id="confirm_password"
                 type="password"
@@ -264,13 +272,14 @@ export default function RegisterPage() {
                 onBlur={() => setConfirmPasswordTouched(true)}
                 placeholder="Подтвердите пароль"
                 required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                className="bg-gray-900 border-gray-700 focus-visible:border-accent focus-visible:ring-accent h-[56px] rounded-xl"
               />
               {confirmPasswordTouched && password !== confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">Пароли не совпадают</p>
+                <p className="text-red-500 text-sm">Пароли не совпадают</p>
               )}
             </div>
 
+            {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-lg">
                 Номер телефона
@@ -280,22 +289,21 @@ export default function RegisterPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+77471234567 <- без пробелов"
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                placeholder="+77471234567"
+                className="bg-gray-900 border-gray-700 focus-visible:border-accent focus-visible:ring-accent h-[56px] rounded-xl"
               />
               {phoneError && (
-                <p className="text-red-500 text-sm mt-2 text-center">
-                  Пожалуйста, введите номер.
-                </p>
+                <p className="text-red-500 text-sm">Введите номер телефона</p>
               )}
             </div>
 
+            {/* Avatar */}
             <div className="space-y-2">
               <Label htmlFor="avatar" className="text-lg">
                 Фото профиля
               </Label>
               <div className="flex items-center gap-4">
-                <label className="cursor-pointer rounded-lg  bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
+                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
                   Выбрать файл
                   <input
                     type="file"
@@ -308,11 +316,13 @@ export default function RegisterPage() {
                   <img
                     src={preview}
                     alt="Preview"
-                    className="h-25 w-25 rounded-full object-cover border"
+                    className="h-20 w-20 rounded-full object-cover border"
                   />
                 )}
               </div>
             </div>
+
+            {/* Политика */}
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="remember"
@@ -321,15 +331,16 @@ export default function RegisterPage() {
               />
               <Label htmlFor="remember" className="text-md">
                 Я согласен(-на) с{" "}
-                <a href="/privacy-policy" className="">
+                <a href="/privacy-policy" className="underline text-accent">
                   Условиями пользования
                 </a>
               </Label>
             </div>
 
+            {/* Кнопка */}
             <Button
               type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white text-lg font-semibold flex items-center justify-center"
+              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white text-lg font-semibold"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -357,20 +368,20 @@ export default function RegisterPage() {
                 "Зарегистрироваться"
               )}
             </Button>
-            <div className="flex justify-center text-base">
-              <span className="text-muted-foreground">
-                Уже есть аккаунт?&nbsp;
-              </span>
-              <a
+
+            <div className="text-center text-base mt-2">
+              Уже есть аккаунт?{" "}
+              <Link
                 href="/login"
                 className="text-accent hover:underline font-medium"
               >
-                Войти в аккаунт
-              </a>
+                Войти
+              </Link>
             </div>
+
             {avatarError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Пожалуйста, загрузите аватар.
+              <p className="text-red-500 text-sm text-center">
+                Загрузите аватар
               </p>
             )}
           </form>

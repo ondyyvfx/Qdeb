@@ -14,21 +14,21 @@
   font-family: "Involve", sans-serif !important;
 }
 
-.no-scrollbar::-webkit-scrollbar {
+/* .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
+} */
 
-.login-form {
+/* .login-form {
   overflow: hidden;
 }
 
 .register-form {
   overflow: hidden;
-}
+} */
 
 .swiper {
   overflow: hidden;
