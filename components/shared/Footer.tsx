@@ -1,11 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
-import inst from "../../public/assets/inst.svg";
-import telegram from "../../public/assets/telegram.svg";
+import Image from "next/image"
+import Link from "next/link"
+import inst from "../../public/assets/inst.svg"
+import telegram from "../../public/assets/telegram.svg"
 
 const Footer = () => {
   return (
-    <footer className="w-full h-[175px] px-5 flex flex-col justify-between items-center bg-background border-t border-white/10 text-gray-400 py-4 pb-7 mt-6">
+    <footer className="w-full h-[175px] px-5 py-7 flex flex-col justify-between items-center bg-background border-t border-white/10 text-gray-400  pb-7 mt-6">
       <div className="w-full flex flex-col md:flex-row justify-between items-center md:items-start px-2 gap-4 md:gap-0">
         <div className="flex items-center md:items-start">
           <Image
@@ -22,15 +22,21 @@ const Footer = () => {
             href="https://www.instagram.com/qdebkz?igsh=MWZpM2ltdGo5YXBtdg%3D%3D&utm_source=qr"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white hover:bg-white/70 w-9 h-9 rounded-full p-2 transition"
+            className="bg-white/75 hover:bg-white/60 w-[45px] h-[45px] rounded-full flex items-center justify-center transition"
           >
-            <Image src={inst} alt="Insta" width={22} height={22} className="" />
+            <Image
+              src={inst}
+              alt="Instagram"
+              width={22}
+              height={22}
+              className=""
+            />
           </Link>
           <Link
             href="https://t.me/qdebkz"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white hover:bg-white/70 w-9 h-9 rounded-full flex items-center justify-center p-2 transition"
+            className="bg-white/75 hover:bg-white/60 w-[45px] h-[45px] rounded-full flex items-center justify-center transition"
           >
             <Image
               src={telegram}
@@ -64,7 +70,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

@@ -25,47 +25,36 @@ const SpeakerCard = ({
 }: SpeakerCardProps) => {
   console.log("Avatar src:", avatar)
   return (
-    // <Card className="relative mr-10 flex flex-col w-[410px] sm:flex-row items-start sm:items-center gap-10 p-10 overflow-hidden bg-primary border-none ">
-    //   <div className="absolute -top-5 -left-5 w-30 h-30 sm:w-40 sm:h-40 rounded-full overflow-hidden z-10">
-    //     <img
-    //       src={avatar}
-    //       alt={full_name}
-    //       className="w-full h-full object-cover"
-    //     />
-    //   </div>
-
-    //   <CardContent className="flex flex-col p-0 ml-15 sm:ml-32">
-    //     <h3 className="font-semibold text-lg">{full_name}</h3>
-    //     <p className="text-sm mt-1">Рейтинг: {elo_rating}</p>
-    //     <p className="text-sm mt-1">Средний балл: {avg_speech}</p>
-    //     <p className="text-sm mt-1">
-    //       Общее количество достижений: {total_achievements}
-    //     </p>
-    //   </CardContent>
-    // </Card>
-    <div className="max-w-md bg-[#0B0E1C] text-white rounded-xl shadow-lg flex p-4 items-center space-x-4">
-      <img
-        src={avatar}
-        alt="Тимур Р."
-        className="w-20 h-20 rounded-full object-cover"
-      />
-      <div>
-        <h2 className="text-xl font-semibold">Тимур Р.</h2>
-        <p className="text-sm text-gray-300 mb-2">Средний балл - 89.5</p>
-        <ul className="text-sm space-y-1">
-          <li>
-            <span className="font-semibold">NCYD</span> - Полу-финалист, Лучший
-            спикер
-          </li>
-          <li>
-            <span className="font-semibold">AGS Cup</span> - Лучший спикер
-          </li>
-          <li>
-            <span className="font-semibold">Quantum Cup</span> - Победитель
-          </li>
-        </ul>
+    <Card
+      className="relative mr-4 flex flex-col sm:flex-row items-start sm:items-center gap-6 
+             p-6 sm:p-8 md:p-10 overflow-hidden bg-primary border-none 
+             w-[320px] sm:w-[500px] md:w-[640px]
+             h-auto sm:h-[260px] md:h-[296px]"
+    >
+      <div className="absolute -top-9 -left-9 w-[140px] sm:w-[140px] md:w-[250px] h-[140px] sm:h-[140px] md:h-[250px] rounded-full overflow-hidden z-10">
+        <img
+          src={avatar}
+          alt={full_name}
+          className="w-full h-full object-cover"
+        />
       </div>
-    </div>
+
+      <CardContent className="flex flex-col p-0 ml-24 sm:ml-48 h-[100px] sm:h-[100px] md:h-[210px]">
+        <h3 className="font-bold text-[22px] sm:text-[30px]">{full_name}</h3>
+        <p className="text-sm text-[15px] sm:text-[20px] text-gray-300">
+          Средний балл: {avg_speech}
+        </p>
+        <ul className="text-[15px] sm:text-[20px] mt-2 sm:mt-5 list-disc">
+          {achievements.map((achievement, index) => {
+            return (
+              <li key={index} className="truncate max-w-full">
+                {achievement.title}
+              </li>
+            )
+          })}
+        </ul>
+      </CardContent>
+    </Card>
   )
 }
 
