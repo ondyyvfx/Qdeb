@@ -1,90 +1,96 @@
-"use client"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { useRouter } from "next/navigation"
-import Cookies from "js-cookie"
-import { useUserStore } from "@/stores/useUserStore"
-import Image from "next/image"
-import { X } from "lucide-react"
-import Link from "next/link"
-import { Toaster, toast } from "react-hot-toast"
+"use client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { useUserStore } from "@/stores/useUserStore";
+import Image from "next/image";
+import { X } from "lucide-react";
+import Link from "next/link";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberDevice, setRememberDevice] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const fetchProfile = async (accessToken: string) => {
-    const res = await fetch("https://qdeb.kz/api/auth/profile/", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
     if (res.ok) {
-      const data = await res.json()
-      useUserStore.getState().setUser(data)
+      const data = await res.json();
+      useUserStore.getState().setUser(data);
     } else {
-      console.error("Не удалось получить профиль пользователя")
+      console.error("Не удалось получить профиль пользователя");
     }
-  }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const getCsrfToken = async () => {
-      const res = await fetch("https://qdeb.kz/api/csrf/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/csrf/`, {
         credentials: "include",
-      })
-      const data = await res.json()
-      return data.csrfToken
-    }
+      });
+      const data = await res.json();
+      return data.csrfToken;
+    };
 
     try {
-      const csrfToken = await getCsrfToken()
+      const csrfToken = await getCsrfToken();
 
-      const res = await fetch("https://qdeb.kz/api/auth/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
 
       if (res.ok) {
-        const data = await res.json()
+        const data = await res.json();
 
-        toast.success("Успешный вход!")
+        toast.success("Успешный вход!");
 
         Cookies.set("accessToken", data.access, {
           expires: rememberDevice ? 7 : 1,
-        })
-        Cookies.set("refreshToken", data.refresh, { expires: 7 })
+        });
+        Cookies.set("refreshToken", data.refresh, { expires: 7 });
 
-        await fetchProfile(data.access)
+        await fetchProfile(data.access);
 
-        router.push("/")
+        router.push("/");
       } else {
-        const error = await res.json()
-        toast.error(error?.detail || "Ошибка входа. Проверьте данные.")
+        const error = await res.json();
+        toast.error(error?.detail || "Ошибка входа. Проверьте данные.");
       }
     } catch (err) {
-      toast.error("Произошла ошибка. Попробуйте снова.")
-      console.error(err)
+      toast.error("Произошла ошибка. Попробуйте снова.");
+      console.error(err);
     }
-  }
+  };
 
   return (
     <div className="login-form flex min-h-screen bg-[#070A12] text-foreground">
@@ -185,5 +191,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

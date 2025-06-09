@@ -6,7 +6,7 @@ export const getUserFromCookie = async () => {
   if (!token) return;
 
   try {
-    const res = await fetch("https://qdeb.kz/api/auth/profile/", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

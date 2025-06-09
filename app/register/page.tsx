@@ -1,180 +1,194 @@
-"use client"
+"use client";
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { X } from "lucide-react"
-import Link from "next/link"
-import { Toaster, toast } from "react-hot-toast"
-import Cookies from "js-cookie"
-import { useUserStore } from "@/stores/useUserStore"
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { X } from "lucide-react";
+import Link from "next/link";
+import { Toaster, toast } from "react-hot-toast";
+import Cookies from "js-cookie";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [full_name, setFull_name] = useState("")
-  const [phone, setPhone] = useState("")
-  const [avatar, setAvatar] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [emailTouched, setEmailTouched] = useState(false)
-  const [passwordTouched, setPasswordTouched] = useState(false)
-  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false)
-  const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [avatarError, setAvatarError] = useState(false)
-  const [phoneError, setPhoneError] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [full_name, setFull_name] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setAvatar(file)
-      setPreview(URL.createObjectURL(file))
-      setAvatarError(false)
+      setAvatar(file);
+      setPreview(URL.createObjectURL(file));
+      setAvatarError(false);
     }
-  }
+  };
 
   const validateEmail = (email: string) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    return re.test(email)
-  }
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  };
 
   const validatePassword = (password: string) => {
     const re =
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/
-    return re.test(password)
-  }
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/;
+    return re.test(password);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateEmail(email)) {
-      toast.error("Введите корректный email.")
-      return
+      toast.error("Введите корректный email.");
+      return;
     }
 
     if (!validatePassword(password)) {
       toast.error(
         "Пароль должен быть не менее 8 символов, содержать заглавную латинскую букву и спецсимвол."
-      )
-      return
+      );
+      return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Пароли не совпадают.")
-      return
+      toast.error("Пароли не совпадают.");
+      return;
     }
 
     if (!avatar) {
-      setAvatarError(true)
-      toast.error("Пожалуйста, загрузите аватар.")
-      return
+      setAvatarError(true);
+      toast.error("Пожалуйста, загрузите аватар.");
+      return;
     } else {
-      setAvatarError(false)
+      setAvatarError(false);
     }
 
     if (!phone) {
-      setPhoneError(true)
-      toast.error("Пожалуйста, введите номер телефона.")
-      return
+      setPhoneError(true);
+      toast.error("Пожалуйста, введите номер телефона.");
+      return;
     } else {
-      setPhoneError(false)
+      setPhoneError(false);
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       // Получение CSRF токена
       const getCsrfToken = async () => {
-        const res = await fetch("https://qdeb.kz/api/csrf/", {
-          credentials: "include",
-        })
-        const data = await res.json()
-        return data.csrfToken
-      }
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/csrf/`,
+          {
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+        return data.csrfToken;
+      };
 
-      const csrfToken = await getCsrfToken()
+      const csrfToken = await getCsrfToken();
 
-      const formData = new FormData()
-      formData.append("email", email)
-      formData.append("password", password)
-      formData.append("full_name", full_name)
-      formData.append("phone", phone)
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("full_name", full_name);
+      formData.append("phone", phone);
       if (avatar) {
-        formData.append("avatar", avatar)
+        formData.append("avatar", avatar);
       }
       // Регистрация
-      const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        body: formData,
-      })
+      const registerRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "X-CSRFToken": csrfToken,
+          },
+          body: formData,
+        }
+      );
 
       if (!registerRes.ok) {
-        const errorData = await registerRes.json()
+        const errorData = await registerRes.json();
         const errorMessage =
           errorData?.email?.[0] ||
           errorData?.password?.[0] ||
           errorData?.detail ||
-          "Ошибка регистрации"
-        toast.error(errorMessage)
-        return
+          "Ошибка регистрации";
+        toast.error(errorMessage);
+        return;
       }
 
-      toast.success("Регистрация успешна!")
+      toast.success("Регистрация успешна!");
 
       // Логин
-      const loginRes = await fetch("https://qdeb.kz/api/auth/login/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      const loginRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!loginRes.ok) {
-        toast.error("Регистрация прошла, но вход не выполнен. Войдите вручную.")
-        router.push("/login")
-        return
+        toast.error(
+          "Регистрация прошла, но вход не выполнен. Войдите вручную."
+        );
+        router.push("/login");
+        return;
       }
 
-      const loginData = await loginRes.json()
-      Cookies.set("accessToken", loginData.access, { expires: 1 })
-      Cookies.set("refreshToken", loginData.refresh, { expires: 7 })
+      const loginData = await loginRes.json();
+      Cookies.set("accessToken", loginData.access, { expires: 1 });
+      Cookies.set("refreshToken", loginData.refresh, { expires: 7 });
 
       // Получение профиля
-      const profileRes = await fetch("https://qdeb.kz/api/auth/profile/", {
-        headers: {
-          Authorization: `Bearer ${loginData.access}`,
-        },
-      })
+      const profileRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`,
+        {
+          headers: {
+            Authorization: `Bearer ${loginData.access}`,
+          },
+        }
+      );
 
       if (!profileRes.ok) {
-        toast.error("Не удалось получить профиль.")
-        return
+        toast.error("Не удалось получить профиль.");
+        return;
       }
 
-      const profile = await profileRes.json()
-      useUserStore.getState().setUser(profile)
+      const profile = await profileRes.json();
+      useUserStore.getState().setUser(profile);
 
-      toast.success("Добро пожаловать!")
-      router.push("/")
+      toast.success("Добро пожаловать!");
+      router.push("/");
     } catch (error) {
-      console.error("Ошибка регистрации:", error)
-      toast.error("Ошибка при подключении к серверу.")
+      console.error("Ошибка регистрации:", error);
+      toast.error("Ошибка при подключении к серверу.");
     }
-  }
+  };
 
   return (
     <div className="register-form flex bg-[#070A12] text-foreground selection:text-accent">
@@ -377,5 +391,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
