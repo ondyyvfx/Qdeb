@@ -90,9 +90,12 @@ export default function RegisterPage() {
     try {
       // Получение CSRF токена
       const getCsrfToken = async () => {
-        const res = await fetch("https://qdeb.kz/api/csrf/", {
-          credentials: "include",
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/csrf/`,
+          {
+            credentials: "include",
+          }
+        );
         const data = await res.json();
         return data.csrfToken;
       };
@@ -108,14 +111,17 @@ export default function RegisterPage() {
         formData.append("avatar", avatar);
       }
       // Регистрация
-      const registerRes = await fetch("https://qdeb.kz/api/auth/register/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-        body: formData,
-      });
+      const registerRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "X-CSRFToken": csrfToken,
+          },
+          body: formData,
+        }
+      );
 
       if (!registerRes.ok) {
         const errorData = await registerRes.json();
@@ -131,15 +137,18 @@ export default function RegisterPage() {
       toast.success("Регистрация успешна!");
 
       // Логин
-      const loginRes = await fetch("https://qdeb.kz/api/auth/login/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const loginRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!loginRes.ok) {
         toast.error(
@@ -154,11 +163,14 @@ export default function RegisterPage() {
       Cookies.set("refreshToken", loginData.refresh, { expires: 7 });
 
       // Получение профиля
-      const profileRes = await fetch("https://qdeb.kz/api/auth/profile/", {
-        headers: {
-          Authorization: `Bearer ${loginData.access}`,
-        },
-      });
+      const profileRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`,
+        {
+          headers: {
+            Authorization: `Bearer ${loginData.access}`,
+          },
+        }
+      );
 
       if (!profileRes.ok) {
         toast.error("Не удалось получить профиль.");
