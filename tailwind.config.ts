@@ -13,6 +13,7 @@ const config: Config = {
       lg: '1024px',
       xl: '1450px',
       '2xl': '1536px',
+      '3xl': '1760px'
     },
     extend: {
       fontFamily: {

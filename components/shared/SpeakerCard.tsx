@@ -1,19 +1,19 @@
-import React from "react"
-import { Card, CardContent } from "../ui/card"
+import React from "react";
+import { Card, CardContent } from "../ui/card";
 
 type Achievement = {
-  title: string
-  tournament_id: number
-}
+  title: string;
+  tournament_id: number;
+};
 
 type SpeakerCardProps = {
-  full_name: string
-  avatar: string
-  elo_rating: number
-  achievements?: Achievement[]
-  avg_speech: number
-  total_achievements: number
-}
+  full_name: string;
+  avatar: string;
+  elo_rating: number;
+  achievements?: Achievement[];
+  avg_speech: number;
+  total_achievements: number;
+};
 
 const SpeakerCard = ({
   full_name,
@@ -23,15 +23,15 @@ const SpeakerCard = ({
   avg_speech,
   total_achievements,
 }: SpeakerCardProps) => {
-  console.log("Avatar src:", avatar)
+  console.log("Avatar src:", avatar);
   return (
     <Card
       className="relative mr-4 flex flex-col sm:flex-row items-start sm:items-center gap-6 
              p-6 sm:p-8 md:p-10 overflow-hidden bg-primary border-none 
-             w-[320px] sm:w-[500px] md:w-[640px]
-             h-auto sm:h-[260px] md:h-[296px]"
+             w-[320px] sm:w-[500px] lg:w-[504px] 3xl:w-[640px]
+             h-auto sm:h-[190px] lg:h-[220px] 3xl:h-[296px]"
     >
-      <div className="absolute -top-9 -left-9 w-[140px] sm:w-[140px] md:w-[250px] h-[140px] sm:h-[140px] md:h-[250px] rounded-full overflow-hidden z-10">
+      <div className="absolute -top-4 -left-4 lg:-top-7 lg:-left-7 w-[120px] sm:w-[120px] md:w-[185px] h-[120px] sm:h-[120px] md:h-[185px] rounded-full overflow-hidden z-10">
         <img
           src={avatar}
           alt={full_name}
@@ -39,8 +39,10 @@ const SpeakerCard = ({
         />
       </div>
 
-      <CardContent className="flex flex-col p-0 ml-24 sm:ml-48 h-[100px] sm:h-[100px] md:h-[210px]">
-        <h3 className="font-bold text-[22px] sm:text-[30px]">{full_name}</h3>
+      <CardContent className="flex flex-col p-0 ml-24 sm:ml-38 h-[100px] sm:h-[100px] md:h-[210px]">
+        <h3 className="font-bold text-[16px] sm:text-[24px] mt-5">
+          {full_name}
+        </h3>
         <p className="text-sm text-[15px] sm:text-[20px] text-gray-300">
           Средний балл: {avg_speech}
         </p>
@@ -50,15 +52,15 @@ const SpeakerCard = ({
               <li key={index} className="truncate max-w-full">
                 {achievement.title}
               </li>
-            )
+            );
           })}
         </ul>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default SpeakerCard
+export default SpeakerCard;
 
 {
   /* {achievements && achievements.length > 0 && (

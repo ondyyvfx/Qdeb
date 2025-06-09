@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import React, { useEffect, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Swiper as SwiperCore } from "swiper"
-import { Navigation, Autoplay } from "swiper/modules"
-import "swiper/css"
-import "swiper/css/autoplay"
-import SpeakerCard from "./SpeakerCard"
+import React, { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperCore } from "swiper";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/autoplay";
+import SpeakerCard from "./SpeakerCard";
 
 const SpeakerSlider = () => {
-  const [speakers, setSpeakers] = useState<any[]>([])
-  const swiperRef = useRef<SwiperCore | null>(null)
+  const [speakers, setSpeakers] = useState<any[]>([]);
+  const swiperRef = useRef<SwiperCore | null>(null);
 
   useEffect(() => {
     const fetchSpeakers = async () => {
@@ -21,27 +21,27 @@ const SpeakerSlider = () => {
           {
             cache: "no-store",
           }
-        )
-        const data = await res.json()
+        );
+        const data = await res.json();
         if (data && Array.isArray(data.results)) {
-          setSpeakers(data.results)
+          setSpeakers(data.results);
         } else {
-          console.error("Unexpected API format:", data)
+          console.error("Unexpected API format:", data);
         }
       } catch (error) {
-        console.error("Error fetching speakers:", error)
+        console.error("Error fetching speakers:", error);
       }
-    }
+    };
 
-    fetchSpeakers()
-  }, [])
+    fetchSpeakers();
+  }, []);
 
   useEffect(() => {
     if (swiperRef.current) {
-      swiperRef.current.update()
-      swiperRef.current.slideTo(0)
+      swiperRef.current.update();
+      swiperRef.current.slideTo(0);
     }
-  }, [speakers])
+  }, [speakers]);
 
   return (
     <div className="relative">
@@ -56,7 +56,7 @@ const SpeakerSlider = () => {
       <Swiper
         modules={[Navigation, Autoplay]}
         onSwiper={(swiper) => {
-          swiperRef.current = swiper
+          swiperRef.current = swiper;
         }}
         spaceBetween={350}
         slidesPerView={1.2}
@@ -112,7 +112,7 @@ const SpeakerSlider = () => {
         ))}
       </Swiper>
     </div>
-  )
-}
+  );
+};
 
-export default SpeakerSlider
+export default SpeakerSlider;
