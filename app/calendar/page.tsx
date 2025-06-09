@@ -18,7 +18,7 @@ type Event = {
 };
 
 export default async function CalendarPage() {
-  const res = await fetch("https://qdeb.kz/api/events/", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/events/`, {
     next: { revalidate: 60 }, // ISR: кеш на 60 сек
   });
 
