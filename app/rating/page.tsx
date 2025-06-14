@@ -1,154 +1,166 @@
-// import Navbar from "@/components/shared/Navbar";
-// import { getTopSpeakers } from "../../lib/topspeakers";
-// import Image from "next/image";
-// import defaultLogo from "../../public/assets/default/default-avatar.png";
+"use client";
 
-// export default async function RatingPage() {
-//   const speakers = await getTopSpeakers();
-//   // console.log("Speakers: ", speakers);
-//   const top3 = speakers.slice(0, 3); // Топ-3
-//   const others = speakers.slice(3); // Остальные
-
-//   type Speaker = {
-//     id: string;
-//     name: string;
-//     image: string;
-//     avg_speech: number;
-//     elo: number;
-//     num_tournaments: number;
-//   };
-
-//   const gradients = [
-//     "from-[rgba(223,159,32,0)] to-[rgba(223,159,32,0.45)]", // золото — 1 место
-//     "from-[rgba(191,191,191,0)] to-[rgba(191,191,191,0.45)]", // серебро — 2 место
-//     "from-[rgba(185,128,70,0)] to-[rgba(185,128,70,0.45)]", // бронза — 3 место
-//   ];
-
-//   return (
-//     <>
-//       <Navbar />
-//       <div className="bg-[#0b0c14] min-h-screen text-white">
-//         <div className="text-center pt-10 pb-4 text-2xl font-semibold">
-//           Рейтинг спикеров
-//         </div>
-
-//         {/* Топ 3 */}
-//         <div className="flex justify-center gap-6 items-end px-4 pb-20">
-//           <div className="flex justify-center gap-6 items-end px-4 pb-20">
-//             {[1, 0, 2].map((posIdx, visualIdx) => {
-//               const speaker = top3[posIdx];
-//               const gradient = gradients[posIdx];
-//               const isFirst = posIdx === 0;
-//               const isSecond = posIdx === 1;
-//               const isThird = posIdx === 2;
-
-//               const medalColor = isFirst
-//                 ? "text-yellow-400"
-//                 : isSecond
-//                 ? "text-gray-400"
-//                 : "text-orange-400";
-
-//               const borderColor = isFirst
-//                 ? "border-yellow-500"
-//                 : isSecond
-//                 ? "border-gray-400"
-//                 : "border-orange-400";
-
-//               return (
-//                 <div
-//                   key={speaker.id}
-//                   className={`relative text-center rounded-2xl mx-6 p-6 w-64 transition-all duration-300
-//           ${
-//             isFirst
-//               ? `scale-110 z-10 shadow-yellow-400/40 shadow-2xl bg-gradient-to-b ${gradient}`
-//               : `bg-gradient-to-b ${gradient} shadow-md`
-//           }`}
-//                 >
-//                   <div
-//                     className={`text-8xl font-extrabold absolute -top-10 left-1/2 -translate-x-1/2 ${medalColor}`}
-//                   >
-//                     #{posIdx + 1}
-//                   </div>
-//                   <div
-//                     className={`w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 ${borderColor}`}
-//                   >
-//                     <Image
-//                       src={speaker.image || defaultLogo}
-//                       alt={speaker.name}
-//                       width={128}
-//                       height={128}
-//                       className="h-30 w-30 rounded-full object-cover"
-//                     />
-//                   </div>
-//                   <h2 className="text-lg font-semibold">{speaker.name}</h2>
-//                   <p className="text-sm text-gray-300 mb-2">
-//                     Средний балл: {speaker.avg_speech.toFixed(1)}
-//                   </p>
-//                   <div className="text-sm text-gray-400">
-//                     <div>ELO: {speaker.elo}</div>
-//                     <div>Турниров: {speaker.num_tournaments}</div>
-//                   </div>
-//                 </div>
-//               );
-//             })}
-//           </div>
-//         </div>
-
-//         <div className="max-w-5xl mx-auto px-2 pb-10">
-//           {others.map((speaker: Speaker, index: number) => (
-//             <div
-//               key={speaker.id}
-//               className="bg-[#13151f] mb-4 p-4 rounded-xl flex items-center justify-between"
-//             >
-//               <div className="flex items-center gap-4">
-//                 <span className="text-xl font-bold text-gray-400">
-//                   #{index + 4}
-//                 </span>
-//                 <div className="w-14 h-14 rounded-full overflow-hidden">
-//                   <Image
-//                     src={speaker.image || defaultLogo}
-//                     alt={speaker.name}
-//                     width={56}
-//                     height={56}
-//                   />
-//                 </div>
-//                 <div>
-//                   <div className="font-semibold">{speaker.name}</div>
-//                   <div className="text-sm text-gray-400">
-//                     ELO: {speaker.elo}, Средний балл:{" "}
-//                     {speaker.avg_speech.toFixed(1)}, Турниров:{" "}
-//                     {speaker.num_tournaments}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </>
-//   );
-// }
-
+import { useState, useMemo, useEffect } from "react";
 import Navbar from "@/components/shared/Navbar";
 import { getTopSpeakers } from "../../lib/topspeakers";
 import Image from "next/image";
-import defaultLogo from "../../public/assets/default/default-avatar.png";
-import { Search, Filter, ArrowUpRight } from "lucide-react";
+import { Search, Filter, ArrowUpRight, X } from "lucide-react";
 
-export default async function RatingPage() {
-  const speakers = await getTopSpeakers();
-  const top3 = speakers.slice(0, 3);
-  const others = speakers.slice(3);
+type Speaker = {
+  id: string;
+  name: string;
+  image: string;
+  avg_speech: number;
+  elo: number;
+  num_tournaments: number;
+  organization?: string;
+  achievements?: string[];
+};
 
-  type Speaker = {
-    id: string;
-    name: string;
-    image: string;
-    avg_speech: number;
-    elo: number;
-    num_tournaments: number;
-    organization?: string;
-    achievements?: string[];
+type SortOption = "elo" | "avg_speech" | "num_tournaments";
+
+type ToastType = "success" | "info" | "warning" | "error";
+
+interface Toast {
+  id: string;
+  message: string;
+  type: ToastType;
+}
+
+export default function RatingPage() {
+  const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("elo");
+  const [isLoading, setIsLoading] = useState(true);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Toast functions
+  const addToast = (message: string, type: ToastType = "info") => {
+    const id = Date.now().toString();
+    const newToast: Toast = { id, message, type };
+    setToasts((prev) => [...prev, newToast]);
+
+    // Auto remove toast after 3 seconds
+    setTimeout(() => {
+      removeToast(id);
+    }, 3000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  // Load speakers data
+  useEffect(() => {
+    const loadSpeakers = async () => {
+      try {
+        const data = await getTopSpeakers();
+        setSpeakers(data);
+      } catch (error) {
+        console.error("Error loading speakers:", error);
+        addToast("Ошибка при загрузке данных спикеров", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSpeakers();
+  }, []);
+
+  // Sort all speakers first to get consistent rankings
+  const sortedSpeakers = useMemo(() => {
+    return [...speakers].sort((a, b) => {
+      switch (sortBy) {
+        case "elo":
+          return b.elo - a.elo;
+        case "avg_speech":
+          return b.avg_speech - a.avg_speech;
+        case "num_tournaments":
+          return b.num_tournaments - a.num_tournaments;
+        default:
+          return 0;
+      }
+    });
+  }, [speakers, sortBy]);
+
+  // Get stable top 3 and others
+  const stableTop3 = sortedSpeakers.slice(0, 3);
+  const othersSpeakers = sortedSpeakers.slice(3);
+
+  // Filter others based on search (case-insensitive) - DESKTOP ONLY
+  const filteredOthersSpeakers = useMemo(() => {
+    if (!appliedSearchQuery.trim()) {
+      return othersSpeakers;
+    }
+
+    return othersSpeakers.filter((speaker) =>
+      speaker.name.toLowerCase().includes(appliedSearchQuery.toLowerCase())
+    );
+  }, [othersSpeakers, appliedSearchQuery]);
+
+  // Filter ALL speakers for mobile (including top 3)
+  const filteredAllSpeakers = useMemo(() => {
+    if (!appliedSearchQuery.trim()) {
+      return sortedSpeakers;
+    }
+
+    return sortedSpeakers.filter((speaker) =>
+      speaker.name.toLowerCase().includes(appliedSearchQuery.toLowerCase())
+    );
+  }, [sortedSpeakers, appliedSearchQuery]);
+
+  // Function to get speaker's actual rank in full sorted list
+  const getSpeakerRank = (speakerId: string) => {
+    const index = sortedSpeakers.findIndex(
+      (speaker) => speaker.id === speakerId
+    );
+    return index + 1; // Convert to 1-based ranking
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedSearchQuery(searchQuery);
+
+    const searchText = searchQuery.trim() ? `"${searchQuery}"` : "не указан";
+    const sortText = getSortLabel(sortBy);
+
+    addToast(
+      `Фильтры применены: поиск ${searchText}, сортировка ${sortText}`,
+      "success"
+    );
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setAppliedSearchQuery("");
+    addToast("Поиск очищен", "info");
+  };
+
+  const getSortLabel = (sort: SortOption) => {
+    switch (sort) {
+      case "elo":
+        return "по ELO";
+      case "avg_speech":
+        return "по среднему баллу";
+      case "num_tournaments":
+        return "по количеству турниров";
+      default:
+        return "по ELO";
+    }
+  };
+
+  const getToastColors = (type: ToastType) => {
+    switch (type) {
+      case "success":
+        return "bg-green-600 border-green-500";
+      case "error":
+        return "bg-red-600 border-red-500";
+      case "warning":
+        return "bg-yellow-600 border-yellow-500";
+      case "info":
+      default:
+        return "bg-blue-600 border-blue-500";
+    }
   };
 
   const gradients = [
@@ -213,14 +225,49 @@ export default async function RatingPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <div className="bg-background min-h-screen text-white pt-16 flex items-center justify-center">
+          <div className="text-xl">Загрузка...</div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
+
+      {/* Toast Container */}
+      <div className="fixed top-20 right-4 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`
+              ${getToastColors(toast.type)} 
+              text-white px-4 py-3 rounded-lg shadow-lg border-l-4 
+              flex items-center justify-between min-w-80 max-w-96
+              animate-in slide-in-from-right duration-300
+            `}
+          >
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="ml-2 hover:bg-white hover:bg-opacity-20 rounded p-1 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+
       <div className="bg-background min-h-screen text-white pt-16">
         {/* Desktop: Top 3 Podium */}
         <div className="hidden lg:flex justify-center items-end gap-0 px-4 pb-20">
           {podiumOrder.map((position) => {
-            const speaker = top3[position];
+            const speaker = stableTop3[position];
             if (!speaker) return null;
 
             const rankData = getRankData(position);
@@ -258,7 +305,7 @@ export default async function RatingPage() {
                   `}
                   >
                     <Image
-                      src={speaker.image || defaultLogo}
+                      src={speaker.image}
                       alt={speaker.name}
                       width={isFirst ? 128 : 112}
                       height={isFirst ? 128 : 112}
@@ -309,159 +356,207 @@ export default async function RatingPage() {
 
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                <div className="relative">
+                <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Поиск по имени"
-                    className="bg-background border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-full sm:w-64"
+                    placeholder="Поиск по имени спикера"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleApplyFilters()
+                    }
+                    className="bg-background border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-full"
                   />
+                  {appliedSearchQuery && (
+                    <button
+                      onClick={handleClearSearch}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
 
-                <select className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                  <option>Сортировать по ELO</option>
-                  <option>Сортировать по среднему баллу</option>
-                  <option>Сортировать по турнирам</option>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                >
+                  <option value="elo">Сортировать по ELO</option>
+                  <option value="avg_speech">
+                    Сортировать по среднему баллу
+                  </option>
+                  <option value="num_tournaments">
+                    Сортировать по турнирам
+                  </option>
                 </select>
 
-                <button className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleApplyFilters}
+                  className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
                   <Filter className="w-4 h-4" />
-                  Все фильтры
+                  Применить фильтры
                 </button>
               </div>
             </div>
 
-            {/* All Speakers List (including top 3) */}
-            <div className="space-y-3">
-              {speakers.map((speaker: Speaker, index: number) => {
-                const isTopThree = index < 3;
-                const styling = getRankStyling(index);
-
-                return (
-                  <div
-                    key={speaker.id}
-                    className={`
-                      ${
-                        isTopThree
-                          ? `bg-gradient-to-r ${styling.bgGradient} border-2 ${styling.borderColor}`
-                          : "bg-primary border border-gray-700"
-                      }
-                      hover:bg-[#1a1d29] rounded-xl p-4 transition-all duration-200 group cursor-pointer relative
-                    `}
+            {/* Current filters display */}
+            {appliedSearchQuery && (
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-sm text-gray-400">Активный поиск:</span>
+                <div className="bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                  {appliedSearchQuery}
+                  <button
+                    onClick={handleClearSearch}
+                    className="hover:bg-blue-700 rounded p-0.5"
                   >
-                    {/* Rank number */}
-                    <div className="absolute top-3 left-4 z-10">
-                      <div
-                        className={`
-                        text-3xl font-black opacity-80 leading-none
-                        ${isTopThree ? styling.numberColor : "text-white"}
-                      `}
-                      >
-                        {index + 1}
-                      </div>
-                    </div>
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    <div className="flex flex-col gap-4 ml-12">
-                      <div className="flex items-center gap-4 flex-1">
-                        {/* Avatar */}
+            {/* Mobile List: Show filtered speakers (including top 3 when no search) */}
+            <div className="space-y-3">
+              {filteredAllSpeakers.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  Спикеры не найдены
+                </div>
+              ) : (
+                filteredAllSpeakers.map((speaker: Speaker) => {
+                  const actualRank = getSpeakerRank(speaker.id);
+                  const isTop3 = actualRank <= 3;
+                  const styling = isTop3
+                    ? getRankStyling(actualRank - 1)
+                    : {
+                        bgGradient: "",
+                        numberColor: "text-white",
+                        borderColor: "border-gray-600",
+                      };
+
+                  return (
+                    <div
+                      key={speaker.id}
+                      className={`
+                        ${
+                          isTop3
+                            ? `bg-gradient-to-r ${styling.bgGradient} border-2 ${styling.borderColor}`
+                            : "bg-primary border border-gray-700"
+                        }
+                        hover:bg-[#1a1d29] rounded-xl p-4 transition-all duration-200 group cursor-pointer relative
+                      `}
+                    >
+                      {/* Rank number */}
+                      <div className="absolute top-3 left-4 z-10">
                         <div
                           className={`
-                          rounded-full overflow-hidden
-                          ${
-                            isTopThree
-                              ? `border-2 ${styling.borderColor} w-16 h-16`
-                              : "w-12 h-12"
-                          }
+                          text-3xl font-black opacity-80 leading-none
+                          ${styling.numberColor}
                         `}
                         >
-                          <Image
-                            src={speaker.image || defaultLogo}
-                            alt={speaker.name}
-                            width={isTopThree ? 64 : 48}
-                            height={isTopThree ? 64 : 48}
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={`
-                            font-semibold mb-1 truncate
-                            ${isTopThree ? "text-lg" : "text-base"}
-                          `}
-                          >
-                            {speaker.name}
-                          </div>
-                          <div className="text-xs text-gray-400 flex flex-col gap-1">
-                            <div className="bg-gray-700 rounded px-2 py-1 text-xs inline-block w-fit">
-                              Парасат
-                            </div>
-                            <span>Астана, ЕНУ</span>
-                          </div>
+                          {actualRank}
                         </div>
                       </div>
 
-                      {/* Stats */}
-                      <div className="flex items-center justify-between text-center">
-                        <div>
+                      <div className="flex flex-col gap-4 ml-12">
+                        <div className="flex items-center gap-4 flex-1">
+                          {/* Avatar */}
                           <div
                             className={`
-                            font-bold
-                            ${isTopThree ? "text-lg" : "text-base"}
+                            rounded-full overflow-hidden ${
+                              isTop3
+                                ? `border-2 ${styling.borderColor} w-16 h-16`
+                                : "w-12 h-12"
+                            }
                           `}
                           >
-                            {speaker.elo.toFixed(1)}
+                            <Image
+                              src={speaker.image}
+                              alt={speaker.name}
+                              width={isTop3 ? 64 : 48}
+                              height={isTop3 ? 64 : 48}
+                              className="object-cover w-full h-full"
+                            />
                           </div>
-                          <div className="text-xs text-gray-400">ELO</div>
-                        </div>
-                        <div>
-                          <div
-                            className={`
-                            font-bold
-                            ${isTopThree ? "text-lg" : "text-base"}
-                          `}
-                          >
-                            {speaker.avg_speech.toFixed(1)}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            Средний балл
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            className={`
-                            font-bold
-                            ${isTopThree ? "text-lg" : "text-base"}
-                          `}
-                          >
-                            {speaker.num_tournaments}
-                          </div>
-                          <div className="text-xs text-gray-400">Турниры</div>
-                        </div>
-                      </div>
 
-                      {/* Top 3 achievements */}
-                      {isTopThree && (
-                        <div className="mt-2">
-                          <div className="text-xs text-gray-200 space-y-1 leading-relaxed">
-                            <div>
-                              <strong>NCYD</strong> - Полу-финалист, Лучший
-                              спикер
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className={`font-semibold mb-1 truncate ${
+                                isTop3 ? "text-lg" : "text-base"
+                              }`}
+                            >
+                              {speaker.name}
                             </div>
-                            <div>
-                              <strong>ACS Cup</strong> - Лучший спикер
-                            </div>
-                            <div>
-                              <strong>Quantum Cup</strong> - Победитель
+                            <div className="text-xs text-gray-400 flex flex-col gap-1">
+                              <div className="bg-gray-700 rounded px-2 py-1 text-xs inline-block w-fit">
+                                Парасат
+                              </div>
+                              <span>Астана, ЕНУ</span>
                             </div>
                           </div>
                         </div>
-                      )}
+
+                        {/* Stats */}
+                        <div className="flex items-center justify-between text-center">
+                          <div>
+                            <div
+                              className={`font-bold ${
+                                isTop3 ? "text-lg" : "text-base"
+                              }`}
+                            >
+                              {speaker.elo.toFixed(1)}
+                            </div>
+                            <div className="text-xs text-gray-400">ELO</div>
+                          </div>
+                          <div>
+                            <div
+                              className={`font-bold ${
+                                isTop3 ? "text-lg" : "text-base"
+                              }`}
+                            >
+                              {speaker.avg_speech.toFixed(1)}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              Средний балл
+                            </div>
+                          </div>
+                          <div>
+                            <div
+                              className={`font-bold ${
+                                isTop3 ? "text-lg" : "text-base"
+                              }`}
+                            >
+                              {speaker.num_tournaments}
+                            </div>
+                            <div className="text-xs text-gray-400">Турниры</div>
+                          </div>
+                        </div>
+
+                        {/* Top 3 achievements */}
+                        {isTop3 && (
+                          <div className="mt-2">
+                            <div className="text-xs text-gray-200 space-y-1 leading-relaxed">
+                              <div>
+                                <strong>NCYD</strong> - Полу-финалист, Лучший
+                                спикер
+                              </div>
+                              <div>
+                                <strong>ACS Cup</strong> - Лучший спикер
+                              </div>
+                              <div>
+                                <strong>Quantum Cup</strong> - Победитель
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -478,95 +573,147 @@ export default async function RatingPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Поиск по имени"
-                  className="bg-background border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-64"
+                  placeholder="Поиск по имени (только среди спикеров ниже топ-3)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleApplyFilters()}
+                  className="bg-background border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-80"
                 />
+                {appliedSearchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
-              <select className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                <option>Сортировать по ELO</option>
-                <option>Сортировать по среднему баллу</option>
-                <option>Сортировать по турнирам</option>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="elo">Сортировать по ELO</option>
+                <option value="avg_speech">
+                  Сортировать по среднему баллу
+                </option>
+                <option value="num_tournaments">Сортировать по турнирам</option>
               </select>
 
-              <button className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+              <button
+                onClick={handleApplyFilters}
+                className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
                 <Filter className="w-4 h-4" />
-                Все фильтры
+                Применить фильтры
               </button>
             </div>
           </div>
 
-          {/* Speakers List (excluding top 3) */}
-          <div className="space-y-3">
-            {others.map((speaker: Speaker, index: number) => (
-              <div
-                key={speaker.id}
-                className="bg-primary hover:bg-[#1a1d29] rounded-xl p-6 transition-all duration-200 group cursor-pointer relative"
-              >
-                {/* Rank number positioned at top */}
-                <div className="absolute top-4 left-6">
-                  <div className="text-6xl font-black text-white opacity-80 leading-none">
-                    {index + 4}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between ml-20">
-                  <div className="flex items-center gap-6">
-                    {/* Avatar */}
-                    <div className="w-16 h-16 rounded-full overflow-hidden">
-                      <Image
-                        src={speaker.image || defaultLogo}
-                        alt={speaker.name}
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1">
-                      <div className="font-semibold text-xl mb-1">
-                        {speaker.name}
-                      </div>
-                      <div className="text-sm text-gray-400 flex items-center gap-1">
-                        <div className="bg-gray-700 rounded px-2 py-1 text-xs">
-                          Парасат
-                        </div>
-                        <span>Астана, ЕНУ</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center gap-12 text-center">
-                    <div>
-                      <div className="text-2xl font-bold">
-                        {speaker.elo.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-400">ELO</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">
-                        {speaker.avg_speech.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-400">Средний балл</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">
-                        {speaker.num_tournaments}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        Кол-во турниров
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-gray-400 group-hover:text-white transition-colors ml-6">
-                    <ArrowUpRight className="w-5 h-5" />
-                  </div>
-                </div>
+          {/* Current filters display */}
+          {appliedSearchQuery && (
+            <div className="mb-6 flex items-center gap-2">
+              <span className="text-sm text-gray-400">Активный поиск:</span>
+              <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                {appliedSearchQuery}
+                <button
+                  onClick={handleClearSearch}
+                  className="hover:bg-blue-700 rounded-full p-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Speakers List (filtered others) */}
+          <div className="space-y-3">
+            {filteredOthersSpeakers.length === 0 && appliedSearchQuery ? (
+              <div className="text-center py-8 text-gray-400">
+                Спикеры не найдены среди мест 4+
+              </div>
+            ) : filteredOthersSpeakers.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                Нет других спикеров
+              </div>
+            ) : (
+              filteredOthersSpeakers.map((speaker: Speaker) => {
+                const actualRank = getSpeakerRank(speaker.id);
+
+                return (
+                  <div
+                    key={speaker.id}
+                    className="bg-primary hover:bg-[#1a1d29] rounded-xl p-6 transition-all duration-200 group cursor-pointer relative"
+                  >
+                    {/* Rank number - show actual rank */}
+                    <div className="absolute top-6 left-6">
+                      <div className="text-6xl font-black text-white opacity-80 leading-none">
+                        {actualRank}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between ml-20">
+                      <div className="flex items-center gap-6">
+                        {/* Avatar */}
+                        <div className="w-16 h-16 rounded-full overflow-hidden">
+                          <Image
+                            src={speaker.image}
+                            alt={speaker.name}
+                            width={64}
+                            height={64}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1">
+                          <div className="font-semibold text-xl mb-1">
+                            {speaker.name}
+                          </div>
+                          <div className="text-sm text-gray-400 flex items-center gap-1">
+                            <div className="bg-gray-700 rounded px-2 py-1 text-xs">
+                              Парасат
+                            </div>
+                            <span>Астана, ЕНУ</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-12 text-center">
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {speaker.elo.toFixed(1)}
+                          </div>
+                          <div className="text-sm text-gray-400">ELO</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {speaker.avg_speech.toFixed(1)}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            Средний балл
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {speaker.num_tournaments}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            Кол-во турниров
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-gray-400 group-hover:text-white transition-colors ml-6">
+                        <ArrowUpRight className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
