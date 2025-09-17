@@ -1,48 +1,54 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import React, { useState, useRef, useEffect } from "react"
-import logoImage from "../../public/assets/logo.svg"
-import { Button } from "../ui/button"
-import { useRouter } from "next/navigation"
-import { useUserStore } from "@/stores/useUserStore"
-import Cookies from "js-cookie"
-import Link from "next/link"
-import { Menu } from "lucide-react"
-import MobileMenu from "./MobileMenu"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import Image from "next/image";
+import React, { useState, useRef, useEffect } from "react";
+import logoImage from "../../public/assets/logo.svg";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/useUserStore";
+import Cookies from "js-cookie";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import MobileMenu from "./MobileMenu";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 const Navbar = () => {
-  const router = useRouter()
-  const user = useUserStore((state) => state.user)
-  const setUser = useUserStore((state) => state.setUser)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
+        setMenuOpen(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
+    };
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Mark hydration complete to avoid SSR/CSR mismatch when reading zustand
+    setHasHydrated(true);
+  }, []);
 
   const handleLogout = () => {
-    Cookies.remove("accessToken")
-    Cookies.remove("refreshToken")
-    setUser(null)
-    router.push("/")
-  }
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    setUser(null);
+    router.push("/");
+  };
 
   const handleNavigate = (path: string) => {
-    router.push(path)
-    setDrawerOpen(false)
-  }
+    router.push(path);
+    setDrawerOpen(false);
+  };
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
@@ -69,7 +75,9 @@ const Navbar = () => {
 
         {/* Desktop user avatar or login */}
         <div className="hidden md:flex items-center relative" ref={menuRef}>
-          {user ? (
+          {!hasHydrated ? (
+            <div className="h-10 w-[140px] rounded-md bg-white/10 animate-pulse" />
+          ) : user ? (
             <div
               className="flex items-center gap-3 cursor-pointer"
               onClick={() => setMenuOpen((prev) => !prev)}
@@ -110,8 +118,8 @@ const Navbar = () => {
             <div className="absolute -right-5 mt-[150px] bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
               <button
                 onClick={() => {
-                  router.push("/profile")
-                  setMenuOpen(false)
+                  router.push("/profile");
+                  setMenuOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
               >
@@ -146,7 +154,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

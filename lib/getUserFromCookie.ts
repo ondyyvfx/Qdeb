@@ -1,24 +1,27 @@
-import Cookies from "js-cookie";
-import { useUserStore } from "@/stores/useUserStore";
+"use server";
+import { cookies } from "next/headers";
 
 export const getUserFromCookie = async () => {
-  const token = Cookies.get("accessToken");
-  if (!token) return;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+  if (!token) return null;
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`, {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+    const res = await fetch(`${baseUrl}/auth/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      cache: "no-store",
     });
 
     if (res.ok) {
       const data = await res.json();
-      useUserStore.getState().setUser(data);
-    } else {
-      console.error("Не удалось получить профиль");
+      return data;
     }
+    // fallback: если профиля нет — попробуем по username из JWT куки нет доступа здесь; вернем null
+    return null;
   } catch (err) {
-    console.error("Ошибка при получении профиля:", err);
+    return null;
   }
 };

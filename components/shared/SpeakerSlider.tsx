@@ -8,28 +8,37 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/autoplay";
 import SpeakerCard from "./SpeakerCard";
+import Cookies from "js-cookie";
 
 const SpeakerSlider = () => {
   const [speakers, setSpeakers] = useState<any[]>([]);
   const swiperRef = useRef<SwiperCore | null>(null);
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
 
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/speakers/`,
-          {
-            cache: "no-store",
-          }
-        );
-        const data = await res.json();
-        if (data && Array.isArray(data.results)) {
-          setSpeakers(data.results);
-        } else {
-          console.error("Unexpected API format:", data);
+        const res = await fetch(`${API_URL}/users`, { cache: "no-store" });
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok || !contentType.includes("application/json")) {
+          return;
         }
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : [];
+        setSpeakers(
+          arr.map((u: any) => ({
+            full_name: u.fullName || u.username,
+            avatar: u.profilePictureUrl,
+            elo_rating: undefined,
+            achievements: [],
+            avg_speech: undefined,
+            total_achievements: undefined,
+            id: u.id,
+          }))
+        );
       } catch (error) {
-        console.error("Error fetching speakers:", error);
+        // ignore
       }
     };
 

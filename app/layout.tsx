@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./styles/globals.css";
 import { Montserrat } from "next/font/google";
 import { AppWrapper } from "@/components/shared/AppWrapper";
+import { getUserFromCookie } from "@/lib/getUserFromCookie";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -15,15 +16,16 @@ export const metadata: Metadata = {
   description: "Qazaq Debate Community",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialUser = await getUserFromCookie();
   return (
     <html lang="en">
       <body className={`${montserrat.variable}`}>
-        <AppWrapper>{children}</AppWrapper>
+        <AppWrapper initialUser={initialUser}>{children}</AppWrapper>
       </body>
     </html>
   );

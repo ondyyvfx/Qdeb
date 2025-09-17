@@ -1,5 +1,6 @@
 export async function getTopSpeakers() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/speakers/`, {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+  const res = await fetch(`${baseUrl}/api/speakers/`, {
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Ошибка при загрузке спикеров");

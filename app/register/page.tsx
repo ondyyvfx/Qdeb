@@ -13,6 +13,8 @@ import { Toaster, toast } from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/stores/useUserStore";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
+  const [username, setUsername] = useState("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,118 +78,69 @@ export default function RegisterPage() {
       setAvatarError(true);
       toast.error("Пожалуйста, загрузите аватар.");
       return;
-    } else {
-      setAvatarError(false);
-    }
-
-    if (!phone) {
-      setPhoneError(true);
-      toast.error("Пожалуйста, введите номер телефона.");
-      return;
-    } else {
-      setPhoneError(false);
     }
 
     setIsLoading(true);
 
     try {
-      // Получение CSRF токена
-      const getCsrfToken = async () => {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/csrf/`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await res.json();
-        return data.csrfToken;
-      };
-
-      const csrfToken = await getCsrfToken();
-
       const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("full_name", full_name);
-      formData.append("phone", phone);
-      if (avatar) {
-        formData.append("avatar", avatar);
-      }
-      // Регистрация
-      const registerRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register/`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "X-CSRFToken": csrfToken,
-          },
-          body: formData,
-        }
-      );
+      // formData.append(
+      //   "register",
+      //   JSON.stringify({
+      //     email,
+      //     username,
+      //     password,
+      //     full_name,
+      //     phone,
+      //     description: "Hello!",
+      //   })
+      // );
+      // if (avatar) {
+      //   formData.append("profilePicture", avatar);
+      // }
 
-      if (!registerRes.ok) {
-        const errorData = await registerRes.json();
-        const errorMessage =
-          errorData?.email?.[0] ||
-          errorData?.password?.[0] ||
-          errorData?.detail ||
-          "Ошибка регистрации";
-        toast.error(errorMessage);
-        return;
+      const json = JSON.stringify({
+        email,
+        username,
+        password,
+        full_name,
+        phone,
+        description: "Hello!",
+      });
+
+      formData.append("data", new Blob([json], { type: "application/json" }));
+
+      if (avatar) {
+        formData.append("profilePicture", avatar);
+      }
+
+      console.log("FormData dump:");
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(
+            `${key}: FILE (${value.name}, ${value.type}, ${value.size} bytes)`
+          );
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Ошибка регистрации");
       }
 
       toast.success("Регистрация успешна!");
-
-      // Логин
-      const loginRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login/`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      if (!loginRes.ok) {
-        toast.error(
-          "Регистрация прошла, но вход не выполнен. Войдите вручную."
-        );
-        router.push("/login");
-        return;
-      }
-
-      const loginData = await loginRes.json();
-      Cookies.set("accessToken", loginData.access, { expires: 1 });
-      Cookies.set("refreshToken", loginData.refresh, { expires: 7 });
-
-      // Получение профиля
-      const profileRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile/`,
-        {
-          headers: {
-            Authorization: `Bearer ${loginData.access}`,
-          },
-        }
-      );
-
-      if (!profileRes.ok) {
-        toast.error("Не удалось получить профиль.");
-        return;
-      }
-
-      const profile = await profileRes.json();
-      useUserStore.getState().setUser(profile);
-
-      toast.success("Добро пожаловать!");
-      router.push("/");
-    } catch (error) {
-      console.error("Ошибка регистрации:", error);
-      toast.error("Ошибка при подключении к серверу.");
+      router.push("/login");
+    } catch (err: any) {
+      toast.error(err.message || "Ошибка при подключении к серверу.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -223,6 +177,20 @@ export default function RegisterPage() {
                 value={full_name}
                 onChange={(e) => setFull_name(e.target.value)}
                 placeholder="Имя и Фамилия"
+                required
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-lg">
+                Nickname
+              </Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Nickname"
                 required
                 className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
