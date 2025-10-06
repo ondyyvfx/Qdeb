@@ -38,6 +38,49 @@ const Navbar = () => {
     setHasHydrated(true);
   }, []);
 
+  // Автоматическое извлечение данных пользователя из JWT при загрузке страницы
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+    
+    if (token) {
+      try {
+        // Разделяем токен по точкам
+        const parts = token.split(".");
+        
+        if (parts.length === 3) {
+          // Берем вторую часть (payload)
+          const payload = parts[1];
+          // Декодируем через atob и преобразуем в JSON
+          const decodedPayload = JSON.parse(atob(payload));
+          
+          // Маппим данные из JWT в формат User
+          const userData = {
+            email: decodedPayload.sub || decodedPayload.email || "",
+            full_name: decodedPayload.full_name || decodedPayload.name || "",
+            avatar: decodedPayload.avatar || decodedPayload.profilePictureUrl || "",
+            // Дополнительные поля из JWT если есть
+            ...(decodedPayload.phone && { phone: decodedPayload.phone }),
+            ...(decodedPayload.description && { description: decodedPayload.description }),
+            ...(decodedPayload.elo_rating && { elo_rating: decodedPayload.elo_rating }),
+            ...(decodedPayload.tournaments_completed && { tournaments_completed: decodedPayload.tournaments_completed }),
+            ...(decodedPayload.avg_speech && { avg_speech: decodedPayload.avg_speech }),
+            ...(decodedPayload.std_deviation && { std_deviation: decodedPayload.std_deviation }),
+            ...(decodedPayload.total_achievements && { total_achievements: decodedPayload.total_achievements }),
+          };
+          
+          // Сохраняем результат в Zustand
+          setUser(userData);
+        } else {
+          console.error("Invalid JWT token format - expected 3 parts, got:", parts.length);
+        }
+      } catch (error) {
+        // Если парсинг не удался — выводим ошибку в консоль
+        console.error("Ошибка при парсинге JWT токена:", error);
+      }
+    }
+  }, [setUser]);
+
+
   const handleLogout = () => {
     Cookies.remove("accessToken");
     Cookies.remove("refreshToken");
@@ -49,6 +92,33 @@ const Navbar = () => {
     router.push(path);
     setDrawerOpen(false);
   };
+
+  // Функция для форматирования имени пользователя
+  const formatUserName = (user: { full_name?: string; email?: string }) => {
+    if (user.full_name) {
+      return user.full_name;
+    }
+    if (user.email) {
+      // Извлекаем имя из email (часть до @)
+      const nameFromEmail = user.email.split('@')[0];
+      // Делаем первую букву заглавной
+      return nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+    }
+    return "Пользователь";
+  };
+
+  // Функция для получения инициалов пользователя
+  const getUserInitials = (user: { full_name?: string; email?: string }) => {
+    if (user.full_name) {
+      return user.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+    }
+    if (user.email) {
+      const nameFromEmail = user.email.split('@')[0];
+      return nameFromEmail.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
@@ -79,20 +149,26 @@ const Navbar = () => {
             <div className="h-10 w-[140px] rounded-md bg-white/10 animate-pulse" />
           ) : user ? (
             <div
-              className="flex items-center gap-3 cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg px-2 py-1 transition-all duration-200"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              {user.avatar && (
+              {user.avatar ? (
                 <Image
                   src={user.avatar}
                   alt="avatar"
                   width={40}
                   height={40}
-                  className="h-10 w-10 rounded-full object-cover border"
+                  className="h-12 w-12 rounded-full object-cover border-2 border-white/20 shadow-lg hover:border-accent transition-all duration-200"
                 />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center border-2 border-white/20 shadow-lg hover:border-accent transition-all duration-200">
+                  <span className="text-white font-bold text-lg">
+                    {getUserInitials(user)}
+                  </span>
+                </div>
               )}
-              <span className="text-sm font-medium text-white">
-                {user.full_name}
+              <span className="text-base font-semibold text-white">
+                {formatUserName(user)}
               </span>
             </div>
           ) : (
