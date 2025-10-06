@@ -47,7 +47,7 @@ const SpeakerCard = ({
           Средний балл: {avg_speech}
         </p>
         <ul className="text-[15px] sm:text-[20px] mt-2 sm:mt-5 list-disc">
-          {achievements.map((achievement, index) => {
+          {achievements?.map((achievement, index) => {
             return (
               <li key={index} className="truncate max-w-full">
                 {achievement.title}

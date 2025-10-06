@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import logoImage from "../../public/assets/logo.svg";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,21 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { apiGet } from "@/lib/api";
+
+interface UserProfileResponse {
+  id: number;
+  email: string;
+  username: string;
+  fullName: string;
+  phone?: string;
+  description?: string;
+  profilePictureUrl?: string;
+  elo_rating?: number;
+  tournaments_completed?: number;
+  avg_speech?: number;
+  total_achievements?: number;
+}
 
 const Navbar = () => {
   const router = useRouter();
@@ -38,7 +53,55 @@ const Navbar = () => {
     setHasHydrated(true);
   }, []);
 
-  // Автоматическое извлечение данных пользователя из JWT при загрузке страницы
+  // Функция для получения полной информации о пользователе
+  const fetchUserProfile = useCallback(async (email: string) => {
+    try {
+      // Извлекаем username из email (часть до @)
+      const username = email.split('@')[0];
+      
+      // Получаем полную информацию о пользователе
+      const response = await apiGet<UserProfileResponse>(`/users/${username}`);
+      
+      if (response.error) {
+        console.error("Ошибка получения профиля:", response.error);
+        // Если не удалось получить профиль, используем только email из JWT
+        setUser({
+          email: email,
+          full_name: "",
+          avatar: ""
+        });
+        return;
+      }
+
+      if (response.data) {
+        // Маппим данные из API в формат User
+        const userData = {
+          email: response.data.email || email,
+          full_name: response.data.fullName || "",
+          avatar: response.data.profilePictureUrl || "",
+          phone: response.data.phone || "",
+          description: response.data.description || "",
+          // Дополнительные поля если есть
+          ...(response.data.elo_rating && { elo_rating: response.data.elo_rating }),
+          ...(response.data.tournaments_completed && { tournaments_completed: response.data.tournaments_completed }),
+          ...(response.data.avg_speech && { avg_speech: response.data.avg_speech }),
+          ...(response.data.total_achievements && { total_achievements: response.data.total_achievements }),
+        };
+        
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error("Ошибка при получении профиля пользователя:", error);
+      // Fallback - используем только email из JWT
+      setUser({
+        email: email,
+        full_name: "",
+        avatar: ""
+      });
+    }
+  }, [setUser]);
+
+  // Автоматическое получение данных пользователя при загрузке страницы
   useEffect(() => {
     const token = Cookies.get("accessToken");
     
@@ -53,23 +116,13 @@ const Navbar = () => {
           // Декодируем через atob и преобразуем в JSON
           const decodedPayload = JSON.parse(atob(payload));
           
-          // Маппим данные из JWT в формат User
-          const userData = {
-            email: decodedPayload.sub || decodedPayload.email || "",
-            full_name: decodedPayload.full_name || decodedPayload.name || "",
-            avatar: decodedPayload.avatar || decodedPayload.profilePictureUrl || "",
-            // Дополнительные поля из JWT если есть
-            ...(decodedPayload.phone && { phone: decodedPayload.phone }),
-            ...(decodedPayload.description && { description: decodedPayload.description }),
-            ...(decodedPayload.elo_rating && { elo_rating: decodedPayload.elo_rating }),
-            ...(decodedPayload.tournaments_completed && { tournaments_completed: decodedPayload.tournaments_completed }),
-            ...(decodedPayload.avg_speech && { avg_speech: decodedPayload.avg_speech }),
-            ...(decodedPayload.std_deviation && { std_deviation: decodedPayload.std_deviation }),
-            ...(decodedPayload.total_achievements && { total_achievements: decodedPayload.total_achievements }),
-          };
+          // Извлекаем email из JWT
+          const email = decodedPayload.sub || "";
           
-          // Сохраняем результат в Zustand
-          setUser(userData);
+          if (email) {
+            // Получаем полную информацию о пользователе через API
+            fetchUserProfile(email);
+          }
         } else {
           console.error("Invalid JWT token format - expected 3 parts, got:", parts.length);
         }
@@ -78,7 +131,7 @@ const Navbar = () => {
         console.error("Ошибка при парсинге JWT токена:", error);
       }
     }
-  }, [setUser]);
+  }, [setUser, fetchUserProfile]);
 
 
   const handleLogout = () => {
