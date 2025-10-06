@@ -23,7 +23,7 @@ export default async function CalendarPage() {
   const res = await fetch(`${baseUrl}/tournaments`, {
     next: { revalidate: 60 }, // ISR: кеш на 60 сек
   });
-
+ 
   if (!res.ok) {
     const text = await res.text();
     console.error("Ошибка загрузки событий:", res.status, text);
