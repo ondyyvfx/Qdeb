@@ -36,6 +36,15 @@ const Navbar = () => {
   const [hasHydrated, setHasHydrated] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const apiBase =
+    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5639/api";
+  const resolveImageUrl = (url?: string | null) => {
+    if (!url) return "";
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const normalized = url.startsWith("/") ? url : `/${url}`;
+    return `${apiBase}${normalized}`;
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -53,78 +62,90 @@ const Navbar = () => {
     setHasHydrated(true);
   }, []);
 
-  // Функция для получения полной информации о пользователе
-  const fetchUserProfile = useCallback(async (email: string) => {
-    try {
-      // Извлекаем username из email (часть до @)
-      const username = email.split('@')[0];
-      
-      // Получаем полную информацию о пользователе
-      const response = await apiGet<UserProfileResponse>(`/users/${username}`);
-      
-      if (response.error) {
-        console.error("Ошибка получения профиля:", response.error);
-        // Если не удалось получить профиль, используем только email из JWT
+  // Получение полной информации о пользователе
+  const fetchUserProfile = useCallback(
+    async (email: string) => {
+      try {
+        // Извлекаем username из email (часть до @)
+        const username = email.split("@")[0];
+
+        // Получаем полную информацию о пользователе
+        const response = await apiGet<UserProfileResponse>(
+          `/users/${username}`
+        );
+
+        if (response.error) {
+          console.error("Ошибка получения профиля:", response.error);
+          setUser({
+            email: email,
+            full_name: "",
+            avatar: "",
+          });
+          return;
+        }
+
+        if (response.data) {
+          const userData = {
+            email: response.data.email || email,
+            full_name: response.data.fullName || "",
+            avatar: resolveImageUrl(response.data.profilePictureUrl) || "",
+            phone: response.data.phone || "",
+            description: response.data.description || "",
+            ...(response.data.elo_rating && {
+              elo_rating: response.data.elo_rating,
+            }),
+            ...(response.data.tournaments_completed && {
+              tournaments_completed: response.data.tournaments_completed,
+            }),
+            ...(response.data.avg_speech && {
+              avg_speech: response.data.avg_speech,
+            }),
+            ...(response.data.total_achievements && {
+              total_achievements: response.data.total_achievements,
+            }),
+          };
+
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error("Ошибка при получении профиля пользователя:", error);
         setUser({
           email: email,
           full_name: "",
-          avatar: ""
+          avatar: "",
         });
-        return;
       }
-
-      if (response.data) {
-        // Маппим данные из API в формат User
-        const userData = {
-          email: response.data.email || email,
-          full_name: response.data.fullName || "",
-          avatar: response.data.profilePictureUrl || "",
-          phone: response.data.phone || "",
-          description: response.data.description || "",
-          // Дополнительные поля если есть
-          ...(response.data.elo_rating && { elo_rating: response.data.elo_rating }),
-          ...(response.data.tournaments_completed && { tournaments_completed: response.data.tournaments_completed }),
-          ...(response.data.avg_speech && { avg_speech: response.data.avg_speech }),
-          ...(response.data.total_achievements && { total_achievements: response.data.total_achievements }),
-        };
-        
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error("Ошибка при получении профиля пользователя:", error);
-      // Fallback - используем только email из JWT
-      setUser({
-        email: email,
-        full_name: "",
-        avatar: ""
-      });
-    }
-  }, [setUser]);
+    },
+    [setUser]
+  );
 
   // Автоматическое получение данных пользователя при загрузке страницы
   useEffect(() => {
     const token = Cookies.get("accessToken");
-    
+
     if (token) {
       try {
         // Разделяем токен по точкам
         const parts = token.split(".");
-        
+
         if (parts.length === 3) {
           // Берем вторую часть (payload)
           const payload = parts[1];
           // Декодируем через atob и преобразуем в JSON
           const decodedPayload = JSON.parse(atob(payload));
-          
+
           // Извлекаем email из JWT
           const email = decodedPayload.sub || "";
-          
+
           if (email) {
             // Получаем полную информацию о пользователе через API
             fetchUserProfile(email);
           }
         } else {
-          console.error("Invalid JWT token format - expected 3 parts, got:", parts.length);
+          console.error(
+            "Invalid JWT token format - expected 3 parts, got:",
+            parts.length
+          );
         }
       } catch (error) {
         // Если парсинг не удался — выводим ошибку в консоль
@@ -132,7 +153,6 @@ const Navbar = () => {
       }
     }
   }, [setUser, fetchUserProfile]);
-
 
   const handleLogout = () => {
     Cookies.remove("accessToken");
@@ -153,7 +173,7 @@ const Navbar = () => {
     }
     if (user.email) {
       // Извлекаем имя из email (часть до @)
-      const nameFromEmail = user.email.split('@')[0];
+      const nameFromEmail = user.email.split("@")[0];
       // Делаем первую букву заглавной
       return nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
     }
@@ -163,15 +183,18 @@ const Navbar = () => {
   // Функция для получения инициалов пользователя
   const getUserInitials = (user: { full_name?: string; email?: string }) => {
     if (user.full_name) {
-      return user.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+      return user.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase();
     }
     if (user.email) {
-      const nameFromEmail = user.email.split('@')[0];
+      const nameFromEmail = user.email.split("@")[0];
       return nameFromEmail.charAt(0).toUpperCase();
     }
     return "U";
   };
-
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">

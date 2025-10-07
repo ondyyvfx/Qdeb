@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 //
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5629/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
