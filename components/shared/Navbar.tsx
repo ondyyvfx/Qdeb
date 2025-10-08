@@ -25,6 +25,7 @@ interface UserProfileResponse {
   tournaments_completed?: number;
   avg_speech?: number;
   total_achievements?: number;
+  roles?: string[];
 }
 
 const Navbar = () => {
@@ -81,6 +82,7 @@ const Navbar = () => {
           avatar: response.data.profilePictureUrl || "",
           phone: response.data.phone || "",
           description: response.data.description || "",
+          roles: response.data.roles || ["USER"],
           // Дополнительные поля если есть
           ...(response.data.elo_rating && { elo_rating: response.data.elo_rating }),
           ...(response.data.tournaments_completed && { tournaments_completed: response.data.tournaments_completed }),
@@ -182,11 +184,14 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-8 text-sm font-medium">
+          <Link href="/tournaments" className="hover:text-accent transition-colors">
+            Турниры
+          </Link>
           <Link
             href="/calendar"
             className="hover:text-accent transition-colors"
           >
-            Календарь мероприятий
+            Календарь турниров
           </Link>
           <Link href="/rating" className="hover:text-accent transition-colors">
             Рейтинг спикеров
@@ -254,6 +259,17 @@ const Navbar = () => {
               >
                 Профиль
               </button>
+              {user.roles?.includes("ADMIN") && (
+                <button
+                  onClick={() => {
+                    router.push("/admin/roles");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white mt-1"
+                >
+                  Админ панель
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 hover:bg-red-600 rounded-md text-sm text-white mt-1"

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import { useMemo } from "react";
+import Link from "next/link";
 
 type Event = {
   id: number;
@@ -130,6 +131,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
             width={20}
             height={20}
             className="absolute top-[13px] left-2"
+            alt="Поиск"
           />
           <input
             type="text"
@@ -143,6 +145,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
           value={selectedCity}
           onChange={(e) => setSelectedCity(e.target.value)}
           className="p-2 rounded-lg bg-primary text-white font-montserrat w-full appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label="Выберите город"
         >
           {uniqueCities.map((city) => (
             <option key={city} value={city === "Все" ? "" : city}>
@@ -204,7 +207,9 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                     <div className="sm:flex-1 sm:space-y-2 text-white flex flex-col sm:mt-4 z-10">
                       <div className="flex items-center gap-4">
                         <div className="text-lg sm:text-2xl font-bold">
-                          {event.title}
+                          <Link href={`/tournaments/${event.id}`} className="hover:text-accent transition-colors cursor-pointer">
+                            {event.title}
+                          </Link>
                           <div className="sm:hidden text-xs text-gray-400 text-center mb-2">
                             {format(
                               parseISO(event.start_date.split("T")[0]),
@@ -286,16 +291,11 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                               Регистрация
                             </a>
                           )}
-                        <button
-                          className="bg-white text-black px-3 py-1 text-[11px] sm:text-[16px] sm:px-6 sm:py-2 rounded-md font-semibold"
-                          onClick={() =>
-                            setActiveEvent(
-                              activeEvent === event.id ? null : event.id
-                            )
-                          }
-                        >
-                          Подробнее
-                        </button>
+                        <Link href={`/tournaments/${event.id}`}>
+                          <button className="bg-white text-black px-3 py-1 text-[11px] sm:text-[16px] sm:px-6 sm:py-2 rounded-md font-semibold hover:bg-gray-100 transition-colors">
+                            Подробнее
+                          </button>
+                        </Link>
                       </div>
                     </div>
                   </div>
