@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useUserStore } from "@/stores/useUserStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import Cookies from "js-cookie";
 
 interface UserProfile {
@@ -19,6 +19,12 @@ interface UserProfile {
   tournaments_completed?: number;
   avg_speech?: number;
   total_achievements?: number;
+  // team info per API doc
+  teamId?: number;
+  teamName?: string;
+  teamCode?: string;
+  teamSize?: number;
+  teamLeader?: boolean;
 }
 
 const ProfileView = () => {
@@ -198,6 +204,120 @@ const ProfileView = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Команда */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg text-white">Команда</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profile.teamId ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Название команды
+                  </p>
+                  <p className="text-white font-medium">{profile.teamName}</p>
+                </div>
+                <a href="/team" className="text-accent hover:underline text-sm">
+                  Открыть команду
+                </a>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Код приглашения
+                  </p>
+                  <p className="text-white font-medium">
+                    {profile.teamCode || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Количество участников
+                  </p>
+                  <p className="text-white font-medium">
+                    {profile.teamSize ?? "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Лидер</p>
+                  <p className="text-white font-medium">
+                    {profile.teamLeader ? "Да" : "Нет"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <TeamActionsNoTeam />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Локальный компонент действий, если пользователь без команды
+const TeamActionsNoTeam = () => {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!code.trim()) {
+      setError("Введите код команды");
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await apiPost<{ message?: string }>("/teams/join", {
+        code: code.trim(),
+      });
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      // Перезагрузить страницу профиля для обновления состояния команды
+      window.location.reload();
+    } catch (e) {
+      setError("Не удалось присоединиться к команде");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Вы не состоите в команде
+        </p>
+        <a href="/team/create" className="text-accent hover:underline text-sm">
+          Создать команду
+        </a>
+      </div>
+      <form
+        onSubmit={handleJoin}
+        className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3"
+      >
+        <input
+          className="bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white"
+          placeholder="Код приглашения"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+        <button
+          type="submit"
+          className="bg-accent text-white rounded-md px-4 py-2 disabled:opacity-60"
+          disabled={loading}
+        >
+          {loading ? "Вход..." : "Войти в команду"}
+        </button>
+      </form>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   );
 };
