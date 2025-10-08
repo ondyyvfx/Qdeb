@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import TournamentCard from "./TournamentCard";
+import Cookies from "js-cookie";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
@@ -18,41 +19,38 @@ interface Tournament {
 
 const MobileTournamentSlider = () => {
   const [cards, setCards] = useState<Tournament[]>([]);
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/events/nearest/10/`
-        );
+        const url = `${API_URL}/tournaments`;
+        const res = await fetch(url);
 
         const contentType = res.headers.get("content-type");
         if (!res.ok || !contentType?.includes("application/json")) {
-          const text = await res.text();
-          console.error("Ошибка ответа сервера:", res.status, text);
-          throw new Error(`Некорректный ответ сервера: ${res.status}`);
+          setCards([]);
+          return;
         }
 
         const data = await res.json();
         console.log("API response:", data);
 
-        if (Array.isArray(data.results)) {
-          const formatted = data.results.map((event: any) => ({
-            id: event.id,
-            title: event.title,
-            start_date: event.start_date,
-            end_date: event.end_date,
-            cost: event.cost,
-            location: event.city,
-            registrationlink: event.registration_link,
-            backgroundUrl: "/assets/Q.svg",
-          }));
-          setCards(formatted);
-        } else {
-          console.error("Ожидался массив, но получено:", data);
-        }
+        const arr = Array.isArray(data) ? data : [];
+        const formatted = arr.map((t: any) => ({
+          id: t.id,
+          title: t.name,
+          start_date: t.eventDate,
+          end_date: t.eventDate,
+          cost: t.fee,
+          location: t.organizerName || "",
+          registrationlink: t.tabbycatUrl || null,
+          backgroundUrl: "/assets/Q.svg",
+        }));
+        setCards(formatted);
       } catch (error) {
-        console.error("Ошибка при загрузке турниров:", error);
+        setCards([]);
       }
     };
 

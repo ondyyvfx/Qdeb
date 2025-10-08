@@ -8,6 +8,7 @@ import "swiper/css"
 import { Swiper as SwiperCore } from "swiper"
 import { Navigation } from "swiper/modules"
 import MobileTournamentSlider from "./MobileTournamentSlider"
+import Cookies from "js-cookie"
 
 const NUMBER_OF_EVENTS = 10
 
@@ -25,41 +26,38 @@ interface Tournament {
 const UpcomingTournaments = () => {
   const [cards, setCards] = useState<Tournament[]>([])
   const swiperRef = useRef<SwiperCore | null>(null)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api"
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/events/nearest/${NUMBER_OF_EVENTS}/`
-        )
+        const res = await fetch(`${API_URL}/tournaments/getAll`)
 
         const contentType = res.headers.get("content-type")
         if (!res.ok || !contentType?.includes("application/json")) {
-          const text = await res.text()
-          console.error("Ошибка ответа сервера:", res.status, text)
-          throw new Error(`Некорректный ответ сервера: ${res.status}`)
+          setCards([])
+          return
         }
 
         const data = await res.json()
         console.log("API response:", data)
 
-        if (Array.isArray(data.results)) {
-          const formatted = data.results.map((event: any) => ({
-            id: event.id,
-            title: event.title,
-            start_date: event.start_date,
-            end_date: event.end_date,
-            cost: event.cost,
-            location: event.city,
-            registrationlink: event.registration_link,
-            backgroundUrl: "/assets/Q.svg",
-          }))
-          setCards(formatted)
-        } else {
-          console.error("Ожидался массив, но получено:", data)
-        }
+        const arr = Array.isArray(data) ? data : []
+        const formatted = arr.map((t: any) => ({
+          id: t.id,
+          title: t.name,
+          start_date: t.eventDate,
+          end_date: t.eventDate,
+          cost: t.fee || 0,
+          location: t.organizerName || "Место не указано",
+          registrationlink: t.tabbycatUrl || null,
+          backgroundUrl: t.photoUrl
+            ? `${API_URL}${t.photoUrl}`
+            : "/assets/Q.svg",
+        }))
+        setCards(formatted)
       } catch (error) {
-        console.error("Ошибка при загрузке турниров:", error)
+        setCards([])
       }
     }
 
@@ -77,7 +75,10 @@ const UpcomingTournaments = () => {
     <div className="my-14 px-3 md:px-10 xl:px-20">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Ближайшие турниры</h1>
-        <a href="/calendar" className="text-sm text-blue-500 hover:underline">
+        <a
+          href="/tournaments"
+          className="text-sm text-blue-500 hover:underline"
+        >
           Посмотреть все
         </a>
       </div>
@@ -134,7 +135,16 @@ const UpcomingTournaments = () => {
         >
           {cards.map((card) => (
             <SwiperSlide key={card.id} className="!w-[30%]">
-              <TournamentCard {...card} />
+              <TournamentCard
+                id={card.id}
+                title={card.title}
+                start_date={card.start_date}
+                end_date={card.end_date}
+                cost={card.cost}
+                location={card.location}
+                registrationlink={card.registrationlink}
+                backgroundUrl={card.backgroundUrl}
+              />
             </SwiperSlide>
           ))}
         </Swiper>

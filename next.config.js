@@ -4,13 +4,13 @@ module.exports = {
       {
         protocol: "http",
         hostname: "localhost",
-        port: "8000",
-        pathname: "/media/**",
+        port: "5639",
+        pathname: "/api/**",
       },
       {
         protocol: "https",
         hostname: "qdeb.kz",
-        pathname: "/media/**",
+        pathname: "/api/**",
       },
     ],
   },

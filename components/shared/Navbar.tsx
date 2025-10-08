@@ -1,48 +1,201 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import React, { useState, useRef, useEffect } from "react"
-import logoImage from "../../public/assets/logo.svg"
-import { Button } from "../ui/button"
-import { useRouter } from "next/navigation"
-import { useUserStore } from "@/stores/useUserStore"
-import Cookies from "js-cookie"
-import Link from "next/link"
-import { Menu } from "lucide-react"
-import MobileMenu from "./MobileMenu"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import Image from "next/image";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import logoImage from "../../public/assets/logo.svg";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/useUserStore";
+import Cookies from "js-cookie";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import MobileMenu from "./MobileMenu";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { apiGet } from "@/lib/api";
+
+interface UserProfileResponse {
+  id: number;
+  email: string;
+  username: string;
+  fullName: string;
+  phone?: string;
+  description?: string;
+  profilePictureUrl?: string;
+  elo_rating?: number;
+  tournaments_completed?: number;
+  avg_speech?: number;
+  total_achievements?: number;
+  roles?: string[];
+}
 
 const Navbar = () => {
-  const router = useRouter()
-  const user = useUserStore((state) => state.user)
-  const setUser = useUserStore((state) => state.setUser)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const apiBase =
+    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5639/api";
+  const resolveImageUrl = (url?: string | null) => {
+    if (!url) return "";
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const normalized = url.startsWith("/") ? url : `/${url}`;
+    return `${apiBase}${normalized}`;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Mark hydration complete to avoid SSR/CSR mismatch when reading zustand
+    setHasHydrated(true);
+  }, []);
+
+  // Получение полной информации о пользователе
+  const fetchUserProfile = useCallback(
+    async (email: string) => {
+      try {
+        // Извлекаем username из email (часть до @)
+        const username = email.split("@")[0];
+
+        // Получаем полную информацию о пользователе
+        const response = await apiGet<UserProfileResponse>(
+          `/users/${username}`
+        );
+
+        if (response.error) {
+          console.error("Ошибка получения профиля:", response.error);
+          setUser({
+            email: email,
+            full_name: "",
+            avatar: "",
+          });
+          return;
+        }
+
+        if (response.data) {
+          const userData = {
+            email: response.data.email || email,
+            full_name: response.data.fullName || "",
+            avatar: resolveImageUrl(response.data.profilePictureUrl) || "",
+            phone: response.data.phone || "",
+            description: response.data.description || "",
+            ...(response.data.elo_rating && {
+              elo_rating: response.data.elo_rating,
+            }),
+            ...(response.data.tournaments_completed && {
+              tournaments_completed: response.data.tournaments_completed,
+            }),
+            ...(response.data.avg_speech && {
+              avg_speech: response.data.avg_speech,
+            }),
+            ...(response.data.total_achievements && {
+              total_achievements: response.data.total_achievements,
+            }),
+          };
+
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error("Ошибка при получении профиля пользователя:", error);
+        setUser({
+          email: email,
+          full_name: "",
+          avatar: "",
+        });
+      }
+    },
+    [setUser]
+  );
+
+  // Автоматическое получение данных пользователя при загрузке страницы
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+
+    if (token) {
+      try {
+        // Разделяем токен по точкам
+        const parts = token.split(".");
+
+        if (parts.length === 3) {
+          // Берем вторую часть (payload)
+          const payload = parts[1];
+          // Декодируем через atob и преобразуем в JSON
+          const decodedPayload = JSON.parse(atob(payload));
+
+          // Извлекаем email из JWT
+          const email = decodedPayload.sub || "";
+
+          if (email) {
+            // Получаем полную информацию о пользователе через API
+            fetchUserProfile(email);
+          }
+        } else {
+          console.error(
+            "Invalid JWT token format - expected 3 parts, got:",
+            parts.length
+          );
+        }
+      } catch (error) {
+        // Если парсинг не удался — выводим ошибку в консоль
+        console.error("Ошибка при парсинге JWT токена:", error);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+  }, [setUser, fetchUserProfile]);
 
   const handleLogout = () => {
-    Cookies.remove("accessToken")
-    Cookies.remove("refreshToken")
-    setUser(null)
-    router.push("/")
-  }
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    setUser(null);
+    router.push("/");
+  };
 
   const handleNavigate = (path: string) => {
-    router.push(path)
-    setDrawerOpen(false)
-  }
+    router.push(path);
+    setDrawerOpen(false);
+  };
+
+  // Функция для форматирования имени пользователя
+  const formatUserName = (user: { full_name?: string; email?: string }) => {
+    if (user.full_name) {
+      return user.full_name;
+    }
+    if (user.email) {
+      // Извлекаем имя из email (часть до @)
+      const nameFromEmail = user.email.split("@")[0];
+      // Делаем первую букву заглавной
+      return nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+    }
+    return "Пользователь";
+  };
+
+  // Функция для получения инициалов пользователя
+  const getUserInitials = (user: { full_name?: string; email?: string }) => {
+    if (user.full_name) {
+      return user.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase();
+    }
+    if (user.email) {
+      const nameFromEmail = user.email.split("@")[0];
+      return nameFromEmail.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
@@ -57,7 +210,7 @@ const Navbar = () => {
             href="/calendar"
             className="hover:text-accent transition-colors"
           >
-            Календарь мероприятий
+            Календарь турниров
           </Link>
           <Link href="/rating" className="hover:text-accent transition-colors">
             Рейтинг спикеров
@@ -69,22 +222,30 @@ const Navbar = () => {
 
         {/* Desktop user avatar or login */}
         <div className="hidden md:flex items-center relative" ref={menuRef}>
-          {user ? (
+          {!hasHydrated ? (
+            <div className="h-10 w-[140px] rounded-md bg-white/10 animate-pulse" />
+          ) : user ? (
             <div
-              className="flex items-center gap-3 cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg px-2 py-1 transition-all duration-200"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              {user.avatar && (
+              {user.avatar ? (
                 <Image
                   src={user.avatar}
                   alt="avatar"
                   width={40}
                   height={40}
-                  className="h-10 w-10 rounded-full object-cover border"
+                  className="h-12 w-12 rounded-full object-cover border-2 border-white/20 shadow-lg hover:border-accent transition-all duration-200"
                 />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center border-2 border-white/20 shadow-lg hover:border-accent transition-all duration-200">
+                  <span className="text-white font-bold text-lg">
+                    {getUserInitials(user)}
+                  </span>
+                </div>
               )}
-              <span className="text-sm font-medium text-white">
-                {user.full_name}
+              <span className="text-base font-semibold text-white">
+                {formatUserName(user)}
               </span>
             </div>
           ) : (
@@ -110,13 +271,24 @@ const Navbar = () => {
             <div className="absolute -right-5 mt-[150px] bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
               <button
                 onClick={() => {
-                  router.push("/profile")
-                  setMenuOpen(false)
+                  router.push("/profile");
+                  setMenuOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
               >
                 Профиль
               </button>
+              {user.roles?.includes("ADMIN") && (
+                <button
+                  onClick={() => {
+                    router.push("/admin/roles");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white mt-1"
+                >
+                  Админ панель
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 hover:bg-red-600 rounded-md text-sm text-white mt-1"
@@ -146,7 +318,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
