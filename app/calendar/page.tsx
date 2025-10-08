@@ -20,7 +20,7 @@ type Event = {
 export default async function CalendarPage() {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
-  const res = await fetch(`${baseUrl}/tournaments`, {
+  const res = await fetch(`${baseUrl}/tournaments/getAll`, {
     next: { revalidate: 60 }, // ISR: кеш на 60 сек
   });
  
@@ -59,11 +59,25 @@ export default async function CalendarPage() {
   const categories = ["Для студентов", "Для профессионалов", "Онлайн"]; // Пример статичного списка категорий, если нужно сделать динамичным, используйте API для получения.
 
   return (
-    <div>
+    <div className="min-h-screen bg-background text-text">
       <Navbar />
-      <div className="mx-3 md:mx-10 xl:mx-19 my-15">
-        <h1 className="text-3xl font-bold mb-6">Календарь мероприятий</h1>
-        <ClientCalendar events={groupedByMonth} categories={categories} />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10 mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Календарь турниров
+            </h1>
+            <p className="text-lg text-gray-400 font-medium max-w-2xl mx-auto">
+              Просматривайте турниры по месяцам и планируйте свое участие
+            </p>
+          </div>
+        </div>
+
+        {/* Calendar Content */}
+        <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+          <ClientCalendar events={groupedByMonth} categories={categories} />
+        </div>
       </div>
       <Footer />
     </div>

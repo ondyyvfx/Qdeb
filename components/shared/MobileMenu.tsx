@@ -47,16 +47,19 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
       </DrawerHeader>
 
       <div className="flex flex-col gap-4 p-4">
-        <Link href="/" onClick={() => onNavigate("/calendar")}>
+        <Link href="/" onClick={() => onNavigate("/")}>
           Главная
         </Link>
-        <Link href="/calendar" onClick={() => onNavigate("/calendar")}>
-          Календарь мероприятий
+        <Link href="/tournaments" onClick={() => onNavigate("/tournaments")}>
+          Турниры
         </Link>
-        <Link href="/rating" onClick={() => onNavigate("/speakers")}>
+        <Link href="/calendar" onClick={() => onNavigate("/calendar")}>
+          Календарь турниров
+        </Link>
+        <Link href="/rating" onClick={() => onNavigate("/rating")}>
           Рейтинг спикеров
         </Link>
-        <Link href="#" onClick={() => onNavigate("/about")}>
+        <Link href="/about" onClick={() => onNavigate("/about")}>
           О нас
         </Link>
 
@@ -96,6 +99,15 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             >
               Профиль
             </Button>
+            {user.roles?.includes("ADMIN") && (
+              <Button
+                variant="ghost"
+                onClick={() => onNavigate("/admin/roles")}
+                className="justify-start"
+              >
+                Панель администратора
+              </Button>
+            )}
             <Button
               variant="destructive"
               onClick={onLogout}

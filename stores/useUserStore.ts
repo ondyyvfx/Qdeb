@@ -12,6 +12,7 @@ export type User = {
   std_deviation?: number
   total_achievements?: number
   avatar: string // URL на аватарку
+  roles?: string[] // Роли пользователя (USER, ORGANIZER, ADMIN)
   // achievements?: Achievement[] // если понадобится
 }
 
