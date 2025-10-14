@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiGet, apiPost } from "@/lib/api";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
+import TeamDashboard from "./TeamDashboard";
+import TeamMemberView from "./TeamMemberView";
 
 type TeamInfo = {
   id: number;
@@ -71,47 +75,31 @@ export default function TeamPage() {
   if (!team) return null;
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-white">Команда: {team.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Код приглашения</p>
-              <p className="text-white font-medium">{team.code}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Количество участников
-              </p>
-              <p className="text-white font-medium">{team.size}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Вы лидер</p>
-              <p className="text-white font-medium">
-                {team.leader ? "Да" : "Нет"}
-              </p>
-            </div>
+    <div className="min-h-screen bg-background text-text">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10 mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              {team.name}
+            </h1>
+            <p className="text-lg text-gray-400 font-medium max-w-2xl mx-auto">
+              {team.leader
+                ? "Панель управления командой"
+                : "Информация о команде"}
+            </p>
           </div>
+        </div>
 
-          <div className="flex gap-3 pt-4">
-            <a
-              href="/team/create"
-              className="bg-accent text-white px-4 py-2 rounded-md"
-            >
-              Создать команду
-            </a>
-            <button
-              onClick={handleLeave}
-              className="bg-red-600 text-white px-4 py-2 rounded-md"
-            >
-              Покинуть команду
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Main Content */}
+        {team.leader ? (
+          <TeamDashboard team={team} />
+        ) : (
+          <TeamMemberView team={team} onLeave={handleLeave} />
+        )}
+      </div>
+      <Footer />
     </div>
   );
 }
