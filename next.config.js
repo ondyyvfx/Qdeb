@@ -4,7 +4,7 @@ module.exports = {
       {
         protocol: "http",
         hostname: "localhost",
-        port: "5639",
+        port: "4232",
         pathname: "/api/**",
       },
       {
