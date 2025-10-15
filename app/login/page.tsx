@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 //
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5629/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const fetchProfile = async (accessToken: string) => {
-    const res = await fetch(`${API_URL}/auth/profile`, {
+    const res = await fetch(`${API_URL}/profile`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -43,7 +43,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch(`${API_URL}/auth/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

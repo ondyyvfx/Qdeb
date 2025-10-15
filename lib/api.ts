@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export interface ApiResponse<T = unknown> {
   data?: T;
