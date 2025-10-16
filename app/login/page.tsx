@@ -17,7 +17,7 @@ import { Toaster, toast } from "react-hot-toast";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
@@ -42,17 +42,25 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("Attempting login with:", { username, password: "***" });
+    console.log("API URL:", `${API_URL}/auth/signin`);
+    console.log("Request body:", JSON.stringify({ username, password: "***" }));
+
     try {
       const res = await fetch(`${API_URL}/auth/signin`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
-          email,
+          username,
           password,
         }),
       });
+
+      console.log("Login response status:", res.status);
 
       if (res.ok) {
         const data = await res.json();
@@ -67,8 +75,33 @@ export default function LoginPage() {
 
         router.push("/");
       } else {
-        const error = await res.json();
-        toast.error(error?.detail || "Ошибка входа. Проверьте данные.");
+        // Handle error response similar to register page
+        let message = "Ошибка входа. Проверьте данные.";
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const errorData: unknown = await res.json();
+            const asRecord = (val: unknown): Record<string, unknown> | null =>
+              val && typeof val === "object"
+                ? (val as Record<string, unknown>)
+                : null;
+            const errObj = asRecord(errorData);
+            if (errObj && errObj.detail) {
+              message = String(errObj.detail);
+            } else if (errObj && errObj.message) {
+              message = String(errObj.message);
+            } else if (errObj && errObj.error) {
+              message = String(errObj.error);
+            }
+          } else {
+            const text = await res.text();
+            if (text) message = text;
+          }
+        } catch (parseError) {
+          console.error("Error parsing response:", parseError);
+          // Use default message if parsing fails
+        }
+        toast.error(message);
       }
     } catch (err) {
       toast.error("Произошла ошибка. Попробуйте снова.");
@@ -102,15 +135,15 @@ export default function LoginPage() {
           </h1>
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
-              <Label htmlFor="email" className="text-lg">
-                Электронная почта
+              <Label htmlFor="username" className="text-lg">
+                Имя пользователя
               </Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@mail.com"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Введите имя пользователя"
                 className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
             </div>

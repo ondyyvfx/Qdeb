@@ -3,7 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Filter, Plus } from "lucide-react";
 import Link from "next/link";
@@ -25,7 +31,9 @@ type Tournament = {
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
+  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,14 +44,15 @@ export default function TournamentsPage() {
   // Пока что разрешаем всем создавать турниры
   const isOrganizer = true;
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/tournaments/getAll`);
-        
+        const response = await fetch(`${API_URL}/tournaments`);
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -51,16 +60,20 @@ export default function TournamentsPage() {
         const data = await response.json();
         console.log("API response:", data);
 
-        const formattedTournaments = Array.isArray(data) ? data.map((t: any) => ({
-          id: t.id,
-          title: t.name,
-          start_date: t.eventDate,
-          end_date: t.eventDate,
-          cost: t.fee || 0,
-          location: t.organizerName || "Место не указано",
-          registrationlink: t.tabbycatUrl || null,
-          backgroundUrl: t.photoUrl ? `${API_URL}${t.photoUrl}` : "/assets/Q.svg",
-        })) : [];
+        const formattedTournaments = Array.isArray(data)
+          ? data.map((t: any) => ({
+              id: t.id,
+              title: t.name,
+              start_date: t.date,
+              end_date: t.date,
+              cost: t.fee || 0,
+              location: t.organizerName || "Место не указано",
+              registrationlink: null, // No registration link in new API
+              backgroundUrl: t.imageURL
+                ? `${API_URL.replace("/api", "")}${t.imageURL}`
+                : "/assets/Q.svg",
+            }))
+          : [];
 
         setTournaments(formattedTournaments);
         setFilteredTournaments(formattedTournaments);
@@ -81,9 +94,10 @@ export default function TournamentsPage() {
     if (searchTerm.trim() === "") {
       setFilteredTournaments(tournaments);
     } else {
-      const filtered = tournaments.filter((tournament) =>
-        tournament.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tournament.location.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = tournaments.filter(
+        (tournament) =>
+          tournament.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          tournament.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredTournaments(filtered);
     }
@@ -91,8 +105,9 @@ export default function TournamentsPage() {
 
   const sortByDate = () => {
     setSortBy("date");
-    const sorted = [...filteredTournaments].sort((a, b) => 
-      new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    const sorted = [...filteredTournaments].sort(
+      (a, b) =>
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
     );
     setFilteredTournaments(sorted);
   };
@@ -123,10 +138,7 @@ export default function TournamentsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-center mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="w-full"
-            >
+            <Button onClick={() => window.location.reload()} className="w-full">
               Попробовать снова
             </Button>
           </CardContent>
@@ -159,7 +171,8 @@ export default function TournamentsPage() {
               </div>
             </div>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto font-medium">
-              Просматривайте все доступные турниры, ищите по названию и регистрируйтесь
+              Просматривайте все доступные турниры, ищите по названию и
+              регистрируйтесь
             </p>
           </div>
         </div>
@@ -216,7 +229,9 @@ export default function TournamentsPage() {
             <div className="bg-white/5 rounded-xl p-8 border border-white/10">
               <h3 className="text-xl font-semibold mb-2">Турниры не найдены</h3>
               <p className="text-gray-400 mb-4">
-                {searchTerm ? "Попробуйте изменить поисковый запрос" : "Пока нет доступных турниров"}
+                {searchTerm
+                  ? "Попробуйте изменить поисковый запрос"
+                  : "Пока нет доступных турниров"}
               </p>
               {searchTerm && (
                 <Button

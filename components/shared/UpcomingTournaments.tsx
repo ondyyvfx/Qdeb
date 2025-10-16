@@ -1,75 +1,76 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState, useRef } from "react"
-import TournamentCard from "./TournamentCard"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Swiper, SwiperSlide } from "swiper/react"
-import "swiper/css"
-import { Swiper as SwiperCore } from "swiper"
-import { Navigation } from "swiper/modules"
-import MobileTournamentSlider from "./MobileTournamentSlider"
-import Cookies from "js-cookie"
+import React, { useEffect, useState, useRef } from "react";
+import TournamentCard from "./TournamentCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { Swiper as SwiperCore } from "swiper";
+import { Navigation } from "swiper/modules";
+import MobileTournamentSlider from "./MobileTournamentSlider";
+import Cookies from "js-cookie";
 
-const NUMBER_OF_EVENTS = 10
+const NUMBER_OF_EVENTS = 10;
 
 interface Tournament {
-  id: number
-  title: string
-  start_date: string
-  end_date: string
-  cost: number
-  location: string
-  registrationlink: string | null
-  backgroundUrl: string
+  id: number;
+  title: string;
+  start_date: string;
+  end_date: string;
+  cost: number;
+  location: string;
+  registrationlink: string | null;
+  backgroundUrl: string;
 }
 
 const UpcomingTournaments = () => {
-  const [cards, setCards] = useState<Tournament[]>([])
-  const swiperRef = useRef<SwiperCore | null>(null)
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api"
+  const [cards, setCards] = useState<Tournament[]>([]);
+  const swiperRef = useRef<SwiperCore | null>(null);
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`${API_URL}/tournaments/getAll`)
+        const res = await fetch(`${API_URL}/tournaments`);
 
-        const contentType = res.headers.get("content-type")
+        const contentType = res.headers.get("content-type");
         if (!res.ok || !contentType?.includes("application/json")) {
-          setCards([])
-          return
+          setCards([]);
+          return;
         }
 
-        const data = await res.json()
-        console.log("API response:", data)
+        const data = await res.json();
+        console.log("API response:", data);
 
-        const arr = Array.isArray(data) ? data : []
+        const arr = Array.isArray(data) ? data : [];
         const formatted = arr.map((t: any) => ({
           id: t.id,
           title: t.name,
-          start_date: t.eventDate,
-          end_date: t.eventDate,
+          start_date: t.date,
+          end_date: t.date,
           cost: t.fee || 0,
           location: t.organizerName || "Место не указано",
-          registrationlink: t.tabbycatUrl || null,
-          backgroundUrl: t.photoUrl
-            ? `${API_URL}${t.photoUrl}`
+          registrationlink: null, // No registration link in new API
+          backgroundUrl: t.imageURL
+            ? `${API_URL.replace("/api", "")}${t.imageURL}`
             : "/assets/Q.svg",
-        }))
-        setCards(formatted)
+        }));
+        setCards(formatted);
       } catch (error) {
-        setCards([])
+        setCards([]);
       }
-    }
+    };
 
-    fetchEvents()
-  }, [])
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     if (swiperRef.current) {
-      swiperRef.current.update()
-      swiperRef.current.slideTo(0)
+      swiperRef.current.update();
+      swiperRef.current.slideTo(0);
     }
-  }, [cards])
+  }, [cards]);
 
   return (
     <div className="my-14 px-3 md:px-10 xl:px-20">
@@ -101,7 +102,7 @@ const UpcomingTournaments = () => {
         <Swiper
           modules={[Navigation]}
           onSwiper={(swiper) => {
-            swiperRef.current = swiper
+            swiperRef.current = swiper;
           }}
           spaceBetween={24}
           slidesPerView={1.2}
@@ -150,7 +151,7 @@ const UpcomingTournaments = () => {
         </Swiper>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UpcomingTournaments
+export default UpcomingTournaments;

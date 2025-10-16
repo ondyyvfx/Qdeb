@@ -34,7 +34,7 @@ const ProfileView = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   const apiBase =
-    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5639/api";
+    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:4232/api";
 
   const resolveImageUrl = (url?: string | null) => {
     if (!url) return null;
@@ -44,13 +44,12 @@ const ProfileView = () => {
     return `${apiBase}${normalized}`;
   };
 
-  // Загружаем профиль пользователя по username из JWT
+  // Загружаем профиль текущего пользователя
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
 
-        // Получаем токен и извлекаем username (или email -> username)
         const token = Cookies.get("accessToken");
         if (!token) {
           setIsAuthenticated(false);
@@ -58,39 +57,50 @@ const ProfileView = () => {
           return;
         }
 
-        const parts = token.split(".");
-        if (parts.length === 3) {
-          const payload = parts[1];
-          const decodedPayload = JSON.parse(atob(payload));
-          // В JWT может быть username напрямую, если нет — используем email до '@'
-          const usernameFromToken = decodedPayload.username as
-            | string
-            | undefined;
-          const email = (decodedPayload.sub as string) || "";
+        // Получаем профиль текущего пользователя согласно документации
+        const response = await fetch(`${apiBase}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-          const username =
-            usernameFromToken || (email ? email.split("@")[0] : "");
-
-          if (username) {
-            // Получаем полную информацию о пользователе строго по API
-            const response = await apiGet<UserProfile>(`/users/${username}`);
-
-            if (response.error) {
-              console.error("Ошибка получения профиля:", response.error);
-            } else if (response.data) {
-              setProfile(response.data);
-            }
-          }
+        if (!response.ok) {
+          console.error("Ошибка получения профиля:", response.status);
+          setIsAuthenticated(false);
+          setLoading(false);
+          return;
         }
+
+        const data = await response.json();
+        console.log("Profile data:", data);
+
+        // Маппим данные согласно новой структуре API
+        const mappedProfile: UserProfile = {
+          id: data.id,
+          email: data.email,
+          username: data.username,
+          fullName: data.fullName,
+          phone: data.phone,
+          description: data.description,
+          profilePictureUrl: data.profilePicture,
+          teamId: data.team?.id,
+          teamName: data.team?.name,
+          teamCode: data.team?.code,
+          teamSize: data.team?.members?.length || 0,
+          teamLeader: data.team?.leaderId === data.id,
+        };
+
+        setProfile(mappedProfile);
       } catch (error) {
         console.error("Ошибка при загрузке профиля:", error);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [apiBase]);
 
   if (loading) {
     return (
@@ -273,12 +283,23 @@ const TeamActionsNoTeam = () => {
     }
     try {
       setLoading(true);
-      const res = await apiPost<{ message?: string }>("/teams/join", {
-        code: code.trim(),
+      const token = Cookies.get("accessToken");
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+      const res = await fetch(`${apiBase}/teams/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          code: code.trim(),
+        }),
       });
-      if (res.error) {
-        setError(res.error);
-        return;
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || "Ошибка входа в команду");
       }
       // Перезагрузить страницу профиля для обновления состояния команды
       window.location.reload();

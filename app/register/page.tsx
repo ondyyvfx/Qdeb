@@ -120,6 +120,7 @@ export default function RegisterPage() {
       const res = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       if (!res.ok) {
