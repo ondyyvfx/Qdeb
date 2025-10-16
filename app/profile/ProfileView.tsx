@@ -61,37 +61,59 @@ const ProfileView = () => {
           return;
         }
 
-        // Получаем профиль текущего пользователя согласно документации
-        const response = await fetch(`${apiBase}/profile`, {
+        // Получаем профиль текущего пользователя
+        const profileResponse = await fetch(`${apiBase}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!response.ok) {
-          console.error("Ошибка получения профиля:", response.status);
+        if (!profileResponse.ok) {
+          console.error("Ошибка получения профиля:", profileResponse.status);
           setIsAuthenticated(false);
           setLoading(false);
           return;
         }
 
-        const data = await response.json();
-        console.log("Profile data:", data);
+        const profileData = await profileResponse.json();
+        console.log("Profile data:", profileData);
 
-        // Маппим данные согласно новой структуре API
+        let teamData = null;
+
+        // Получаем данные команды отдельно через специальный эндпоинт
+        try {
+          const teamResponse = await fetch(`${apiBase}/teams/my`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (teamResponse.ok) {
+            teamData = await teamResponse.json();
+            console.log("Team data:", teamData);
+          }
+        } catch (teamError) {
+          console.log(
+            "Пользователь не состоит в команде или ошибка получения команды:",
+            teamError
+          );
+        }
+
+        // Маппим данные профиля
         const mappedProfile: UserProfile = {
-          id: data.id,
-          email: data.email,
-          username: data.username,
-          fullName: data.fullName,
-          phone: data.phone,
-          description: data.description,
-          profilePictureUrl: data.profilePicture,
-          teamId: data.team?.id,
-          teamName: data.team?.name,
-          teamCode: data.team?.code,
-          teamSize: data.team?.members?.length || 0,
-          teamLeader: data.team?.leaderId === data.id,
+          id: profileData.id,
+          email: profileData.email,
+          username: profileData.username,
+          fullName: profileData.fullName,
+          phone: profileData.phone,
+          description: profileData.description,
+          profilePictureUrl: profileData.profilePicture,
+          // Используем данные команды из специального эндпоинта
+          teamId: teamData?.id,
+          teamName: teamData?.name,
+          teamCode: teamData?.joinCode,
+          teamSize: teamData?.memberCount || 0,
+          teamLeader: teamData?.leader?.id === profileData.id,
         };
 
         setProfile(mappedProfile);
@@ -290,20 +312,32 @@ const TeamActionsNoTeam = () => {
       const token = Cookies.get("accessToken");
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+      const requestBody = {
+        joinCode: code.trim(),
+      };
+
+      console.log("Joining team with request body:", requestBody);
+
       const res = await fetch(`${apiBase}/teams/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          code: code.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log("Join team response status:", res.status);
+
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Ошибка входа в команду");
+        let errorMessage = "Ошибка входа в команду";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+          console.error("Ошибка парсинга ответа:", e);
+        }
+        throw new Error(errorMessage);
       }
       // Перезагрузить страницу профиля для обновления состояния команды
       window.location.reload();

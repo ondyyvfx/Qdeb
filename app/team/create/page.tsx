@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
-import { apiGet } from "@/lib/api";
 import Navbar from "@/components/shared/Navbar";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function CreateTeamPage() {
   const [teamName, setTeamName] = useState("");
@@ -60,12 +59,20 @@ export default function CreateTeamPage() {
 
       toast.success(`Команда "${data.name}" создана 🎉`);
       // Покажем код приглашения сразу после создания
-      setCreatedTeam({ name: data.name, code: data.code });
+      setCreatedTeam({ name: data.name, code: data.joinCode });
       // Подтвердим, что создатель стал участником и лидером (бэк должен сделать это по токену)
       try {
-        const me = await apiGet<any>("/auth/profile");
-        if (me?.data?.teamId) {
-          toast.success("Вы добавлены в команду и являетесь лидером");
+        const token = Cookies.get("accessToken");
+        const profileResponse = await fetch(`${API_URL}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          if (profileData.team?.id) {
+            toast.success("Вы добавлены в команду и являетесь лидером");
+          }
         }
       } catch {}
     } catch (err: any) {

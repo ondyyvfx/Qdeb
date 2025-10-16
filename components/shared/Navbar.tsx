@@ -90,6 +90,21 @@ const Navbar = () => {
       const data = await response.json();
       console.log("Navbar profile data:", data);
 
+      // Получаем данные команды отдельно
+      let teamData = null;
+      try {
+        const teamResponse = await fetch(`${apiBase}/teams/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (teamResponse.ok) {
+          teamData = await teamResponse.json();
+        }
+      } catch (teamError) {
+        console.log("Пользователь не состоит в команде");
+      }
+
       const userData = {
         email: data.email || "",
         full_name: data.fullName || "",
@@ -97,6 +112,9 @@ const Navbar = () => {
         phone: data.phone || "",
         description: data.description || "",
         roles: data.roles || [],
+        teamId: teamData?.id,
+        teamName: teamData?.name,
+        teamLeader: teamData?.leader?.id === data.id,
       };
 
       setUser(userData);

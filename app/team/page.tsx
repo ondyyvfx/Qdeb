@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiGet, apiPost } from "@/lib/api";
+import Cookies from "js-cookie";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import TeamDashboard from "./TeamDashboard";
@@ -21,39 +21,85 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        // Получаем профиль, чтобы узнать команду пользователя
-        const me = await apiGet<any>("/auth/profile");
-        if (me.error) {
-          setError(me.error);
+
+        const token = Cookies.get("accessToken");
+        if (!token) {
+          setError("Необходимо войти в систему");
           return;
         }
-        const profile = me.data || {};
-        if (!profile.teamId) {
-          setError("Вы не состоите в команде");
-          return;
-        }
-        setTeam({
-          id: profile.teamId,
-          name: profile.teamName,
-          code: profile.teamCode,
-          size: profile.teamSize,
-          leader: !!profile.teamLeader,
+
+        // Получаем информацию о команде через специальный эндпоинт
+        const response = await fetch(`${API_URL}/teams/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+
+        if (!response.ok) {
+          if (response.status === 400) {
+            setError("Вы не состоите в команде");
+            return;
+          }
+          setError("Ошибка получения данных команды");
+          return;
+        }
+
+        const teamData = await response.json();
+        console.log("Team data:", teamData);
+
+        // Получаем ID текущего пользователя из токена для проверки лидерства
+        let currentUserId = null;
+        try {
+          const tokenPayload = JSON.parse(atob(token.split(".")[1]));
+          currentUserId = tokenPayload.sub || tokenPayload.id;
+        } catch (e) {
+          console.error("Ошибка парсинга токена:", e);
+        }
+
+        setTeam({
+          id: teamData.id,
+          name: teamData.name,
+          code: teamData.joinCode,
+          size: teamData.memberCount || 0,
+          leader: teamData.leader?.id === currentUserId, // Проверяем, является ли текущий пользователь лидером
+        });
+      } catch (error) {
+        console.error("Ошибка загрузки команды:", error);
+        setError("Ошибка загрузки данных команды");
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [API_URL]);
 
   const handleLeave = async () => {
-    const res = await apiPost("/teams/leave");
-    if ((res as any).error) return;
-    window.location.href = "/profile";
+    try {
+      const token = Cookies.get("accessToken");
+      const response = await fetch(`${API_URL}/teams/leave`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Ошибка выхода из команды:", errorData);
+        return;
+      }
+
+      window.location.href = "/profile";
+    } catch (error) {
+      console.error("Ошибка при выходе из команды:", error);
+    }
   };
 
   if (loading) {

@@ -103,4 +103,3 @@ export default function TeamMemberView({ team, onLeave }: TeamMemberViewProps) {
     </div>
   );
 }
-
