@@ -11,7 +11,6 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { apiGet } from "@/lib/api";
 
 interface UserProfileResponse {
   id: number;
@@ -38,12 +37,17 @@ const Navbar = () => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const apiBase =
-    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5639/api";
+    (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:4232/api";
   const resolveImageUrl = (url?: string | null) => {
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    // Согласно документации, изображения доступны через /api/files/profile-picture/{fileName}
+    if (url.includes("profile-picture")) {
+      return `${apiBase.replace("/api", "")}/api/files/profile-picture/${url}`;
+    }
+    // Для других файлов
     const normalized = url.startsWith("/") ? url : `/${url}`;
-    return `${apiBase}${normalized}`;
+    return `${apiBase.replace("/api", "")}${normalized}`;
   };
 
   useEffect(() => {
@@ -64,96 +68,50 @@ const Navbar = () => {
   }, []);
 
   // Получение полной информации о пользователе
-  const fetchUserProfile = useCallback(
-    async (email: string) => {
-      try {
-        // Извлекаем username из email (часть до @)
-        const username = email.split("@")[0];
-
-        // Получаем полную информацию о пользователе
-        const response = await apiGet<UserProfileResponse>(
-          `/users/${username}`
-        );
-
-        if (response.error) {
-          console.error("Ошибка получения профиля:", response.error);
-          setUser({
-            email: email,
-            full_name: "",
-            avatar: "",
-          });
-          return;
-        }
-
-        if (response.data) {
-          const userData = {
-            email: response.data.email || email,
-            full_name: response.data.fullName || "",
-            avatar: resolveImageUrl(response.data.profilePictureUrl) || "",
-            phone: response.data.phone || "",
-            description: response.data.description || "",
-            ...(response.data.elo_rating && {
-              elo_rating: response.data.elo_rating,
-            }),
-            ...(response.data.tournaments_completed && {
-              tournaments_completed: response.data.tournaments_completed,
-            }),
-            ...(response.data.avg_speech && {
-              avg_speech: response.data.avg_speech,
-            }),
-            ...(response.data.total_achievements && {
-              total_achievements: response.data.total_achievements,
-            }),
-          };
-
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error("Ошибка при получении профиля пользователя:", error);
-        setUser({
-          email: email,
-          full_name: "",
-          avatar: "",
-        });
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const token = Cookies.get("accessToken");
+      if (!token) {
+        return;
       }
-    },
-    [setUser]
-  );
+
+      // Получаем профиль текущего пользователя согласно документации
+      const response = await fetch(`${apiBase}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Ошибка получения профиля:", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Navbar profile data:", data);
+
+      const userData = {
+        email: data.email || "",
+        full_name: data.fullName || "",
+        avatar: resolveImageUrl(data.profilePicture) || "",
+        phone: data.phone || "",
+        description: data.description || "",
+        roles: data.roles || [],
+      };
+
+      setUser(userData);
+    } catch (error) {
+      console.error("Ошибка при получении профиля пользователя:", error);
+    }
+  }, [setUser, apiBase]);
 
   // Автоматическое получение данных пользователя при загрузке страницы
   useEffect(() => {
     const token = Cookies.get("accessToken");
-
     if (token) {
-      try {
-        // Разделяем токен по точкам
-        const parts = token.split(".");
-
-        if (parts.length === 3) {
-          // Берем вторую часть (payload)
-          const payload = parts[1];
-          // Декодируем через atob и преобразуем в JSON
-          const decodedPayload = JSON.parse(atob(payload));
-
-          // Извлекаем email из JWT
-          const email = decodedPayload.sub || "";
-
-          if (email) {
-            // Получаем полную информацию о пользователе через API
-            fetchUserProfile(email);
-          }
-        } else {
-          console.error(
-            "Invalid JWT token format - expected 3 parts, got:",
-            parts.length
-          );
-        }
-      } catch (error) {
-        // Если парсинг не удался — выводим ошибку в консоль
-        console.error("Ошибка при парсинге JWT токена:", error);
-      }
+      fetchUserProfile();
     }
-  }, [setUser, fetchUserProfile]);
+  }, [fetchUserProfile]);
 
   const handleLogout = () => {
     Cookies.remove("accessToken");

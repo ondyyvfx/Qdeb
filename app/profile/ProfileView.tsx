@@ -39,9 +39,13 @@ const ProfileView = () => {
   const resolveImageUrl = (url?: string | null) => {
     if (!url) return null;
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    // Always prefix with /api to conform backend routing
+    // Согласно документации, изображения доступны через /api/files/profile-picture/{fileName}
+    if (url.includes("profile-picture") || url.startsWith("uploads/")) {
+      return `${apiBase.replace("/api", "")}/api/files/profile-picture/${url}`;
+    }
+    // Для других файлов
     const normalized = url.startsWith("/") ? url : `/${url}`;
-    return `${apiBase}${normalized}`;
+    return `${apiBase.replace("/api", "")}${normalized}`;
   };
 
   // Загружаем профиль текущего пользователя
