@@ -30,7 +30,7 @@ export default function RegisterPage() {
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
+  // profilePicture is optional per backend docs
   const [phoneError] = useState(false);
   const [username, setUsername] = useState("");
   const [gender, setGender] = useState<"M" | "F" | "O">("O");
@@ -40,7 +40,9 @@ export default function RegisterPage() {
     if (file) {
       setAvatar(file);
       setPreview(URL.createObjectURL(file));
-      setAvatarError(false);
+    } else {
+      setAvatar(null);
+      setPreview(null);
     }
   };
 
@@ -89,30 +91,12 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!avatar) {
-      setAvatarError(true);
-      toast.error("Пожалуйста, загрузите аватар.");
-      return;
-    }
+    // avatar is optional
 
     setIsLoading(true);
 
     try {
       const formData = new FormData();
-      // formData.append(
-      //   "register",
-      //   JSON.stringify({
-      //     email,
-      //     username,
-      //     password,
-      //     full_name,
-      //     phone,
-      //     description: "Hello!",
-      //   })
-      // );
-      // if (avatar) {
-      //   formData.append("profilePicture", avatar);
-      // }
 
       const json = JSON.stringify({
         username,
@@ -124,33 +108,19 @@ export default function RegisterPage() {
         description: "Hello!",
       });
 
-      formData.append(
-        "register",
-        new Blob([json], { type: "application/json" })
-      );
+      // send as plain string; browser sets multipart boundary automatically
+      formData.append("register", json);
 
       if (avatar) {
         formData.append("profilePicture", avatar);
       }
 
-      console.log("FormData dump:");
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(
-            `${key}: FILE (${value.name}, ${value.type}, ${value.size} bytes)`
-          );
-        } else {
-          console.log(`${key}: ${value}`);
-        }
-      }
+      // no debug logs in production
 
       const res = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         body: formData,
       });
-
-      console.log(res);
-      console.log(formData);
 
       if (!res.ok) {
         // Попробуем разобрать JSON с ошибками валидации
@@ -275,37 +245,40 @@ export default function RegisterPage() {
               <Label htmlFor="gender" className="text-lg">
                 Гендер
               </Label>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="M"
-                    checked={gender === "M"}
-                    onChange={() => setGender("M")}
-                  />
-                  <span>Мужской</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="F"
-                    checked={gender === "F"}
-                    onChange={() => setGender("F")}
-                  />
-                  <span>Женский</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="O"
-                    checked={gender === "O"}
-                    onChange={() => setGender("O")}
-                  />
-                  <span>Другое</span>
-                </label>
+              <div className="inline-flex rounded-xl overflow-hidden border border-white/10 bg-white/5">
+                <button
+                  type="button"
+                  onClick={() => setGender("M")}
+                  className={`px-4 py-2 text-sm transition-colors ${
+                    gender === "M"
+                      ? "bg-accent text-white"
+                      : "text-gray-300 hover:bg-white/10"
+                  }`}
+                >
+                  Мужской
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender("F")}
+                  className={`px-4 py-2 text-sm transition-colors ${
+                    gender === "F"
+                      ? "bg-accent text-white"
+                      : "text-gray-300 hover:bg-white/10"
+                  }`}
+                >
+                  Женский
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender("O")}
+                  className={`px-4 py-2 text-sm transition-colors ${
+                    gender === "O"
+                      ? "bg-accent text-white"
+                      : "text-gray-300 hover:bg-white/10"
+                  }`}
+                >
+                  Другое
+                </button>
               </div>
             </div>
 
@@ -441,11 +414,6 @@ export default function RegisterPage() {
                 Войти в аккаунт
               </a>
             </div>
-            {avatarError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Пожалуйста, загрузите аватар.
-              </p>
-            )}
           </form>
         </div>
       </div>
