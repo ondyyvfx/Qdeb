@@ -20,7 +20,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
       return user.full_name;
     }
     if (user.email) {
-      const nameFromEmail = user.email.split('@')[0];
+      const nameFromEmail = user.email.split("@")[0];
       return nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
     }
     return "Пользователь";
@@ -29,10 +29,14 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
   // Функция для получения инициалов пользователя
   const getUserInitials = (user: { full_name?: string; email?: string }) => {
     if (user.full_name) {
-      return user.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+      return user.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase();
     }
     if (user.email) {
-      const nameFromEmail = user.email.split('@')[0];
+      const nameFromEmail = user.email.split("@")[0];
       return nameFromEmail.charAt(0).toUpperCase();
     }
     return "U";
@@ -62,6 +66,15 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
         <Link href="/about" onClick={() => onNavigate("/about")}>
           О нас
         </Link>
+        {user?.roles?.includes("ROLE_ADMIN") && (
+          <Link
+            href="/tournaments/create"
+            onClick={() => onNavigate("/tournaments/create")}
+            className="text-orange-500 font-semibold"
+          >
+            Создать турнир
+          </Link>
+        )}
 
         {user ? (
           <>
@@ -86,12 +99,10 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
                 <span className="text-white font-semibold text-sm">
                   {formatUserName(user)}
                 </span>
-                <span className="text-gray-400 text-xs">
-                  {user.email}
-                </span>
+                <span className="text-gray-400 text-xs">{user.email}</span>
               </div>
             </div>
-            
+
             <Button
               variant="ghost"
               onClick={() => onNavigate("/profile")}
@@ -99,7 +110,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             >
               Профиль
             </Button>
-            {user.roles?.includes("ADMIN") && (
+            {user.roles?.includes("ROLE_ADMIN") && (
               <Button
                 variant="ghost"
                 onClick={() => onNavigate("/admin/roles")}

@@ -17,6 +17,7 @@ import TournamentCard from "@/components/shared/TournamentCard";
 import { useUserStore } from "@/stores/useUserStore";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
+import { isAdmin } from "@/lib/auth-utils";
 
 type Tournament = {
   id: number;
@@ -40,9 +41,6 @@ export default function TournamentsPage() {
   const [sortBy, setSortBy] = useState<"date" | "price">("date");
 
   const { user } = useUserStore();
-
-  // Пока что разрешаем всем создавать турниры
-  const isOrganizer = true;
 
   const API_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
@@ -162,12 +160,18 @@ export default function TournamentsPage() {
                 </h1>
               </div>
               <div className="flex-1 flex justify-end">
-                <Link href="/tournaments/create">
-                  <Button className="flex items-center gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white font-semibold px-6 py-3 transition-all duration-300 transform hover:scale-105">
-                    <Plus className="w-5 h-5" />
-                    Создать турнир
-                  </Button>
-                </Link>
+                {isAdmin(user) ? (
+                  <Link href="/tournaments/create">
+                    <Button className="flex items-center gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white font-semibold px-6 py-3 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded-xl gradient-button">
+                      <Plus className="w-5 h-5" />
+                      Создать турнир
+                    </Button>
+                  </Link>
+                ) : user ? (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>Только для администраторов</span>
+                  </div>
+                ) : null}
               </div>
             </div>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto font-medium">

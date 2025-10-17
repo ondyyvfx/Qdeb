@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 // import Cookies from "js-cookie";
@@ -30,6 +30,8 @@ export default function RegisterPage() {
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // profilePicture is optional per backend docs
   const [phoneError] = useState(false);
   const [username, setUsername] = useState("");
@@ -287,32 +289,60 @@ export default function RegisterPage() {
               <Label htmlFor="password" className="text-lg">
                 Пароль
               </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={() => setPasswordTouched(true)}
-                placeholder="Придумайте пароль"
-                required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => setPasswordTouched(true)}
+                  placeholder="Придумайте пароль"
+                  required
+                  className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-gray-300"
+                  aria-label={
+                    showPassword ? "Скрыть пароль" : "Показать пароль"
+                  }
+                >
+                  {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+                </button>
+              </div>
               {passwordTouched && !validatePassword(password) && (
                 <p className="text-red-500 text-sm mt-1">
                   Пароль должен быть не менее 8 символов, заглавную букву и
                   спецсимвол
                 </p>
               )}
-              <Input
-                id="confirm_password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onBlur={() => setConfirmPasswordTouched(true)}
-                placeholder="Подтвердите пароль"
-                required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
+              <div className="relative">
+                <Input
+                  id="confirm_password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={() => setConfirmPasswordTouched(true)}
+                  placeholder="Подтвердите пароль"
+                  required
+                  className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-gray-300"
+                  aria-label={
+                    showConfirmPassword ? "Скрыть пароль" : "Показать пароль"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={24} />
+                  ) : (
+                    <Eye size={24} />
+                  )}
+                </button>
+              </div>
               {confirmPasswordTouched && password !== confirmPassword && (
                 <p className="text-red-500 text-sm mt-1">Пароли не совпадают</p>
               )}

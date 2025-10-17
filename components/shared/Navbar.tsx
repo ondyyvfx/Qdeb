@@ -89,6 +89,37 @@ const Navbar = () => {
 
       const data = await response.json();
       console.log("Navbar profile data:", data);
+      console.log("Roles from API:", data.roles);
+
+      // Если роли не пришли в обычном профиле, попробуем получить их через тестовый endpoint
+      let roles = data.roles || [];
+      if (!roles || roles.length === 0) {
+        try {
+          const testResponse = await fetch(`${apiBase}/test/profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (testResponse.ok) {
+            const testData = await testResponse.json();
+            console.log("Test profile data:", testData);
+            // Роли приходят как массив объектов {id, name}, нужно извлечь только name
+            roles = testData.roles
+              ? testData.roles.map((role: any) => role.name)
+              : [];
+          }
+        } catch (testError) {
+          console.log(
+            "Не удалось получить роли через тестовый endpoint:",
+            testError
+          );
+        }
+      } else {
+        // Если роли пришли в обычном профиле, проверим их формат
+        if (roles.length > 0 && typeof roles[0] === "object") {
+          roles = roles.map((role: any) => role.name);
+        }
+      }
 
       // Получаем данные команды отдельно
       let teamData = null;
@@ -105,13 +136,16 @@ const Navbar = () => {
         console.log("Пользователь не состоит в команде");
       }
 
+      console.log("Final roles:", roles);
+      console.log("Is admin:", roles.includes("ROLE_ADMIN"));
+
       const userData = {
         email: data.email || "",
         full_name: data.fullName || "",
         avatar: resolveImageUrl(data.profilePicture) || "",
         phone: data.phone || "",
         description: data.description || "",
-        roles: data.roles || [],
+        roles: roles,
         teamId: teamData?.id,
         teamName: teamData?.name,
         teamLeader: teamData?.leader?.id === data.id,
@@ -194,6 +228,14 @@ const Navbar = () => {
           <Link href="/about" className="hover:text-accent transition-colors">
             О нас
           </Link>
+          {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
+            <Link
+              href="/tournaments/create"
+              className="hover:text-orange-400 transition-colors text-orange-500 font-semibold"
+            >
+              Создать турнир
+            </Link>
+          )}
         </nav>
 
         {/* Desktop user avatar or login */}
@@ -254,7 +296,7 @@ const Navbar = () => {
               >
                 Профиль
               </button>
-              {user.roles?.includes("ADMIN") && (
+              {user.roles?.includes("ROLE_ADMIN") && (
                 <button
                   onClick={() => {
                     router.push("/admin/roles");

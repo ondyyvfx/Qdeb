@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
+import "../styles/button-enhancements.css";
 import { Montserrat } from "next/font/google";
 import { AppWrapper } from "@/components/shared/AppWrapper";
 import { getUserFromCookie } from "@/lib/getUserFromCookie";
