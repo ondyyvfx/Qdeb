@@ -296,17 +296,6 @@ const Navbar = () => {
               >
                 Профиль
               </button>
-              {user.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  onClick={() => {
-                    router.push("/admin/roles");
-                    setMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white mt-1"
-                >
-                  Админ панель
-                </button>
-              )}
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 hover:bg-red-600 rounded-md text-sm text-white mt-1"

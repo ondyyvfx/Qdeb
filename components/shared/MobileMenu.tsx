@@ -110,15 +110,6 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             >
               Профиль
             </Button>
-            {user.roles?.includes("ROLE_ADMIN") && (
-              <Button
-                variant="ghost"
-                onClick={() => onNavigate("/admin/roles")}
-                className="justify-start"
-              >
-                Панель администратора
-              </Button>
-            )}
             <Button
               variant="destructive"
               onClick={onLogout}
