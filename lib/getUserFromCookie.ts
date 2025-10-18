@@ -25,3 +25,4 @@ export const getUserFromCookie = async () => {
     return null;
   }
 };
+

@@ -1,5 +1,5 @@
 export async function getTopSpeakers() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
   try {
     // Первичная попытка: (исходная задумка) speakers endpoint

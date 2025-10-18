@@ -136,14 +136,14 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
               <Label htmlFor="username" className="text-lg">
-                Имя пользователя
+                �?�?�? ���?�>�?���?�?���'��>�?
               </Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Введите имя пользователя"
+                placeholder="�'�?��?��'�� ��?�? ���?�>�?���?�?���'��>�?"
                 className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
             </div>
@@ -210,3 +210,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -8,12 +8,11 @@ import "swiper/css";
 import { Swiper as SwiperCore } from "swiper";
 import { Navigation } from "swiper/modules";
 import MobileTournamentSlider from "./MobileTournamentSlider";
-import Cookies from "js-cookie";
 
-const NUMBER_OF_EVENTS = 10;
 
 interface Tournament {
   id: number;
+  slug: string;
   title: string;
   start_date: string;
   end_date: string;
@@ -41,22 +40,37 @@ const UpcomingTournaments = () => {
         }
 
         const data = await res.json();
-        console.log("API response:", data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.results)
+          ? (data as any).results
+          : [];
 
-        const arr = Array.isArray(data) ? data : [];
-        const formatted = arr.map((t: any) => ({
-          id: t.id,
-          title: t.name,
-          start_date: t.date,
-          end_date: t.date,
-          cost: t.fee || 0,
-          location: t.organizerName || "Место не указано",
-          registrationlink: null, // No registration link in new API
-          backgroundUrl: t.imageURL
-            ? `${API_URL.replace("/api", "")}${t.imageURL}`
-            : "/assets/Q.svg",
-        }));
+        const formatted = list.map((t: any) => {
+          const slug = t.slug || String(t.id);
+          const imagePath =
+            t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || "";
+          const resolvedBackground = imagePath
+            ? `${API_URL.replace("/api", "")}${imagePath}`
+            : "/assets/Q.svg";
+
+          return {
+            id: t.id,
+            slug,
+            title: t.name || t.title || slug,
+            start_date: t.date || t.startDate || t.eventDate,
+            end_date: t.date || t.endDate || t.eventDate,
+            cost:
+              typeof t.fee === "number"
+                ? t.fee
+                : Number.parseFloat(t.fee ?? "0") || 0,
+            location: t.organizerName || t.city || "Location to be announced",
+            registrationlink: t.tabbycatUrl || t.registrationLink || null,
+            backgroundUrl: resolvedBackground,
+          } as Tournament;
+        });
         setCards(formatted);
+
       } catch (error) {
         setCards([]);
       }
@@ -135,9 +149,10 @@ const UpcomingTournaments = () => {
           }}
         >
           {cards.map((card) => (
-            <SwiperSlide key={card.id} className="!w-[30%]">
+            <SwiperSlide key={card.slug} className="!w-[30%]">
               <TournamentCard
                 id={card.id}
+                slug={card.slug}
                 title={card.title}
                 start_date={card.start_date}
                 end_date={card.end_date}
@@ -155,3 +170,4 @@ const UpcomingTournaments = () => {
 };
 
 export default UpcomingTournaments;
+

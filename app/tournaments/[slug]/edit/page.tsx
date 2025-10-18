@@ -2,28 +2,28 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MapPin, DollarSign, Users, FileText, Upload, Save, ArrowLeft } from "lucide-react";
-import { useUserStore } from "@/stores/useUserStore";
 import { toast } from "sonner";
-import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
 
 interface TournamentFormData {
   name: string;
   shortName: string;
   slug: string;
   organizerName: string;
-  organizerContacts: string;
+  organizerContact: string;
   description: string;
   eventDate: string;
   active: boolean;
   fee: number;
-  level: string;
+  level: "LOCAL" | "REGIONAL" | "NATIONAL" | "INTERNATIONAL";
   format: string;
   photo: File | null;
 }
@@ -31,7 +31,6 @@ interface TournamentFormData {
 const EditTournamentPage = () => {
   const params = useParams();
   const router = useRouter();
-  const user = useUserStore((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,274 +39,278 @@ const EditTournamentPage = () => {
     shortName: "",
     slug: "",
     organizerName: "",
-    organizerContacts: "",
+    organizerContact: "",
     description: "",
     eventDate: "",
     active: true,
     fee: 0,
-    level: "SCHOOL",
+    level: "LOCAL",
     format: "",
     photo: null,
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
-  const tournamentId = params.id as string;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+  const tournamentSlug = (params.slug as string) || "";
 
   useEffect(() => {
-    if (tournamentId) {
+    if (tournamentSlug) {
       fetchTournament();
     }
-  }, [tournamentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournamentSlug]);
 
   const fetchTournament = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/tournaments/getAll`);
-      
+      const response = await fetch(`${API_URL}/tournaments`, {
+        cache: "no-store",
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      const tournamentData = Array.isArray(data) ? data.find((t: any) => t.id.toString() === tournamentId) : null;
-
-      if (tournamentData) {
-        setFormData({
-          name: tournamentData.name || "",
-          shortName: tournamentData.shortName || "",
-          slug: tournamentData.slug || "",
-          organizerName: tournamentData.organizerName || "",
-          organizerContacts: tournamentData.organizerContacts || "",
-          description: tournamentData.description || "",
-          eventDate: tournamentData.eventDate || "",
-          active: tournamentData.active || false,
-          fee: tournamentData.fee || 0,
-          level: tournamentData.level || "SCHOOL",
-          format: tournamentData.format || "",
-          photo: null,
-        });
-      } else {
-        setError("РўСѓСЂРЅРёСЂ РЅРµ РЅР°Р№РґРµРЅ");
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Unexpected response format");
       }
-    } catch (error) {
-      console.error("Error fetching tournament:", error);
-      setError("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё С‚СѓСЂРЅРёСЂР°");
+
+      const data: unknown = await response.json();
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.results)
+        ? (data as any).results
+        : [];
+
+      const raw = list.find((item: any) => {
+        const rawSlug = item?.slug || item?.tournamentSlug || String(item?.id ?? "");
+        return rawSlug?.toString().toLowerCase() === tournamentSlug.toLowerCase();
+      });
+
+      if (!raw) {
+        setError("Tournament not found.");
+        setLoading(false);
+        return;
+      }
+
+      setFormData({
+        name: raw?.name || "",
+        shortName: raw?.shortName || raw?.name || "",
+        slug: raw?.slug || raw?.tournamentSlug || tournamentSlug,
+        organizerName: raw?.organizerName || "",
+        organizerContact: raw?.organizerContact || raw?.organizerContacts || "",
+        description: raw?.description || "",
+        eventDate: raw?.date || raw?.eventDate || "",
+        active: Boolean(raw?.active),
+        fee:
+          typeof raw?.fee === "number"
+            ? raw.fee
+            : Number.parseFloat(raw?.fee ?? "0") || 0,
+        level: (raw?.level as TournamentFormData["level"]) || "LOCAL",
+        format: raw?.format || "",
+        photo: null,
+      });
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching tournament:", err);
+      setError("Не удалось загрузить данные турнира.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: keyof TournamentFormData, value: string | number | boolean | File | null) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof TournamentFormData,
+    value: string | number | boolean | File | null
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
   };
 
   const handleNameChange = (name: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       name,
-      slug: generateSlug(name)
+      slug: generateSlug(name),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setSaving(true);
-    
+
     try {
       const formDataToSend = new FormData();
-      
-      // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ С‚СѓСЂРЅРёСЂР°
+
       const tournamentData = {
         name: formData.name,
         shortName: formData.shortName || formData.name.substring(0, 25),
         slug: formData.slug,
         organizerName: formData.organizerName,
-        organizerContacts: formData.organizerContacts,
+        organizerContact: formData.organizerContact,
         description: formData.description,
         eventDate: formData.eventDate,
         active: formData.active,
         fee: formData.fee,
         level: formData.level,
         format: formData.format,
-        seq: 1
+        seq: 1,
       };
 
-      formDataToSend.append('tournament', JSON.stringify(tournamentData));
-      
+      formDataToSend.append("tournament", JSON.stringify(tournamentData));
+
       if (formData.photo) {
-        formDataToSend.append('photo', formData.photo);
+        formDataToSend.append("tournamentPicture", formData.photo);
       }
 
-      // Р—РґРµСЃСЊ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ API РІС‹Р·РѕРІ РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ С‚СѓСЂРЅРёСЂР°
-      // const response = await fetch(`${API_URL}/tournaments/${tournamentId}`, {
-      //   method: 'PUT',
-      //   body: formDataToSend,
-      //   headers: {
-      //     'Authorization': `Bearer ${document.cookie.split('accessToken=')[1]?.split(';')[0] || ''}`
-      //   }
-      // });
-
-      // if (response.ok) {
-        toast.success("РўСѓСЂРЅРёСЂ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»РµРЅ!");
-        router.push(`/tournaments/${tournamentId}`);
-      // } else {
-      //   const errorData = await response.json();
-      //   toast.error(`РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ С‚СѓСЂРЅРёСЂР°: ${errorData.message || 'РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР°'}`);
-      // }
-    } catch (error) {
-      console.error("Error updating tournament:", error);
-      toast.error("РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё С‚СѓСЂРЅРёСЂР°");
+      // TODO: PUT /api/tournaments/{slug}
+      toast.success("Турнир успешно обновлен!");
+      router.push(`/tournaments/${tournamentSlug}`);
+    } catch (err) {
+      console.error("Error updating tournament:", err);
+      toast.error("Произошла ошибка при обновлении турнира");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background text-text">
+  const renderContent = () => {
+    if (loading) {
+      return (
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-              <p className="text-lg">Р—Р°РіСЂСѓР·РєР° С‚СѓСЂРЅРёСЂР°...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4" />
+              <p className="text-lg">Загрузка турнира...</p>
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background text-text">
+    if (error) {
+      return (
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle>РћС€РёР±РєР°</CardTitle>
+                <CardTitle>Ошибка</CardTitle>
                 <CardDescription>{error}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button onClick={() => router.push("/tournaments")} className="w-full">
-                  Р’РµСЂРЅСѓС‚СЊСЃСЏ Рє С‚СѓСЂРЅРёСЂР°Рј
+                  Вернуться к списку
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return (
-    <div className="min-h-screen bg-background text-text">
-      <Navbar />
+    return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* РќР°РІРёРіР°С†РёСЏ */}
           <div className="mb-6">
             <Button
               variant="outline"
-              onClick={() => router.push(`/tournaments/${tournamentId}`)}
+              onClick={() => router.push(`/tournaments/${tournamentSlug}`)}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              РќР°Р·Р°Рґ Рє С‚СѓСЂРЅРёСЂСѓ
+              Назад к турниру
             </Button>
           </div>
 
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ С‚СѓСЂРЅРёСЂР°
+                Редактирование турнира
               </h1>
               <p className="text-lg text-gray-400 font-medium">
-                РР·РјРµРЅРёС‚Рµ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ С‚СѓСЂРЅРёСЂРµ
+                Измените информацию о турнире
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* РћСЃРЅРѕРІРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  РћСЃРЅРѕРІРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ
+                  Основная информация
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">РќР°Р·РІР°РЅРёРµ С‚СѓСЂРЅРёСЂР° *</Label>
+                    <Label htmlFor="name">Название турнира *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleNameChange(e.target.value)}
-                      placeholder="QDeb Spring Championship 2024"
+                      placeholder="QDeb Spring Championship"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="shortName">РљСЂР°С‚РєРѕРµ РЅР°Р·РІР°РЅРёРµ</Label>
+                    <Label htmlFor="shortName">Краткое название</Label>
                     <Input
                       id="shortName"
                       value={formData.shortName}
                       onChange={(e) => handleInputChange("shortName", e.target.value)}
-                      placeholder="QSC2024"
+                      placeholder="QSC"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="slug">URL-Р°РґСЂРµСЃ (slug) *</Label>
+                  <Label htmlFor="slug">URL-адрес (slug) *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
                     onChange={(e) => handleInputChange("slug", e.target.value)}
-                    placeholder="qdeb-spring-championship-2024"
+                    placeholder="qdeb-spring-championship"
                     required
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="description">РћРїРёСЃР°РЅРёРµ С‚СѓСЂРЅРёСЂР°</Label>
+                  <Label htmlFor="description">Описание</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
-                    placeholder="РџРѕРґСЂРѕР±РЅРѕРµ РѕРїРёСЃР°РЅРёРµ С‚СѓСЂРЅРёСЂР°, РїСЂР°РІРёР»Р°, СѓСЃР»РѕРІРёСЏ СѓС‡Р°СЃС‚РёСЏ..."
+                    placeholder="Подробное описание турнира"
                     rows={4}
                   />
                 </div>
               </CardContent>
             </Card>
 
-            {/* РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РјРµСЂРѕРїСЂРёСЏС‚РёРё */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РјРµСЂРѕРїСЂРёСЏС‚РёРё
+                  Информация о мероприятии
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="eventDate">Р”Р°С‚Р° РїСЂРѕРІРµРґРµРЅРёСЏ *</Label>
+                    <Label htmlFor="eventDate">Дата проведения *</Label>
                     <Input
                       id="eventDate"
                       type="date"
@@ -317,7 +320,7 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fee">РЎС‚РѕРёРјРѕСЃС‚СЊ СѓС‡Р°СЃС‚РёСЏ (С‚РµРЅРіРµ)</Label>
+                    <Label htmlFor="fee">Стоимость участия (тенге)</Label>
                     <Input
                       id="fee"
                       type="number"
@@ -331,22 +334,22 @@ const EditTournamentPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="level">РЈСЂРѕРІРµРЅСЊ С‚СѓСЂРЅРёСЂР°</Label>
+                    <Label htmlFor="level">Уровень турнира</Label>
                     <select
                       id="level"
                       value={formData.level}
                       onChange={(e) => handleInputChange("level", e.target.value)}
                       className="w-full p-2 rounded-md border bg-background text-text"
-                      aria-label="РЈСЂРѕРІРµРЅСЊ С‚СѓСЂРЅРёСЂР°"
+                      aria-label="Уровень турнира"
                     >
-                      <option value="SCHOOL">РЁРєРѕР»СЊРЅС‹Р№</option>
-                      <option value="UNIVERSITY">РЈРЅРёРІРµСЂСЃРёС‚РµС‚СЃРєРёР№</option>
-                      <option value="NATIONAL">РќР°С†РёРѕРЅР°Р»СЊРЅС‹Р№</option>
-                      <option value="INTERNATIONAL">РњРµР¶РґСѓРЅР°СЂРѕРґРЅС‹Р№</option>
+                      <option value="LOCAL">Местный</option>
+                      <option value="REGIONAL">Региональный</option>
+                      <option value="NATIONAL">Национальный</option>
+                      <option value="INTERNATIONAL">Международный</option>
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="format">Р¤РѕСЂРјР°С‚ РґРµР±Р°С‚РѕРІ</Label>
+                    <Label htmlFor="format">Формат дебатов</Label>
                     <Input
                       id="format"
                       value={formData.format}
@@ -363,24 +366,23 @@ const EditTournamentPage = () => {
                     checked={formData.active}
                     onChange={(e) => handleInputChange("active", e.target.checked)}
                     className="rounded"
-                    aria-label="Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕС‚РєСЂС‹С‚Р°"
+                    aria-label="Регистрация открыта"
                   />
-                  <Label htmlFor="active">Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕС‚РєСЂС‹С‚Р°</Label>
+                  <Label htmlFor="active">Регистрация открыта</Label>
                 </div>
               </CardContent>
             </Card>
 
-            {/* РРЅС„РѕСЂРјР°С†РёСЏ РѕР± РѕСЂРіР°РЅРёР·Р°С‚РѕСЂРµ */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  РРЅС„РѕСЂРјР°С†РёСЏ РѕР± РѕСЂРіР°РЅРёР·Р°С‚РѕСЂРµ
+                  Информация об организаторе
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="organizerName">РќР°Р·РІР°РЅРёРµ РѕСЂРіР°РЅРёР·Р°С†РёРё *</Label>
+                  <Label htmlFor="organizerName">Название организации *</Label>
                   <Input
                     id="organizerName"
                     value={formData.organizerName}
@@ -390,31 +392,30 @@ const EditTournamentPage = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="organizerContacts">РљРѕРЅС‚Р°РєС‚РЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ</Label>
+                  <Label htmlFor="organizerContact">Контактная информация</Label>
                   <Input
-                    id="organizerContacts"
-                    value={formData.organizerContacts}
-                    onChange={(e) => handleInputChange("organizerContacts", e.target.value)}
+                    id="organizerContact"
+                    value={formData.organizerContact}
+                    onChange={(e) => handleInputChange("organizerContact", e.target.value)}
                     placeholder="contact@qdeb.kz"
                   />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Р—Р°РіСЂСѓР·РєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
-                  РР·РѕР±СЂР°Р¶РµРЅРёРµ С‚СѓСЂРЅРёСЂР°
+                  Изображение турнира
                 </CardTitle>
                 <CardDescription>
-                  Р—Р°РіСЂСѓР·РёС‚Рµ РЅРѕРІРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РґР»СЏ С‚СѓСЂРЅРёСЂР° (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
+                  Загрузите новое изображение (необязательно)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>
-                  <Label htmlFor="photo">Р’С‹Р±РµСЂРёС‚Рµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ</Label>
+                  <Label htmlFor="photo">Выберите файл</Label>
                   <Input
                     id="photo"
                     type="file"
@@ -426,30 +427,32 @@ const EditTournamentPage = () => {
               </CardContent>
             </Card>
 
-            {/* РљРЅРѕРїРєРё РґРµР№СЃС‚РІРёР№ */}
             <div className="flex gap-4 justify-end">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push(`/tournaments/${tournamentId}`)}
+                onClick={() => router.push(`/tournaments/${tournamentSlug}`)}
                 disabled={saving}
               >
-                РћС‚РјРµРЅР°
+                Отмена
               </Button>
-              <Button
-                type="submit"
-                disabled={saving}
-                className="flex items-center gap-2"
-              >
+              <Button type="submit" disabled={saving} className="flex items-center gap-2">
                 <Save className="w-4 h-4" />
-                {saving ? "РЎРѕС…СЂР°РЅРµРЅРёРµ..." : "РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ"}
+                {saving ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </div>
           </form>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <AdminOnlyPage title="Редактирование турнира" message="Доступно только администраторам">
+      <Navbar />
+      <div className="min-h-screen bg-background text-text">{renderContent()}</div>
       <Footer />
-    </div>
+    </AdminOnlyPage>
   );
 };
 

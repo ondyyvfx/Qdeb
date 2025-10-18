@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import TournamentCard from "./TournamentCard";
-import Cookies from "js-cookie";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
 interface Tournament {
   id: number;
+  slug: string;
   title: string;
   start_date: string;
   end_date: string;
@@ -20,7 +20,7 @@ interface Tournament {
 const MobileTournamentSlider = () => {
   const [cards, setCards] = useState<Tournament[]>([]);
   const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -35,19 +35,35 @@ const MobileTournamentSlider = () => {
         }
 
         const data = await res.json();
-        console.log("API response:", data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.results)
+          ? (data as any).results
+          : [];
 
-        const arr = Array.isArray(data) ? data : [];
-        const formatted = arr.map((t: any) => ({
-          id: t.id,
-          title: t.name,
-          start_date: t.eventDate,
-          end_date: t.eventDate,
-          cost: t.fee,
-          location: t.organizerName || "",
-          registrationlink: t.tabbycatUrl || null,
-          backgroundUrl: "/assets/Q.svg",
-        }));
+        const formatted = list.map((t: any) => {
+          const slug = t.slug || String(t.id);
+          const imagePath =
+            t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || "";
+          const resolvedBackground = imagePath
+            ? `${API_URL.replace("/api", "")}${imagePath}`
+            : "/assets/Q.svg";
+
+          return {
+            id: t.id,
+            slug,
+            title: t.name || t.title || slug,
+            start_date: t.date || t.startDate || t.eventDate,
+            end_date: t.date || t.endDate || t.eventDate,
+            cost:
+              typeof t.fee === "number"
+                ? t.fee
+                : Number.parseFloat(t.fee ?? "0") || 0,
+            location: t.organizerName || t.city || "Location to be announced",
+            registrationlink: t.tabbycatUrl || t.registrationLink || null,
+            backgroundUrl: resolvedBackground,
+          } as Tournament;
+        });
         setCards(formatted);
       } catch (error) {
         setCards([]);
@@ -71,7 +87,7 @@ const MobileTournamentSlider = () => {
         }}
       >
         {cards.map((card) => (
-          <SwiperSlide key={card.id}>
+          <SwiperSlide key={card.slug}>
             <TournamentCard {...card} />
           </SwiperSlide>
         ))}

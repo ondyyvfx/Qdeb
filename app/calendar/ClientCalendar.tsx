@@ -166,7 +166,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
               <div className="space-y-4">
                 {events.map((event) => (
                   <div
-                    key={event.id}
+                    key={event.slug}
                     className="relative bg-primary p-4 sm:p-6 py-4 rounded-2xl shadow-lg flex flex-col md:flex-row gap-4 sm:gap-6"
                   >
                     {event.is_registration_open && (
@@ -207,7 +207,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                     <div className="sm:flex-1 sm:space-y-2 text-white flex flex-col sm:mt-4 z-10">
                       <div className="flex items-center gap-4">
                         <div className="text-lg sm:text-2xl font-bold">
-                          <Link href={`/tournaments/${event.id}`} className="hover:text-accent transition-colors cursor-pointer">
+                          <Link href={`/tournaments/${event.slug}`} className="hover:text-accent transition-colors cursor-pointer">
                             {event.title}
                           </Link>
                           <div className="sm:hidden text-xs text-gray-400 text-center mb-2">
@@ -291,7 +291,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                               Регистрация
                             </a>
                           )}
-                        <Link href={`/tournaments/${event.id}`}>
+                        <Link href={`/tournaments/${event.slug}`}>
                           <button className="bg-white text-black px-3 py-1 text-[11px] sm:text-[16px] sm:px-6 sm:py-2 rounded-md font-semibold hover:bg-gray-100 transition-colors">
                             Подробнее
                           </button>

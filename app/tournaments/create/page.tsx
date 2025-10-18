@@ -32,12 +32,12 @@ interface TournamentFormData {
   shortName: string;
   slug: string;
   organizerName: string;
-  organizerContacts: string;
+  organizerContact: string;
   description: string;
   eventDate: string;
   active: boolean;
   fee: number;
-  level: string;
+  level: "LOCAL" | "REGIONAL" | "NATIONAL" | "INTERNATIONAL";
   format: string;
   photo: File | null;
 }
@@ -50,12 +50,12 @@ const CreateTournamentPage = () => {
     shortName: "",
     slug: "",
     organizerName: "",
-    organizerContacts: "",
+    organizerContact: "",
     description: "",
     eventDate: "",
     active: true,
     fee: 0,
-    level: "SCHOOL",
+    level: "LOCAL",
     format: "",
     photo: null,
   });
@@ -70,13 +70,54 @@ const CreateTournamentPage = () => {
     }));
   };
 
-  const generateSlug = (name: string) => {
-    return name
+  const generateSlug = (value: string) => {
+    const transliterationMap: Record<string, string> = {
+      а: "a",
+      б: "b",
+      в: "v",
+      г: "g",
+      д: "d",
+      е: "e",
+      ё: "e",
+      ж: "zh",
+      з: "z",
+      и: "i",
+      й: "y",
+      к: "k",
+      л: "l",
+      м: "m",
+      н: "n",
+      о: "o",
+      п: "p",
+      р: "r",
+      с: "s",
+      т: "t",
+      у: "u",
+      ф: "f",
+      х: "h",
+      ц: "ts",
+      ч: "ch",
+      ш: "sh",
+      щ: "shch",
+      ъ: "",
+      ы: "y",
+      ь: "",
+      э: "e",
+      ю: "yu",
+      я: "ya",
+    };
+
+    const normalized = value
       .toLowerCase()
+      .split("")
+      .map((char) => transliterationMap[char] ?? char)
+      .join("")
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
-      .trim();
+      .replace(/^-|-$/g, "");
+
+    return normalized || `tournament-${Date.now()}`;
   };
 
   const handleNameChange = (name: string) => {
@@ -94,14 +135,17 @@ const CreateTournamentPage = () => {
 
     try {
       const formDataToSend = new FormData();
+      const normalizedSlug = generateSlug(
+        formData.slug || formData.name || `tournament-${Date.now()}`
+      );
 
       // Создаем объект турнира
       const tournamentData = {
         name: formData.name,
         shortName: formData.shortName || formData.name.substring(0, 25),
-        slug: formData.slug,
+        slug: normalizedSlug,
         organizerName: formData.organizerName,
-        organizerContact: formData.organizerContacts, // Исправлено: organizerContacts -> organizerContact
+        organizerContact: formData.organizerContact, // Исправлено: organizerContacts -> organizerContact
         description: formData.description,
         date: formData.eventDate, // Исправлено: eventDate -> date
         active: formData.active,
@@ -109,7 +153,7 @@ const CreateTournamentPage = () => {
         level: formData.level,
         format: formData.format,
         seq: 1,
-        registraionFields: [
+        registrationFields: [
           // Добавляем поля регистрации (как в документации)
           {
             name: "Full Name",
@@ -130,47 +174,74 @@ const CreateTournamentPage = () => {
         formDataToSend.append("tournamentPicture", formData.photo);
       }
 
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
-        }/tournaments`,
-        {
-          method: "POST",
-          body: formDataToSend,
-          headers: {
-            Authorization: `Bearer ${
-              document.cookie.split("accessToken=")[1]?.split(";")[0] || ""
-            }`,
-          },
-        }
-      );
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+
+      const response = await fetch(`${apiBase}/tournaments`, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          Authorization: `Bearer ${
+            document.cookie.split("accessToken=")[1]?.split(";")[0] || ""
+          }`,
+        },
+      });
 
       if (response.ok) {
-        toast.success("Турнир успешно создан!");
-        router.push("/tournaments");
-      } else {
-        let errorMessage = "Неизвестная ошибка";
-        try {
-          const errorData = await response.json();
-          console.error("Server error response:", errorData);
+        let createdSlug = normalizedSlug;
 
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          } else if (errorData.error) {
-            errorMessage = errorData.error;
-          } else if (typeof errorData === "string") {
-            errorMessage = errorData;
+        try {
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const createdData = await response.json();
+            if (createdData?.slug) {
+              createdSlug = createdData.slug;
+            } else if (createdData?.id) {
+              createdSlug = String(createdData.id);
+            }
+          }
+        } catch (parseSuccessError) {
+          console.warn(
+            "Failed to parse tournament creation response:",
+            parseSuccessError
+          );
+        }
+
+        toast.success("Tournament created!");
+        router.push(`/tournaments/${createdSlug}`);
+      } else {
+        let errorMessage = "Failed to create tournament";
+        try {
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const errorData = await response.json();
+            console.error("Server error response:", errorData);
+
+            if (errorData?.message) {
+              errorMessage = errorData.message;
+            } else if (errorData?.error) {
+              errorMessage = errorData.error;
+            } else if (typeof errorData === "string") {
+              errorMessage = errorData;
+            }
+          } else {
+            const textBody = await response.text();
+            if (textBody) {
+              errorMessage = textBody;
+            } else {
+              errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
           }
         } catch (parseError) {
           console.error("Error parsing error response:", parseError);
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
 
-        toast.error(`Ошибка создания турнира: ${errorMessage}`);
+        toast.error(`Failed to create tournament: ${errorMessage}`);
       }
     } catch (error) {
       console.error("Error creating tournament:", error);
-      toast.error("Произошла ошибка при создании турнира");
+      toast.error("Unexpected error while creating tournament.");
     } finally {
       setLoading(false);
     }
@@ -259,14 +330,14 @@ const CreateTournamentPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="organizerContacts">
+                      <Label htmlFor="organizerContact">
                         Контактная информация *
                       </Label>
                       <Input
-                        id="organizerContacts"
-                        value={formData.organizerContacts}
+                        id="organizerContact"
+                        value={formData.organizerContact}
                         onChange={(e) =>
-                          handleInputChange("organizerContacts", e.target.value)
+                          handleInputChange("organizerContact", e.target.value)
                         }
                         placeholder="info@qdeb.kz, +7 777 123 4567"
                         required
@@ -328,6 +399,7 @@ const CreateTournamentPage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
+                    <div>
                       <Label htmlFor="level">Уровень турнира</Label>
                       <select
                         id="level"
@@ -338,13 +410,12 @@ const CreateTournamentPage = () => {
                         className="w-full p-2 rounded-md border bg-background text-text"
                         aria-label="Уровень турнира"
                       >
-                        <option value="SCHOOL">Школьный</option>
-                        <option value="UNIVERSITY">Университетский</option>
+                        <option value="LOCAL">Местный</option>
+                        <option value="REGIONAL">Региональный</option>
                         <option value="NATIONAL">Национальный</option>
                         <option value="INTERNATIONAL">Международный</option>
                       </select>
                     </div>
-                    <div>
                       <Label htmlFor="format">Формат дебатов</Label>
                       <Input
                         id="format"
@@ -397,14 +468,14 @@ const CreateTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="organizerContacts">
+                    <Label htmlFor="organizerContact">
                       Контактная информация
                     </Label>
                     <Input
-                      id="organizerContacts"
-                      value={formData.organizerContacts}
+                      id="organizerContact"
+                      value={formData.organizerContact}
                       onChange={(e) =>
-                        handleInputChange("organizerContacts", e.target.value)
+                        handleInputChange("organizerContact", e.target.value)
                       }
                       placeholder="contact@qdeb.kz"
                     />
@@ -469,3 +540,4 @@ const CreateTournamentPage = () => {
 };
 
 export default CreateTournamentPage;
+

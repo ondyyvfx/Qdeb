@@ -52,19 +52,19 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
 
       <div className="flex flex-col gap-4 p-4">
         <Link href="/" onClick={() => onNavigate("/")}>
-          Главная
+          Home
         </Link>
         <Link href="/tournaments" onClick={() => onNavigate("/tournaments")}>
-          Турниры
+          Tournaments
         </Link>
         <Link href="/calendar" onClick={() => onNavigate("/calendar")}>
-          Календарь турниров
+          Calendar
         </Link>
         <Link href="/rating" onClick={() => onNavigate("/rating")}>
-          Рейтинг спикеров
+          Speaker Rating
         </Link>
         <Link href="/about" onClick={() => onNavigate("/about")}>
-          О нас
+          About
         </Link>
         {user?.roles?.includes("ROLE_ADMIN") && (
           <Link
@@ -72,10 +72,9 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             onClick={() => onNavigate("/tournaments/create")}
             className="text-orange-500 font-semibold"
           >
-            Создать турнир
+            Create Tournament
           </Link>
         )}
-
         {user ? (
           <>
             {/* Информация о пользователе */}

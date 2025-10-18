@@ -216,24 +216,24 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-8 text-sm font-medium">
-          <Link
-            href="/calendar"
-            className="hover:text-accent transition-colors"
-          >
-            Календарь турниров
+          <Link href="/calendar" className="hover:text-accent transition-colors">
+            Calendar
+          </Link>
+          <Link href="/tournaments" className="hover:text-accent transition-colors">
+            Tournaments
           </Link>
           <Link href="/rating" className="hover:text-accent transition-colors">
-            Рейтинг спикеров
+            Speaker Rating
           </Link>
           <Link href="/about" className="hover:text-accent transition-colors">
-            О нас
+            About
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"
               className="hover:text-orange-400 transition-colors text-orange-500 font-semibold"
             >
-              Создать турнир
+              Create Tournament
             </Link>
           )}
         </nav>
@@ -329,3 +329,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

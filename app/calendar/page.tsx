@@ -1,4 +1,4 @@
-import Navbar from "@/components/shared/Navbar";
+﻿import Navbar from "@/components/shared/Navbar";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import ClientCalendar from "./ClientCalendar";
@@ -6,6 +6,7 @@ import Footer from "@/components/shared/Footer";
 
 type Event = {
   id: number;
+  slug: string;
   title: string;
   description: string;
   cost: string;
@@ -17,67 +18,127 @@ type Event = {
   categories: string[];
 };
 
+const FALLBACK_API = "http://localhost:4232/api";
+
 export default async function CalendarPage() {
   let events: Event[] = [];
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/tournaments/getAll`,
-      {
-        next: { revalidate: 60 }, // ISR: кеш на 60 сек
-      }
-    );
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== ""
+        ? process.env.NEXT_PUBLIC_API_URL
+        : FALLBACK_API;
+
+    const res = await fetch(`${apiBase}/tournaments`, {
+      next: { revalidate: 60 },
+    });
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("Ошибка загрузки событий:", res.status, text);
-
-      // Если 403 или другие ошибки - используем пустой массив
-      if (res.status === 403 || res.status >= 400) {
-        console.warn("API недоступен, используем пустые данные");
-        events = [];
-      } else {
-        throw new Error("Не удалось загрузить события");
-      }
+      console.error(
+        "Failed to load tournaments for calendar:",
+        res.status,
+        text
+      );
     } else {
-      const data: unknown = await res.json();
+      const contentType = res.headers.get("content-type") || "";
 
-      if (
-        typeof data !== "object" ||
-        data === null ||
-        !("results" in data) ||
-        !Array.isArray((data as any).results)
-      ) {
-        console.warn("Неверный формат данных, используем пустые данные");
-        events = [];
+      if (!contentType.includes("application/json")) {
+        console.warn(
+          "Unexpected content type when loading tournaments for calendar:",
+          contentType
+        );
       } else {
-        events = (data as any).results;
+        const data: unknown = await res.json();
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.results)
+          ? (data as any).results
+          : [];
+
+        events = (list as any[])
+          .map((tournament, index) => {
+            const rawSlug =
+              tournament?.slug ||
+              (tournament?.id !== undefined ? String(tournament.id) : "");
+            const startDate =
+              tournament?.date ||
+              tournament?.startDate ||
+              tournament?.eventDate ||
+              "";
+            const endDate =
+              tournament?.date ||
+              tournament?.endDate ||
+              tournament?.eventDate ||
+              startDate;
+
+            if (!rawSlug || !startDate) {
+              return null;
+            }
+
+            const numericId = Number.isFinite(Number(tournament?.id))
+              ? Number(tournament.id)
+              : Number.parseInt(rawSlug.replace(/[^0-9]/g, ""), 10);
+            const fallbackId = Number.isFinite(numericId)
+              ? numericId
+              : index;
+
+            const feeValue =
+              typeof tournament?.fee === "number"
+                ? tournament.fee
+                : Number.parseFloat(tournament?.fee ?? "0");
+
+            const categories = [
+              tournament?.level,
+              tournament?.format,
+            ].filter(Boolean) as string[];
+
+            return {
+              id: fallbackId,
+              slug: rawSlug,
+              title: tournament?.name || tournament?.title || rawSlug,
+              description: tournament?.description || "",
+              cost: Number.isFinite(feeValue) ? feeValue.toString() : "0",
+              city:
+                tournament?.organizerName ||
+                tournament?.city ||
+                "Location to be announced",
+              start_date: startDate,
+              end_date: endDate,
+              is_registration_open: Boolean(
+                tournament?.active ?? tournament?.registrationOpen ?? false
+              ),
+              registration_link:
+                tournament?.tabbycatUrl || tournament?.registrationLink || null,
+              categories: categories.map((item) => String(item).toLowerCase()),
+            } as Event;
+          })
+          .filter((item): item is Event => Boolean(item));
       }
     }
   } catch (error) {
-    console.error("Ошибка при загрузке данных календаря:", error);
-    // В случае любой ошибки используем пустой массив
+    console.error("CalendarPage: failed to fetch tournaments:", error);
     events = [];
   }
 
-  // Группировка событий по месяцам
-  const groupedByMonth = events.reduce((acc: any, event) => {
+  const groupedByMonth = events.reduce((acc: Record<string, Event[]>, event) => {
     const month = format(new Date(event.start_date), "LLLL yyyy", {
       locale: ru,
     });
-    acc[month] = acc[month] || [];
+    if (!acc[month]) {
+      acc[month] = [];
+    }
     acc[month].push(event);
     return acc;
   }, {});
 
-  // Теперь передаем категории из базы данных через пропс
-  const categories = ["Для студентов", "Для профессионалов", "Онлайн"]; // Пример статичного списка категорий, если нужно сделать динамичным, используйте API для получения.
+  const categories = ["students", "offline", "online"];
 
   return (
     <div>
       <Navbar />
       <div className="mx-3 md:mx-10 xl:mx-19 my-15">
-        <h1 className="text-3xl font-bold mb-6">Календарь мероприятий</h1>
+        <h1 className="text-3xl font-bold mb-6">Календарь турниров</h1>
         <ClientCalendar events={groupedByMonth} categories={categories} />
       </div>
       <Footer />

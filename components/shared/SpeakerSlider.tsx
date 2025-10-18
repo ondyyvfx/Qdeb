@@ -14,7 +14,7 @@ const SpeakerSlider = () => {
   const [speakers, setSpeakers] = useState<any[]>([]);
   const swiperRef = useRef<SwiperCore | null>(null);
   const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5639/api";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
   useEffect(() => {
     const fetchSpeakers = async () => {
