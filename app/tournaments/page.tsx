@@ -322,7 +322,6 @@ export default function TournamentsPage() {
                     </div>
                 )}
             </div>
-            <DebateClubs />
             <Footer />
         </div>
     );

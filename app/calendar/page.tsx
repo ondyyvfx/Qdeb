@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import ClientCalendar from "./ClientCalendar";
 import Footer from "@/components/shared/Footer";
+import { cookies } from "next/headers";
 
 type Event = {
   id: number;
@@ -13,9 +14,10 @@ type Event = {
   city: string;
   start_date: string;
   end_date: string;
-  is_registration_open: boolean;
+  is_registration_open: boolean | null;
   registration_link: string | null;
   categories: string[];
+  imageUrl: string;
 };
 
 const FALLBACK_API = "http://localhost:4232/api";
@@ -29,8 +31,16 @@ export default async function CalendarPage() {
         ? process.env.NEXT_PUBLIC_API_URL
         : FALLBACK_API;
 
+    const apiOrigin = apiBase.replace(/\/api\/?$/, "");
+
+    const accessToken = cookies().get("accessToken")?.value;
+    const headers: HeadersInit = accessToken
+      ? { Authorization: `Bearer ${accessToken}` }
+      : {};
+
     const res = await fetch(`${apiBase}/tournaments`, {
-      next: { revalidate: 60 },
+      headers,
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -93,6 +103,50 @@ export default async function CalendarPage() {
               tournament?.format,
             ].filter(Boolean) as string[];
 
+            const rawImagePath =
+              tournament?.imageUrl ||
+              tournament?.imageURL ||
+              tournament?.photoUrl ||
+              tournament?.pictureUrl ||
+              "";
+            let imageUrl = "/assets/Qback.svg";
+            if (typeof rawImagePath === "string") {
+              const trimmedPath = rawImagePath.trim();
+              if (trimmedPath.length > 0) {
+                imageUrl = trimmedPath.startsWith("http")
+                  ? trimmedPath
+                  : `${apiOrigin}${
+                      trimmedPath.startsWith("/") ? "" : "/"
+                    }${trimmedPath}`;
+              }
+            }
+
+            const registrationSource =
+              tournament?.active ??
+              tournament?.registrationOpen ??
+              tournament?.isRegistrationOpen ??
+              null;
+
+            let isRegistrationOpen: boolean | null = null;
+
+            if (typeof registrationSource === "boolean") {
+              isRegistrationOpen = registrationSource;
+            } else if (typeof registrationSource === "number") {
+              if (registrationSource === 1) {
+                isRegistrationOpen = true;
+              } else if (registrationSource === 0) {
+                isRegistrationOpen = false;
+              }
+            } else if (typeof registrationSource === "string") {
+              const normalized = registrationSource.trim().toLowerCase();
+
+              if (["true", "open", "yes", "1"].includes(normalized)) {
+                isRegistrationOpen = true;
+              } else if (["false", "closed", "no", "0"].includes(normalized)) {
+                isRegistrationOpen = false;
+              }
+            }
+
             return {
               id: fallbackId,
               slug: rawSlug,
@@ -105,12 +159,11 @@ export default async function CalendarPage() {
                 "Location to be announced",
               start_date: startDate,
               end_date: endDate,
-              is_registration_open: Boolean(
-                tournament?.active ?? tournament?.registrationOpen ?? false
-              ),
+              is_registration_open: isRegistrationOpen,
               registration_link:
                 tournament?.tabbycatUrl || tournament?.registrationLink || null,
               categories: categories.map((item) => String(item).toLowerCase()),
+              imageUrl,
             } as Event;
           })
           .filter((item): item is Event => Boolean(item));
