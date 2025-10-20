@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -12,20 +10,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Calendar,
-  MapPin,
-  DollarSign,
-  Users,
-  FileText,
-  Upload,
-  Save,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar, DollarSign, Users, FileText, Upload, Save } from "lucide-react";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
+
+type RegistrationFieldType = "TEXT" | "DESCRIPTION";
+
+type RegistrationField = {
+  name: string;
+  type: RegistrationFieldType;
+  required: boolean;
+};
 
 interface TournamentFormData {
   name: string;
@@ -41,6 +41,39 @@ interface TournamentFormData {
   format: string;
   photo: File | null;
 }
+
+const STORAGE_KEY = "tournamentRegistrationTemplate";
+
+const REGISTRATION_TYPE_LABELS: Record<RegistrationFieldType, string> = {
+  TEXT: "Короткий ответ",
+  DESCRIPTION: "Развернутый ответ",
+};
+
+const DEFAULT_REGISTRATION_FIELDS: RegistrationField[] = [
+  { name: "Full Name", type: "TEXT", required: true },
+  { name: "Institution", type: "TEXT", required: true },
+];
+
+const readTemplateFromStorage = (): RegistrationField[] | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const sanitized = parsed
+      .map((item: any) => ({
+        name: typeof item?.name === "string" ? item.name.trim() : "",
+        type: item?.type === "DESCRIPTION" ? "DESCRIPTION" : "TEXT",
+        required: Boolean(item?.required),
+      }))
+      .filter((item: RegistrationField) => item.name.length > 0);
+    return sanitized.length > 0 ? sanitized : null;
+  } catch (error) {
+    console.error("Failed to read registration template:", error);
+    return null;
+  }
+};
 
 const CreateTournamentPage = () => {
   const router = useRouter();
@@ -59,6 +92,16 @@ const CreateTournamentPage = () => {
     format: "",
     photo: null,
   });
+  const [registrationFields, setRegistrationFields] = useState<
+    RegistrationField[]
+  >(DEFAULT_REGISTRATION_FIELDS);
+
+  useEffect(() => {
+    const saved = readTemplateFromStorage();
+    if (saved) {
+      setRegistrationFields(saved);
+    }
+  }, []);
 
   const handleInputChange = (
     field: keyof TournamentFormData,
@@ -68,6 +111,23 @@ const CreateTournamentPage = () => {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleOpenFormBuilder = () => {
+    router.push("/tournaments/form-builder");
+  };
+
+  const handleRefreshRegistrationFields = () => {
+    const saved = readTemplateFromStorage();
+    if (saved) {
+      setRegistrationFields(saved);
+      toast.success("Шаблон формы обновлён.");
+    } else {
+      setRegistrationFields(DEFAULT_REGISTRATION_FIELDS);
+      toast.info(
+        "Сохранённый шаблон не найден. Откройте конструктор, чтобы создать его."
+      );
+    }
   };
 
   const generateSlug = (value: string) => {
@@ -134,38 +194,35 @@ const CreateTournamentPage = () => {
     setLoading(true);
 
     try {
+      const preparedRegistrationFields = registrationFields
+        .map((field) => ({
+          ...field,
+          name: field.name.trim(),
+        }))
+        .filter((field) => field.name.length > 0);
+
       const formDataToSend = new FormData();
       const normalizedSlug = generateSlug(
         formData.slug || formData.name || `tournament-${Date.now()}`
       );
 
-      // Создаем объект турнира
       const tournamentData = {
         name: formData.name,
         shortName: formData.shortName || formData.name.substring(0, 25),
         slug: normalizedSlug,
         organizerName: formData.organizerName,
-        organizerContact: formData.organizerContact, // Исправлено: organizerContacts -> organizerContact
+        organizerContact: formData.organizerContact,
         description: formData.description,
-        date: formData.eventDate, // Исправлено: eventDate -> date
+        date: formData.eventDate,
         active: formData.active,
         fee: formData.fee,
         level: formData.level,
         format: formData.format,
         seq: 1,
-        registrationFields: [
-          // Добавляем поля регистрации (как в документации)
-          {
-            name: "Full Name",
-            type: "DESCRIPTION",
-            required: true,
-          },
-          {
-            name: "Institution",
-            type: "DESCRIPTION",
-            required: true,
-          },
-        ],
+        registrationFields:
+          preparedRegistrationFields.length > 0
+            ? preparedRegistrationFields
+            : DEFAULT_REGISTRATION_FIELDS,
       };
 
       formDataToSend.append("tournament", JSON.stringify(tournamentData));
@@ -177,13 +234,19 @@ const CreateTournamentPage = () => {
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
+      const token =
+        typeof document !== "undefined"
+          ? document.cookie
+              .split("; ")
+              .find((row) => row.startsWith("accessToken="))
+              ?.split("=")[1] ?? ""
+          : "";
+
       const response = await fetch(`${apiBase}/tournaments`, {
         method: "POST",
         body: formDataToSend,
         headers: {
-          Authorization: `Bearer ${
-            document.cookie.split("accessToken=")[1]?.split(";")[0] || ""
-          }`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -262,7 +325,7 @@ const CreateTournamentPage = () => {
                   Создание турнира
                 </h1>
                 <p className="text-lg text-gray-400 font-medium">
-                  Заполните форму для создания нового турнира
+                  Заполните форму ниже для публикации нового турнира
                 </p>
               </div>
             </div>
@@ -317,7 +380,7 @@ const CreateTournamentPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="organizerName">
-                        Название организатора *
+                        Название организации *
                       </Label>
                       <Input
                         id="organizerName"
@@ -331,7 +394,7 @@ const CreateTournamentPage = () => {
                     </div>
                     <div>
                       <Label htmlFor="organizerContact">
-                        Контактная информация *
+                        Контактная информация
                       </Label>
                       <Input
                         id="organizerContact"
@@ -339,8 +402,7 @@ const CreateTournamentPage = () => {
                         onChange={(e) =>
                           handleInputChange("organizerContact", e.target.value)
                         }
-                        placeholder="info@qdeb.kz, +7 777 123 4567"
-                        required
+                        placeholder="contact@qdeb.kz"
                       />
                     </div>
                   </div>
@@ -353,19 +415,19 @@ const CreateTournamentPage = () => {
                       onChange={(e) =>
                         handleInputChange("description", e.target.value)
                       }
-                      placeholder="Подробное описание турнира, правила, условия участия..."
+                      placeholder="Добавьте краткое описание, особенности, формат..."
                       rows={4}
                     />
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Информация о мероприятии */}
+              {/* Даты и формат */}
               <Card className="bg-white/5 border-white/20 shadow-xl hover:shadow-2xl transition-shadow duration-300">
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <Calendar className="w-6 h-6 text-accent" />
-                    Информация о мероприятии
+                    Даты и формат
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -383,7 +445,7 @@ const CreateTournamentPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="fee">Стоимость участия (тенге)</Label>
+                      <Label htmlFor="fee">Регистрационный взнос (₸)</Label>
                       <Input
                         id="fee"
                         type="number"
@@ -399,7 +461,6 @@ const CreateTournamentPage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                    <div>
                       <Label htmlFor="level">Уровень турнира</Label>
                       <select
                         id="level"
@@ -410,12 +471,15 @@ const CreateTournamentPage = () => {
                         className="w-full p-2 rounded-md border bg-background text-text"
                         aria-label="Уровень турнира"
                       >
-                        <option value="LOCAL">Местный</option>
+                        <option value="LOCAL">Локальный</option>
                         <option value="REGIONAL">Региональный</option>
                         <option value="NATIONAL">Национальный</option>
-                        <option value="INTERNATIONAL">Международный</option>
+                        <option value="INTERNATIONAL">
+                          Международный
+                        </option>
                       </select>
                     </div>
+                    <div>
                       <Label htmlFor="format">Формат дебатов</Label>
                       <Input
                         id="format"
@@ -440,6 +504,75 @@ const CreateTournamentPage = () => {
                       aria-label="Регистрация открыта"
                     />
                     <Label htmlFor="active">Регистрация открыта</Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Форма регистрации для команд */}
+              <Card className="bg-white/5 border-white/20 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-accent" />
+                    Форма регистрации
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Настройте поля, которые заполнят команды при подаче заявки.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {registrationFields.length === 0 ? (
+                    <p className="text-sm text-gray-300">
+                      Поля формы пока не выбраны. Откройте конструктор, чтобы
+                      создать шаблон.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {registrationFields.map((field, index) => (
+                        <div
+                          key={`summary-field-${index}`}
+                          className="rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+                        >
+                          <div className="flex items-center justify-between text-sm text-white font-medium">
+                            <span>
+                              {index + 1}. {field.name}
+                            </span>
+                            <span className="text-xs text-gray-300">
+                              {REGISTRATION_TYPE_LABELS[field.type]}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-gray-400">
+                            {field.required
+                              ? "Обязательное поле"
+                              : "Необязательное поле"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-gray-400">
+                      Шаблон хранится в браузере. После создания турнира поля
+                      будут включены в заявку.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleOpenFormBuilder}
+                        className="flex items-center gap-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Открыть конструктор
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleRefreshRegistrationFields}
+                      >
+                        Обновить
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -540,4 +673,3 @@ const CreateTournamentPage = () => {
 };
 
 export default CreateTournamentPage;
-

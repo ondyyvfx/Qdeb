@@ -347,19 +347,24 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                             </div>
 
                                             <div className="flex flex-col sm:flex-row md:flex-col gap-2 mt-4 md:mt-0 md:ml-auto w-full sm:w-auto">
-                                                {event.is_registration_open &&
-                                                    event.registration_link && (
+                                                {event.is_registration_open && (
+                                                    event.registration_link ? (
                                                         <a
-                                                            href={
-                                                                event.registration_link
-                                                            }
+                                                            href={event.registration_link}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="bg-green-400 text-white px-3 py-2 text-[13px] text-center sm:text-[16px] sm:px-4 sm:py-2 rounded-md font-semibold hover:bg-green-500 transition w-full sm:w-auto"
                                                         >
                                                             Регистрация
                                                         </a>
-                                                    )}
+                                                    ) : (
+                                                        <Link href={`/tournaments/${event.slug}/join`}>
+                                                            <button className="bg-green-400 text-white px-3 py-2 text-[13px] text-center sm:text-[16px] sm:px-4 sm:py-2 rounded-md font-semibold hover:bg-green-500 transition w-full sm:w-auto">
+                                                                Подать заявку
+                                                            </button>
+                                                        </Link>
+                                                    )
+                                                )}
                                                 <Link
                                                     href={`/tournaments/${event.slug}`}
                                                 >

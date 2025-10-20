@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+import Cookies from "js-cookie";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -15,189 +17,231 @@ type TeamMembersProps = {
   team: TeamInfo;
 };
 
-// Моковые данные для демонстрации
-const mockMembers = [
-  {
-    id: 1,
-    username: "team_leader",
-    fullName: "Александр Петров",
-    email: "alex@example.com",
-    role: "leader",
-    joinedAt: "2024-01-15",
-    tournamentsParticipated: 12,
-    wins: 8,
-    avgRating: 1850,
-    isOnline: true,
-    avatar: null,
-  },
-  {
-    id: 2,
-    username: "debater_pro",
-    fullName: "Мария Сидорова",
-    email: "maria@example.com",
-    role: "member",
-    joinedAt: "2024-02-20",
-    tournamentsParticipated: 8,
-    wins: 5,
-    avgRating: 1720,
-    isOnline: false,
-    avatar: null,
-  },
-];
+type MemberSummary = {
+  id: string;
+  username?: string;
+  fullName?: string;
+  email?: string;
+  role: "leader" | "member";
+  joinedAt?: string | null;
+  note?: string;
+  isSelf?: boolean;
+};
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function TeamMembers({ team }: TeamMembersProps) {
+  const [members, setMembers] = useState<MemberSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = Cookies.get("accessToken");
+        if (!token) {
+          setError("Не удалось определить текущего пользователя.");
+          setMembers([]);
+          return;
+        }
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [profileRes, teamRes] = await Promise.all([
+          fetch(`${API_URL}/profile`, { headers }),
+          fetch(`${API_URL}/teams/my`, { headers }),
+        ]);
+
+        if (!profileRes.ok) {
+          throw new Error("Не удалось получить информацию о профиле.");
+        }
+
+        const profileData = await profileRes.json();
+        const teamData = teamRes.ok ? await teamRes.json() : null;
+
+        const collected = new Map<string, MemberSummary>();
+
+        // Лидер команды (если пришёл из API)
+        if (teamData?.leader) {
+          const leader: MemberSummary = {
+            id: String(teamData.leader.id),
+            username: teamData.leader.username,
+            fullName: teamData.leader.fullName ?? teamData.leader.username,
+            email: teamData.leader.email,
+            role: "leader",
+            joinedAt: teamData.createdAt ?? null,
+            note: teamData.leader.id === profileData.id ? "Это вы" : undefined,
+          };
+          collected.set(leader.id, leader);
+        }
+
+        // Текущий пользователь
+        const currentUser: MemberSummary = {
+          id: String(profileData.id),
+          username: profileData.username,
+          fullName: profileData.fullName,
+          email: profileData.email,
+          role: profileData.team?.role === "LEADER" ? "leader" : "member",
+          joinedAt: profileData.team?.joinedAt ?? null,
+          note: "Это вы",
+          isSelf: true,
+        };
+        collected.set(currentUser.id, currentUser);
+
+        // Второй участник (если известен только ID)
+        const teammateId = profileData.team?.memberId;
+        if (
+          teammateId &&
+          !collected.has(String(teammateId)) &&
+          team.size > 1
+        ) {
+          collected.set(String(teammateId), {
+            id: String(teammateId),
+            role: "member",
+            note: "Информация об участнике появится после подключения профиля.",
+          });
+        }
+
+        setMembers(Array.from(collected.values()));
+      } catch (err) {
+        console.error("Ошибка загрузки состава команды:", err);
+        setError(
+          err instanceof Error ? err.message : "Не удалось загрузить участников команды."
+        );
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMembers();
+  }, [team.id]);
+
+  const memberLimit = 2;
+  const joinedCount = useMemo(
+    () => Math.max(team.size, members.length),
+    [team.size, members.length]
+  );
+  const freeSlots = useMemo(
+    () => Math.max(0, memberLimit - joinedCount),
+    [memberLimit, joinedCount]
+  );
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">Участники команды</h2>
+          <h2 className="text-2xl font-bold text-white">Состав команды</h2>
           <p className="text-gray-400 mt-1">
-            {mockMembers.length} из 2 участников
+            {joinedCount} из {memberLimit} участников
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-green-400 text-sm font-medium">
-            {mockMembers.filter((m) => m.isOnline).length} онлайн
-          </span>
         </div>
       </div>
 
-      {/* Members List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {mockMembers.map((member) => (
-          <Card
-            key={member.id}
-            className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-200"
-          >
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-accent to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                      {member.fullName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    {member.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-background"></div>
-                    )}
-                  </div>
+      {loading ? (
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="p-6 text-sm text-gray-400">
+            Загрузка состава команды...
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card className="bg-red-500/10 border-red-500/20">
+          <CardContent className="p-6 text-sm text-red-300">{error}</CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {members.map((member) => (
+            <Card
+              key={member.id}
+              className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-200"
+            >
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-white text-lg">
-                      {member.fullName}
+                      {member.fullName ?? "Участник команды"}
                     </CardTitle>
-                    <p className="text-gray-400 text-sm">@{member.username}</p>
+                    <p className="text-gray-400 text-sm">
+                      {member.username ? `@${member.username}` : "логин недоступен"}
+                    </p>
                   </div>
-                </div>
-                <div className="text-right">
                   <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                       member.role === "leader"
-                        ? "bg-yellow-500/20 text-yellow-400"
-                        : "bg-blue-500/20 text-blue-400"
+                        ? "bg-yellow-500/20 text-yellow-300"
+                        : "bg-blue-500/20 text-blue-300"
                     }`}
                   >
                     {member.role === "leader" ? "Лидер" : "Участник"}
                   </span>
                 </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-white/5 rounded-lg">
-                  <p className="text-xl font-bold text-white">
-                    {member.tournamentsParticipated}
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="space-y-1">
+                  <p className="text-white">
+                    {member.fullName ?? "Участник команды"}
                   </p>
-                  <p className="text-xs text-gray-400">Турниров</p>
-                </div>
-                <div className="text-center p-3 bg-white/5 rounded-lg">
-                  <p className="text-xl font-bold text-white">{member.wins}</p>
-                  <p className="text-xs text-gray-400">Побед</p>
-                </div>
-                <div className="text-center p-3 bg-white/5 rounded-lg">
-                  <p className="text-xl font-bold text-white">
-                    {member.avgRating}
+                  <p className="text-gray-400">
+                    {member.username ? `@${member.username}` : "логин недоступен"}
                   </p>
-                  <p className="text-xs text-gray-400">Рейтинг</p>
+                  <p className="text-gray-300">
+                    {member.role === "leader" ? "Лидер" : "Участник"}
+                  </p>
                 </div>
-              </div>
+                <div className="space-y-1 text-gray-300">
+                  <p>
+                    Email{" "}
+                    <span className="text-white">
+                      {member.email ?? "не указан"}
+                    </span>
+                  </p>
+                  <p>
+                    Дата присоединения{" "}
+                    <span className="text-white">
+                      {member.joinedAt
+                        ? new Date(member.joinedAt).toLocaleDateString("ru-RU")
+                        : "недоступно"}
+                    </span>
+                  </p>
+                </div>
+                {member.note && (
+                  <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300">
+                    {member.note}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-              {/* Additional Info */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Email:</span>
-                  <span className="text-white">{member.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">В команде с:</span>
-                  <span className="text-white">
-                    {new Date(member.joinedAt).toLocaleDateString("ru-RU")}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Статус:</span>
-                  <span
-                    className={`flex items-center gap-1 ${
-                      member.isOnline ? "text-green-400" : "text-gray-400"
-                    }`}
-                  >
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        member.isOnline ? "bg-green-400" : "bg-gray-400"
-                      }`}
-                    ></div>
-                    {member.isOnline ? "Онлайн" : "Офлайн"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Actions */}
-              {member.role !== "leader" && (
-                <div className="pt-4 border-t border-white/10">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30"
-                  >
-                    Удалить из команды
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Add Member Info */}
-      {mockMembers.length < 2 && (
+      {freeSlots > 0 && (
         <Card className="bg-blue-500/10 border-blue-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">👥</div>
-              <div>
-                <h3 className="text-white font-medium mb-1">
-                  Пригласите второго участника
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  Для участия в турнирах команда должна состоять из 2 участников
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <code className="bg-black/20 px-3 py-1 rounded text-white font-mono text-sm">
-                    {team.code}
-                  </code>
-                  <Button
-                    size="sm"
-                    onClick={() => navigator.clipboard.writeText(team.code)}
-                    className="bg-accent hover:bg-accent/90"
-                  >
-                    Копировать код
-                  </Button>
-                </div>
+          <CardContent className="p-6 space-y-3">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-white font-medium">
+                До полного состава осталось {freeSlots}
+                {freeSlots === 1 ? " место" : " места"}
+              </h3>
+              <p className="text-gray-400 text-sm">
+                Поделитесь кодом, чтобы пригласить нового участника.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="bg-black/30 px-3 py-1 rounded text-white font-mono text-sm">
+                  {team.code}
+                </code>
+                <Button
+                  size="sm"
+                  onClick={() => navigator.clipboard.writeText(team.code)}
+                  className="bg-accent hover:bg-accent/90"
+                >
+                  Скопировать
+                </Button>
               </div>
             </div>
           </CardContent>

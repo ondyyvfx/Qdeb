@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type TeamInfo = {
   id: number;
@@ -16,7 +17,15 @@ type TeamMemberViewProps = {
   onLeave: () => void;
 };
 
+const TEAM_CAPACITY = 2;
+
 export default function TeamMemberView({ team, onLeave }: TeamMemberViewProps) {
+  const memberCount = Math.max(team.size, 1);
+  const readiness = Math.min(
+    100,
+    Math.round((memberCount / TEAM_CAPACITY) * 100)
+  );
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -38,7 +47,9 @@ export default function TeamMemberView({ team, onLeave }: TeamMemberViewProps) {
                 <p className="text-sm text-gray-400 mb-1">
                   Участников в команде
                 </p>
-                <p className="text-white font-medium text-lg">{team.size}/2</p>
+                <p className="text-white font-medium text-lg">
+                  {memberCount}/{TEAM_CAPACITY}
+                </p>
               </div>
             </div>
 
@@ -75,20 +86,37 @@ export default function TeamMemberView({ team, onLeave }: TeamMemberViewProps) {
             <div className="pt-4 border-t border-white/10">
               <div className="flex items-center justify-between">
                 <span className="text-gray-400">Готовность команды</span>
-                <span className="text-white font-medium">
-                  {team.size === 2 ? "100%" : `${(team.size / 2) * 100}%`}
-                </span>
+                <span className="text-white font-medium">{readiness}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                 <div
                   className="bg-gradient-to-r from-accent to-orange-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(team.size / 2) * 100}%` }}
+                  style={{ width: `${readiness}%` }}
                 ></div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <Card className="bg-white/5 border-white/10 mt-8">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent rounded-full"></div>
+            Формы и заявки
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-gray-300">
+          <p>
+            Если лидер команды поделился формой или анкетой, перейдите по ссылке ниже, чтобы ее заполнить.
+            Ответы помогут организаторам быстрее обработать вашу заявку.
+          </p>
+          <Button asChild className="bg-accent hover:bg-accent/90 text-white">
+            <Link href="/registration-form">Перейти к форме</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
 
       {/* Действия */}
       <div className="mt-8 flex justify-center">

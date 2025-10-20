@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import TeamMembers from "./TeamMembers";
 import TeamApplications from "./TeamApplications";
 import TeamStats from "./TeamStats";
+import TeamFormBuilder from "./TeamFormBuilder";
 
 type TeamInfo = {
   id: number;
@@ -19,17 +20,23 @@ type TeamDashboardProps = {
   team: TeamInfo;
 };
 
-type DashboardTab = "overview" | "members" | "applications" | "settings";
+type DashboardTab =
+  | "overview"
+  | "members"
+  | "applications"
+  | "create-form"
+  | "settings";
+
+const tabs: { id: DashboardTab; label: string; icon: string }[] = [
+  { id: "overview", label: "Обзор", icon: "📊" },
+  { id: "members", label: "Участники", icon: "👥" },
+  { id: "applications", label: "Заявки", icon: "📮" },
+  { id: "create-form", label: "Создать форму", icon: "📝" },
+  { id: "settings", label: "Настройки", icon: "⚙️" },
+];
 
 export default function TeamDashboard({ team }: TeamDashboardProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
-
-  const tabs = [
-    { id: "overview" as DashboardTab, label: "Обзор", icon: "📊" },
-    { id: "members" as DashboardTab, label: "Участники", icon: "👥" },
-    { id: "applications" as DashboardTab, label: "Заявки", icon: "📝" },
-    { id: "settings" as DashboardTab, label: "Настройки", icon: "⚙️" },
-  ];
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -58,6 +65,7 @@ export default function TeamDashboard({ team }: TeamDashboardProps) {
         {activeTab === "overview" && <TeamStats team={team} />}
         {activeTab === "members" && <TeamMembers team={team} />}
         {activeTab === "applications" && <TeamApplications team={team} />}
+        {activeTab === "create-form" && <TeamFormBuilder />}
         {activeTab === "settings" && (
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
@@ -70,35 +78,29 @@ export default function TeamDashboard({ team }: TeamDashboardProps) {
               <div className="space-y-4">
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                   <p className="text-yellow-400 text-sm">
-                    ⚠️ Настройки команды будут доступны в следующих обновлениях
+                    Раздел в разработке: скоро появятся роли, интеграции и автоматизация задач.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-white/5 rounded-lg">
-                    <h3 className="text-white font-medium mb-2">
-                      Код приглашения
-                    </h3>
+                    <h3 className="text-white font-medium mb-2">Пригласительный код</h3>
                     <div className="flex items-center gap-2">
                       <code className="bg-black/20 px-3 py-1 rounded text-white font-mono">
                         {team.code}
                       </code>
                       <Button
                         size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(team.code);
-                        }}
+                        onClick={() => navigator.clipboard.writeText(team.code)}
                         className="bg-accent hover:bg-accent/90"
                       >
-                        Копировать
+                        Скопировать
                       </Button>
                     </div>
                   </div>
 
                   <div className="p-4 bg-white/5 rounded-lg">
-                    <h3 className="text-white font-medium mb-2">
-                      Статус команды
-                    </h3>
+                    <h3 className="text-white font-medium mb-2">Статус команды</h3>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                       <span className="text-white">Активна</span>
@@ -113,4 +115,3 @@ export default function TeamDashboard({ team }: TeamDashboardProps) {
     </div>
   );
 }
-
