@@ -216,10 +216,16 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-8 text-sm font-medium">
-          <Link href="/calendar" className="hover:text-accent transition-colors">
+          <Link
+            href="/calendar"
+            className="hover:text-accent transition-colors"
+          >
             Calendar
           </Link>
-          <Link href="/tournaments" className="hover:text-accent transition-colors">
+          <Link
+            href="/tournaments"
+            className="hover:text-accent transition-colors"
+          >
             Tournaments
           </Link>
           <Link href="/rating" className="hover:text-accent transition-colors">
@@ -286,7 +292,7 @@ const Navbar = () => {
           )}
 
           {menuOpen && user && (
-            <div className="absolute -right-5 mt-[150px] bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
+            <div className="absolute -right-5 mt-[200px] bg-background border border-white/10 rounded-lg shadow-md p-3 z-50 min-w-[160px]">
               <button
                 onClick={() => {
                   router.push("/profile");
@@ -295,6 +301,15 @@ const Navbar = () => {
                 className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
               >
                 Профиль
+              </button>
+              <button
+                onClick={() => {
+                  router.push("/team");
+                  setMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-accent rounded-md text-sm text-white"
+              >
+                Моя команда
               </button>
               <button
                 onClick={handleLogout}
@@ -329,4 +344,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
