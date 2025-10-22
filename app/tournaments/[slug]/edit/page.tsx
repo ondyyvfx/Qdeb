@@ -9,9 +9,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, DollarSign, Users, FileText, Upload, Save, ArrowLeft } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Calendar,
+  MapPin,
+  DollarSign,
+  Users,
+  FileText,
+  Upload,
+  Save,
+  ArrowLeft,
+} from "lucide-react";
 import { toast } from "sonner";
+import { apiGet } from "@/lib/api";
 
 interface TournamentFormData {
   name: string;
@@ -49,7 +65,8 @@ const EditTournamentPage = () => {
     photo: null,
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
   const tournamentSlug = (params.slug as string) || "";
 
   useEffect(() => {
@@ -62,11 +79,16 @@ const EditTournamentPage = () => {
   const fetchTournament = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/tournaments`, {
+      const response = await fetch(`${API_URL}/tournaments/${tournamentSlug}`, {
         cache: "no-store",
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          setError("Tournament not found.");
+          setLoading(false);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -75,28 +97,12 @@ const EditTournamentPage = () => {
         throw new Error("Unexpected response format");
       }
 
-      const data: unknown = await response.json();
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray((data as any)?.results)
-        ? (data as any).results
-        : [];
-
-      const raw = list.find((item: any) => {
-        const rawSlug = item?.slug || item?.tournamentSlug || String(item?.id ?? "");
-        return rawSlug?.toString().toLowerCase() === tournamentSlug.toLowerCase();
-      });
-
-      if (!raw) {
-        setError("Tournament not found.");
-        setLoading(false);
-        return;
-      }
+      const raw: any = await response.json();
 
       setFormData({
         name: raw?.name || "",
         shortName: raw?.shortName || raw?.name || "",
-        slug: raw?.slug || raw?.tournamentSlug || tournamentSlug,
+        slug: raw?.slug || tournamentSlug,
         organizerName: raw?.organizerName || "",
         organizerContact: raw?.organizerContact || raw?.organizerContacts || "",
         description: raw?.description || "",
@@ -113,7 +119,7 @@ const EditTournamentPage = () => {
       setError(null);
     } catch (err) {
       console.error("Error fetching tournament:", err);
-      setError("Не удалось загрузить данные турнира.");
+      setError("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
     } finally {
       setLoading(false);
     }
@@ -176,11 +182,11 @@ const EditTournamentPage = () => {
       }
 
       // TODO: PUT /api/tournaments/{slug}
-      toast.success("Турнир успешно обновлен!");
+      toast.success("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
       router.push(`/tournaments/${tournamentSlug}`);
     } catch (err) {
       console.error("Error updating tournament:", err);
-      toast.error("Произошла ошибка при обновлении турнира");
+      toast.error("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
     } finally {
       setSaving(false);
     }
@@ -193,7 +199,7 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4" />
-              <p className="text-lg">Загрузка турнира...</p>
+              <p className="text-lg">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ...</p>
             </div>
           </div>
         </div>
@@ -206,12 +212,15 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle>Ошибка</CardTitle>
+                <CardTitle>пїЅпїЅпїЅпїЅпїЅпїЅ</CardTitle>
                 <CardDescription>{error}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={() => router.push("/tournaments")} className="w-full">
-                  Вернуться к списку
+                <Button
+                  onClick={() => router.push("/tournaments")}
+                  className="w-full"
+                >
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 </Button>
               </CardContent>
             </Card>
@@ -230,17 +239,17 @@ const EditTournamentPage = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Назад к турниру
+              пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             </Button>
           </div>
 
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Редактирование турнира
+                пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
               </h1>
               <p className="text-lg text-gray-400 font-medium">
-                Измените информацию о турнире
+                пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
               </p>
             </div>
           </div>
@@ -250,13 +259,13 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Основная информация
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Название турнира *</Label>
+                    <Label htmlFor="name">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ *</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -266,18 +275,20 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="shortName">Краткое название</Label>
+                    <Label htmlFor="shortName">пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Label>
                     <Input
                       id="shortName"
                       value={formData.shortName}
-                      onChange={(e) => handleInputChange("shortName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("shortName", e.target.value)
+                      }
                       placeholder="QSC"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="slug">URL-адрес (slug) *</Label>
+                  <Label htmlFor="slug">URL-пїЅпїЅпїЅпїЅпїЅ (slug) *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -288,12 +299,14 @@ const EditTournamentPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Описание</Label>
+                  <Label htmlFor="description">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    placeholder="Подробное описание турнира"
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
+                    placeholder="пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
                     rows={4}
                   />
                 </div>
@@ -304,28 +317,32 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Информация о мероприятии
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="eventDate">Дата проведения *</Label>
+                    <Label htmlFor="eventDate">пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ *</Label>
                     <Input
                       id="eventDate"
                       type="date"
                       value={formData.eventDate}
-                      onChange={(e) => handleInputChange("eventDate", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("eventDate", e.target.value)
+                      }
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fee">Стоимость участия (тенге)</Label>
+                    <Label htmlFor="fee">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ)</Label>
                     <Input
                       id="fee"
                       type="number"
                       value={formData.fee}
-                      onChange={(e) => handleInputChange("fee", Number(e.target.value))}
+                      onChange={(e) =>
+                        handleInputChange("fee", Number(e.target.value))
+                      }
                       placeholder="0"
                       min="0"
                     />
@@ -334,26 +351,30 @@ const EditTournamentPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="level">Уровень турнира</Label>
+                    <Label htmlFor="level">пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Label>
                     <select
                       id="level"
                       value={formData.level}
-                      onChange={(e) => handleInputChange("level", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("level", e.target.value)
+                      }
                       className="w-full p-2 rounded-md border bg-background text-text"
-                      aria-label="Уровень турнира"
+                      aria-label="пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
                     >
-                      <option value="LOCAL">Местный</option>
-                      <option value="REGIONAL">Региональный</option>
-                      <option value="NATIONAL">Национальный</option>
-                      <option value="INTERNATIONAL">Международный</option>
+                      <option value="LOCAL">пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</option>
+                      <option value="REGIONAL">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</option>
+                      <option value="NATIONAL">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</option>
+                      <option value="INTERNATIONAL">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</option>
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="format">Формат дебатов</Label>
+                    <Label htmlFor="format">пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Label>
                     <Input
                       id="format"
                       value={formData.format}
-                      onChange={(e) => handleInputChange("format", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("format", e.target.value)
+                      }
                       placeholder="British Parliamentary"
                     />
                   </div>
@@ -364,11 +385,13 @@ const EditTournamentPage = () => {
                     type="checkbox"
                     id="active"
                     checked={formData.active}
-                    onChange={(e) => handleInputChange("active", e.target.checked)}
+                    onChange={(e) =>
+                      handleInputChange("active", e.target.checked)
+                    }
                     className="rounded"
-                    aria-label="Регистрация открыта"
+                    aria-label="пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
                   />
-                  <Label htmlFor="active">Регистрация открыта</Label>
+                  <Label htmlFor="active">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Label>
                 </div>
               </CardContent>
             </Card>
@@ -377,26 +400,32 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Информация об организаторе
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="organizerName">Название организации *</Label>
+                  <Label htmlFor="organizerName">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ *</Label>
                   <Input
                     id="organizerName"
                     value={formData.organizerName}
-                    onChange={(e) => handleInputChange("organizerName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("organizerName", e.target.value)
+                    }
                     placeholder="QDeb Kazakhstan"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="organizerContact">Контактная информация</Label>
+                  <Label htmlFor="organizerContact">
+                    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                  </Label>
                   <Input
                     id="organizerContact"
                     value={formData.organizerContact}
-                    onChange={(e) => handleInputChange("organizerContact", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("organizerContact", e.target.value)
+                    }
                     placeholder="contact@qdeb.kz"
                   />
                 </div>
@@ -407,20 +436,22 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
-                  Изображение турнира
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 </CardTitle>
                 <CardDescription>
-                  Загрузите новое изображение (необязательно)
+                  пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>
-                  <Label htmlFor="photo">Выберите файл</Label>
+                  <Label htmlFor="photo">пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ</Label>
                   <Input
                     id="photo"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleInputChange("photo", e.target.files?.[0] || null)}
+                    onChange={(e) =>
+                      handleInputChange("photo", e.target.files?.[0] || null)
+                    }
                     className="mt-2"
                   />
                 </div>
@@ -434,11 +465,15 @@ const EditTournamentPage = () => {
                 onClick={() => router.push(`/tournaments/${tournamentSlug}`)}
                 disabled={saving}
               >
-                Отмена
+                пїЅпїЅпїЅпїЅпїЅпїЅ
               </Button>
-              <Button type="submit" disabled={saving} className="flex items-center gap-2">
+              <Button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2"
+              >
                 <Save className="w-4 h-4" />
-                {saving ? "Сохранение..." : "Сохранить изменения"}
+                {saving ? "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ..." : "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"}
               </Button>
             </div>
           </form>
@@ -448,9 +483,14 @@ const EditTournamentPage = () => {
   };
 
   return (
-    <AdminOnlyPage title="Редактирование турнира" message="Доступно только администраторам">
+    <AdminOnlyPage
+      title="пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+      message="пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+    >
       <Navbar />
-      <div className="min-h-screen bg-background text-text">{renderContent()}</div>
+      <div className="min-h-screen bg-background text-text">
+        {renderContent()}
+      </div>
       <Footer />
     </AdminOnlyPage>
   );

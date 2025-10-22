@@ -3,9 +3,28 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, DollarSign, Users, Clock, ExternalLink, ArrowLeft, Edit, Trash2, FileText, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  DollarSign,
+  Users,
+  Clock,
+  ExternalLink,
+  ArrowLeft,
+  Edit,
+  Trash2,
+  FileText,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import { toast } from "sonner";
@@ -80,9 +99,12 @@ const TournamentDetailPage = () => {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [appsLoading, setAppsLoading] = useState(false);
-  const [applications, setApplications] = useState<TournamentApplicationListItem[] | null>(null);
+  const [applications, setApplications] = useState<
+    TournamentApplicationListItem[] | null
+  >(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
   const assetsBase = API_URL.replace(/\/api$/, "");
   const tournamentSlug = params.slug as string;
 
@@ -119,11 +141,16 @@ const TournamentDetailPage = () => {
   const fetchTournament = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/tournaments`, {
+      const response = await fetch(`${API_URL}/tournaments/${tournamentSlug}`, {
         cache: "no-store",
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          setError("Tournament not found.");
+          setTournament(null);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -132,30 +159,15 @@ const TournamentDetailPage = () => {
         throw new Error("Unexpected response format");
       }
 
-      const data: any = await response.json();
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray((data as any)?.results)
-        ? (data as any).results
-        : [];
-
-      const raw = list.find((item: any) => {
-        const rawSlug = item?.slug || item?.tournamentSlug || String(item?.id ?? "");
-        return rawSlug?.toString().toLowerCase() === tournamentSlug.toLowerCase();
-      });
-
-      if (!raw) {
-        setError("Tournament not found.");
-        setTournament(null);
-        return;
-      }
+      const raw: any = await response.json();
 
       const normalized: Tournament = {
         id: raw?.id ?? 0,
         name: raw?.name ?? "",
         shortName: raw?.shortName ?? raw?.name ?? "",
-        slug: raw?.slug ?? raw?.tournamentSlug ?? String(raw?.id ?? tournamentSlug),
-        imageUrl: raw?.imageURL || raw?.photoUrl || raw?.tournamentPicture || undefined,
+        slug: raw?.slug ?? tournamentSlug,
+        imageUrl:
+          raw?.imageURL || raw?.photoUrl || raw?.tournamentPicture || undefined,
         organizerName: raw?.organizerName ?? "",
         organizerContact: raw?.organizerContact ?? raw?.organizerContacts ?? "",
         description: raw?.description ?? "",
@@ -197,7 +209,9 @@ const TournamentDetailPage = () => {
     if (!tournament?.id || !team) return;
 
     // Validate required fields
-    const required = (tournament.registrationFields || []).filter((f) => f.required);
+    const required = (tournament.registrationFields || []).filter(
+      (f) => f.required
+    );
     for (const f of required) {
       if (!fieldValues[f.name] || !fieldValues[f.name].trim()) {
         toast.error(`Заполните обязательное поле: ${f.name}`);
@@ -244,10 +258,15 @@ const TournamentDetailPage = () => {
     }
   };
 
-  const changeApplicationStatus = async (applicationId: number, action: "accept" | "reject") => {
+  const changeApplicationStatus = async (
+    applicationId: number,
+    action: "accept" | "reject"
+  ) => {
     const res = await apiPost(`/applications/${applicationId}/${action}`);
     if (res.status === 200) {
-      toast.success(action === "accept" ? "Заявка принята" : "Заявка отклонена");
+      toast.success(
+        action === "accept" ? "Заявка принята" : "Заявка отклонена"
+      );
       await loadApplications();
     } else {
       toast.error(res.error || "Не удалось обновить заявку");
@@ -310,10 +329,14 @@ const TournamentDetailPage = () => {
           <Card className="max-w-lg mx-auto">
             <CardHeader>
               <CardTitle>Ошибка</CardTitle>
-              <CardDescription>{error || "Tournament not found."}</CardDescription>
+              <CardDescription>
+                {error || "Tournament not found."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => router.push("/tournaments")}>Вернуться к списку</Button>
+              <Button onClick={() => router.push("/tournaments")}>
+                Вернуться к списку
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -327,7 +350,11 @@ const TournamentDetailPage = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto space-y-6">
-          <Button variant="outline" onClick={() => router.back()} className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             Назад
           </Button>
@@ -336,17 +363,30 @@ const TournamentDetailPage = () => {
             <CardContent className="p-6 md:p-10 space-y-6">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">{tournament.name}</h1>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
+                    {tournament.name}
+                  </h1>
                   {tournament.shortName && (
-                    <p className="text-lg text-gray-400">{tournament.shortName}</p>
+                    <p className="text-lg text-gray-400">
+                      {tournament.shortName}
+                    </p>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge className={`${getLevelColor(tournament.level)} text-white px-4 py-2 text-sm font-semibold`}>
+                  <Badge
+                    className={`${getLevelColor(
+                      tournament.level
+                    )} text-white px-4 py-2 text-sm font-semibold`}
+                  >
                     {getLevelLabel(tournament.level)}
                   </Badge>
-                  <Badge variant={tournament.active ? "default" : "secondary"} className="px-4 py-2 text-sm font-semibold">
-                    {tournament.active ? "Регистрация открыта" : "Регистрация закрыта"}
+                  <Badge
+                    variant={tournament.active ? "default" : "secondary"}
+                    className="px-4 py-2 text-sm font-semibold"
+                  >
+                    {tournament.active
+                      ? "Регистрация открыта"
+                      : "Регистрация закрыта"}
                   </Badge>
                 </div>
               </div>
@@ -358,7 +398,11 @@ const TournamentDetailPage = () => {
               {tournament.imageUrl && (
                 <div className="rounded-xl overflow-hidden border border-white/10">
                   <img
-                    src={tournament.imageUrl.startsWith("http") ? tournament.imageUrl : `${assetsBase}${tournament.imageUrl}`}
+                    src={
+                      tournament.imageUrl.startsWith("http")
+                        ? tournament.imageUrl
+                        : `${assetsBase}${tournament.imageUrl}`
+                    }
                     alt={tournament.name}
                     className="w-full h-80 object-cover"
                   />
@@ -371,7 +415,9 @@ const TournamentDetailPage = () => {
             <div className="space-y-6">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-white">Информация</CardTitle>
+                  <CardTitle className="text-xl font-semibold text-white">
+                    Информация
+                  </CardTitle>
                   <CardDescription>Основные данные о турнире</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -380,7 +426,9 @@ const TournamentDetailPage = () => {
                       <Calendar className="w-5 h-5 text-accent" />
                       <div>
                         <p className="text-sm text-gray-400">Дата</p>
-                        <p className="text-base text-white">{formatDate(tournament.date)}</p>
+                        <p className="text-base text-white">
+                          {formatDate(tournament.date)}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -388,7 +436,9 @@ const TournamentDetailPage = () => {
                       <div>
                         <p className="text-sm text-gray-400">Взнос</p>
                         <p className="text-base text-white">
-                          {tournament.fee === 0 ? "Бесплатно" : `${tournament.fee} ₸`}
+                          {tournament.fee === 0
+                            ? "Бесплатно"
+                            : `${tournament.fee} ₸`}
                         </p>
                       </div>
                     </div>
@@ -396,73 +446,103 @@ const TournamentDetailPage = () => {
                       <Users className="w-5 h-5 text-accent" />
                       <div>
                         <p className="text-sm text-gray-400">Формат</p>
-                        <p className="text-base text-white">{tournament.format || "Уточняется"}</p>
+                        <p className="text-base text-white">
+                          {tournament.format || "Уточняется"}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-accent" />
                       <div>
                         <p className="text-sm text-gray-400">Организатор</p>
-                        <p className="text-base text-white">{tournament.organizerName}</p>
+                        <p className="text-base text-white">
+                          {tournament.organizerName}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-accent" />
                       <div>
                         <p className="text-sm text-gray-400">Контакты</p>
-                        <p className="text-base text-white">{tournament.organizerContact}</p>
+                        <p className="text-base text-white">
+                          {tournament.organizerContact}
+                        </p>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {tournament.registrationFields && tournament.registrationFields.length > 0 && (
-                <Card className="bg-white/5 border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-white">Поля регистрации</CardTitle>
-                    <CardDescription>Какие данные нужно будет указать при подаче заявки</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {tournament.registrationFields.map((field, index) => (
-                      <div
-                        key={field.id ?? index}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3"
-                      >
-                        <div>
-                          <p className="text-base text-white font-medium">{field.name}</p>
-                          <p className="text-xs text-gray-400 uppercase tracking-wide">{field.type}</p>
+              {tournament.registrationFields &&
+                tournament.registrationFields.length > 0 && (
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-semibold text-white">
+                        Поля регистрации
+                      </CardTitle>
+                      <CardDescription>
+                        Какие данные нужно будет указать при подаче заявки
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {tournament.registrationFields.map((field, index) => (
+                        <div
+                          key={field.id ?? index}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+                        >
+                          <div>
+                            <p className="text-base text-white font-medium">
+                              {field.name}
+                            </p>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide">
+                              {field.type}
+                            </p>
+                          </div>
+                          <Badge
+                            variant={field.required ? "default" : "secondary"}
+                          >
+                            {field.required ? "Обязательно" : "Опционально"}
+                          </Badge>
                         </div>
-                        <Badge variant={field.required ? "default" : "secondary"}>
-                          {field.required ? "Обязательно" : "Опционально"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
 
               {showApply && (
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-white">Подача заявки</CardTitle>
-                    <CardDescription>Заполните форму и отправьте на рассмотрение организатору</CardDescription>
+                    <CardTitle className="text-xl font-semibold text-white">
+                      Подача заявки
+                    </CardTitle>
+                    <CardDescription>
+                      Заполните форму и отправьте на рассмотрение организатору
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {!user && (
-                      <p className="text-sm text-red-400">Необходимо войти в аккаунт</p>
+                      <p className="text-sm text-red-400">
+                        Необходимо войти в аккаунт
+                      </p>
                     )}
                     {user && !team && (
-                      <p className="text-sm text-amber-400">Вы не состоите в команде. Создайте или вступите в команду.</p>
+                      <p className="text-sm text-amber-400">
+                        Вы не состоите в команде. Создайте или вступите в
+                        команду.
+                      </p>
                     )}
                     {user && team && team.memberCount !== 2 && (
-                      <p className="text-sm text-amber-400">Заявку может подать только команда из 2 участников.</p>
+                      <p className="text-sm text-amber-400">
+                        Заявку может подать только команда из 2 участников.
+                      </p>
                     )}
                     {user && team && (
                       <div className="rounded-md border border-white/10 p-3 text-sm text-gray-300">
                         <div className="flex items-center justify-between">
                           <span>Команда</span>
-                          <span className="font-semibold text-white">{team.name} ({team.memberCount}/2)</span>
+                          <span className="font-semibold text-white">
+                            {team.name} ({team.memberCount}/2)
+                          </span>
                         </div>
                       </div>
                     )}
@@ -471,13 +551,17 @@ const TournamentDetailPage = () => {
                       <div key={f.name} className="space-y-1">
                         <label className="text-sm text-gray-300">
                           {f.name}
-                          {f.required && <span className="text-red-400"> *</span>}
+                          {f.required && (
+                            <span className="text-red-400"> *</span>
+                          )}
                         </label>
                         <input
                           className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-white placeholder:text-gray-400"
                           placeholder={f.name}
                           value={fieldValues[f.name] || ""}
-                          onChange={(e) => handleFieldChange(f.name, e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange(f.name, e.target.value)
+                          }
                         />
                       </div>
                     ))}
@@ -506,15 +590,25 @@ const TournamentDetailPage = () => {
             <div className="space-y-6">
               <Card className="bg-white/5 border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-white">Действия</CardTitle>
+                  <CardTitle className="text-xl font-semibold text-white">
+                    Действия
+                  </CardTitle>
                   <CardDescription>Ссылки и управляющие кнопки</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {tournament.active ? (
                     <>
                       {tournament.tabbycatUrl && (
-                        <Button asChild className="w-full bg-accent hover:bg-accent/90 text-white">
-                          <a href={tournament.tabbycatUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                        <Button
+                          asChild
+                          className="w-full bg-accent hover:bg-accent/90 text-white"
+                        >
+                          <a
+                            href={tournament.tabbycatUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2"
+                          >
                             <ExternalLink className="w-5 h-5" />
                             Регистрация на Tabbycat
                           </a>
@@ -522,17 +616,24 @@ const TournamentDetailPage = () => {
                       )}
                       <Button
                         className="w-full"
-                        onClick={() => router.push(`/tournaments/${tournament.slug}/join`)}
+                        onClick={() =>
+                          router.push(`/tournaments/${tournament.slug}/join`)
+                        }
                         disabled={!user}
                       >
                         Подать заявку
                       </Button>
                       {!user && (
-                        <p className="text-xs text-gray-400">Войдите в аккаунт, чтобы подать заявку</p>
+                        <p className="text-xs text-gray-400">
+                          Войдите в аккаунт, чтобы подать заявку
+                        </p>
                       )}
                     </>
                   ) : (
-                    <Button disabled className="w-full bg-gray-600 text-gray-300">
+                    <Button
+                      disabled
+                      className="w-full bg-gray-600 text-gray-300"
+                    >
                       <Clock className="w-4 h-4 mr-2" />
                       Регистрация закрыта
                     </Button>
@@ -543,7 +644,9 @@ const TournamentDetailPage = () => {
                       <Button
                         variant="outline"
                         className="w-full border-accent text-accent hover:bg-accent hover:text-white"
-                        onClick={() => router.push(`/tournaments/${tournamentSlug}/edit`)}
+                        onClick={() =>
+                          router.push(`/tournaments/${tournamentSlug}/edit`)
+                        }
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Редактировать
@@ -557,7 +660,11 @@ const TournamentDetailPage = () => {
                         Удалить
                       </Button>
                       <div className="pt-2">
-                        <Button variant="outline" className="w-full" onClick={loadApplications}>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={loadApplications}
+                        >
                           Показать заявки
                         </Button>
                       </div>
@@ -569,9 +676,13 @@ const TournamentDetailPage = () => {
               {user?.roles?.includes("ROLE_ADMIN") && applications && (
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-white">Заявки на турнир</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-white">
+                      Заявки на турнир
+                    </CardTitle>
                     <CardDescription>
-                      {appsLoading ? "Загрузка..." : `Всего: ${applications.length}`}
+                      {appsLoading
+                        ? "Загрузка..."
+                        : `Всего: ${applications.length}`}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -579,7 +690,10 @@ const TournamentDetailPage = () => {
                       <p className="text-sm text-gray-400">Заявок пока нет</p>
                     )}
                     {applications.map((app) => (
-                      <div key={app.id} className="rounded-lg border border-white/10 p-3">
+                      <div
+                        key={app.id}
+                        className="rounded-lg border border-white/10 p-3"
+                      >
                         <div className="flex items-center justify-between gap-3">
                           <div className="text-white font-medium">
                             #{app.id} — {app.team?.name || "Команда"}
@@ -603,7 +717,8 @@ const TournamentDetailPage = () => {
                           <div className="mt-2 grid grid-cols-1 gap-2">
                             {app.fields.map((f) => (
                               <div key={f.id} className="text-xs text-gray-400">
-                                <span className="text-gray-300">{f.name}:</span> {f.value}
+                                <span className="text-gray-300">{f.name}:</span>{" "}
+                                {f.value}
                               </div>
                             ))}
                           </div>
@@ -612,13 +727,17 @@ const TournamentDetailPage = () => {
                           <div className="mt-3 flex gap-2">
                             <Button
                               className="bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => changeApplicationStatus(app.id, "accept")}
+                              onClick={() =>
+                                changeApplicationStatus(app.id, "accept")
+                              }
                             >
                               <CheckCircle2 className="w-4 h-4 mr-2" /> Принять
                             </Button>
                             <Button
                               variant="destructive"
-                              onClick={() => changeApplicationStatus(app.id, "reject")}
+                              onClick={() =>
+                                changeApplicationStatus(app.id, "reject")
+                              }
                             >
                               <XCircle className="w-4 h-4 mr-2" /> Отклонить
                             </Button>

@@ -4,7 +4,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,27 +60,22 @@ const TournamentJoinPage: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
-        // Load tournaments via authorized API helper and pick by slug
-        const listResp = await apiGet<unknown>(`/tournaments`);
-        if (listResp.status !== 200 || !listResp.data) {
-          throw new Error("Failed to load tournaments");
+        // Load tournament by slug using the correct API endpoint
+        const tournamentResp = await apiGet<unknown>(
+          `/tournaments/${tournamentSlug}`
+        );
+        if (tournamentResp.status !== 200 || !tournamentResp.data) {
+          if (tournamentResp.status === 404) {
+            throw new Error("Tournament not found");
+          }
+          throw new Error("Failed to load tournament");
         }
-        const data = listResp.data as any;
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray((data as any)?.results)
-          ? (data as any).results
-          : [];
-        const raw = (list as any[]).find((item) => {
-          const rawSlug = item?.slug || item?.tournamentSlug || String(item?.id ?? "");
-          return rawSlug?.toString().toLowerCase() === tournamentSlug.toLowerCase();
-        });
-        if (!raw) throw new Error("Tournament not found");
 
+        const raw = tournamentResp.data as any;
         setTournament({
           id: raw?.id ?? 0,
           name: raw?.name ?? "",
-          slug: raw?.slug ?? raw?.tournamentSlug ?? String(raw?.id ?? tournamentSlug),
+          slug: raw?.slug ?? tournamentSlug,
           active: Boolean(raw?.active ?? true),
           registrationFields: raw?.registrationFields ?? [],
         });
@@ -109,7 +110,9 @@ const TournamentJoinPage: React.FC = () => {
     if (!tournament?.id || !team) return;
 
     // Required fields validation
-    const required = (tournament.registrationFields || []).filter((f) => f.required);
+    const required = (tournament.registrationFields || []).filter(
+      (f) => f.required
+    );
     for (const f of required) {
       if (!fieldValues[f.name] || !fieldValues[f.name].trim()) {
         toast.error(`Заполните обязательное поле: ${f.name}`);
@@ -147,7 +150,9 @@ const TournamentJoinPage: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle className="text-2xl text-white">Подача заявки</CardTitle>
+              <CardTitle className="text-2xl text-white">
+                Подача заявки
+              </CardTitle>
               <CardDescription>
                 {tournament ? `Турнир: ${tournament.name}` : "Загрузка турнира"}
               </CardDescription>
@@ -161,24 +166,31 @@ const TournamentJoinPage: React.FC = () => {
                 <>
                   {!team && (
                     <div className="text-amber-400 text-sm">
-                      Вы не состоите в команде. Создайте или вступите в команду перед подачей заявки.
+                      Вы не состоите в команде. Создайте или вступите в команду
+                      перед подачей заявки.
                     </div>
                   )}
                   {team && team.memberCount !== 2 && (
                     <div className="text-amber-400 text-sm">
-                      Заявку может подать только команда из 2 участников. Сейчас: {team.memberCount}/2
+                      Заявку может подать только команда из 2 участников.
+                      Сейчас: {team.memberCount}/2
                     </div>
                   )}
                   <div className="rounded-md border border-white/10 p-3 text-sm text-gray-300">
                     <div className="flex items-center justify-between">
                       <span>Команда</span>
-                      <span className="font-semibold text-white">{team ? `${team.name} (${team.memberCount}/2)` : "—"}</span>
+                      <span className="font-semibold text-white">
+                        {team ? `${team.name} (${team.memberCount}/2)` : "—"}
+                      </span>
                     </div>
                   </div>
 
                   {(tournament.registrationFields || []).map((f) => (
                     <div key={f.name} className="space-y-1">
-                      <Label className="text-sm text-gray-300" htmlFor={`field-${f.name}`}>
+                      <Label
+                        className="text-sm text-gray-300"
+                        htmlFor={`field-${f.name}`}
+                      >
                         {f.name}
                         {f.required && <span className="text-red-400"> *</span>}
                       </Label>
@@ -186,7 +198,9 @@ const TournamentJoinPage: React.FC = () => {
                         id={`field-${f.name}`}
                         placeholder={f.name}
                         value={fieldValues[f.name] || ""}
-                        onChange={(e) => handleFieldChange(f.name, e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange(f.name, e.target.value)
+                        }
                       />
                     </div>
                   ))}
@@ -194,7 +208,9 @@ const TournamentJoinPage: React.FC = () => {
                   <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
-                      onClick={() => router.push(`/tournaments/${tournament.slug}`)}
+                      onClick={() =>
+                        router.push(`/tournaments/${tournament.slug}`)
+                      }
                       className="border-white/20"
                     >
                       Назад
@@ -218,5 +234,3 @@ const TournamentJoinPage: React.FC = () => {
 };
 
 export default TournamentJoinPage;
-
-
