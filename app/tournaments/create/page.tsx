@@ -14,17 +14,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, DollarSign, Users, FileText, Upload, Save } from "lucide-react";
+import { Calendar, Users, FileText, Upload, Save } from "lucide-react";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
 
-type RegistrationFieldType = "TEXT" | "DESCRIPTION";
+type RegistrationFieldType = 
+  | "TEXT" 
+  | "DESCRIPTION"
+  | "short_answer"
+  | "paragraph"
+  | "multiple_choice"
+  | "checkboxes"
+  | "dropdown"
+  | "linear_scale";
 
 type RegistrationField = {
+  id: string;
   name: string;
+  title: string;
+  description: string;
   type: RegistrationFieldType;
   required: boolean;
+  options: string[];
+  scale?: {
+    min: number;
+    max: number;
+    minLabel: string;
+    maxLabel: string;
+  };
 };
 
 interface TournamentFormData {
@@ -47,11 +65,33 @@ const STORAGE_KEY = "tournamentRegistrationTemplate";
 const REGISTRATION_TYPE_LABELS: Record<RegistrationFieldType, string> = {
   TEXT: "Короткий ответ",
   DESCRIPTION: "Развернутый ответ",
+  short_answer: "Короткий ответ",
+  paragraph: "Развернутый ответ",
+  multiple_choice: "Один вариант",
+  checkboxes: "Несколько вариантов",
+  dropdown: "Выпадающий список",
+  linear_scale: "Шкала оценки",
 };
 
 const DEFAULT_REGISTRATION_FIELDS: RegistrationField[] = [
-  { name: "Full Name", type: "TEXT", required: true },
-  { name: "Institution", type: "TEXT", required: true },
+  { 
+    id: "field-1", 
+    name: "Full Name", 
+    title: "Полное имя",
+    description: "",
+    type: "TEXT", 
+    required: true,
+    options: []
+  },
+  { 
+    id: "field-2", 
+    name: "Institution", 
+    title: "Учебное заведение",
+    description: "",
+    type: "TEXT", 
+    required: true,
+    options: []
+  },
 ];
 
 const readTemplateFromStorage = (): RegistrationField[] | null => {
@@ -62,11 +102,19 @@ const readTemplateFromStorage = (): RegistrationField[] | null => {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
     const sanitized = parsed
-      .map((item: any) => ({
-        name: typeof item?.name === "string" ? item.name.trim() : "",
-        type: item?.type === "DESCRIPTION" ? "DESCRIPTION" : "TEXT",
-        required: Boolean(item?.required),
-      }))
+      .map((item: unknown) => {
+        const field = item as Record<string, unknown>;
+        return {
+          id: (typeof field?.id === "string" ? field.id : `field-${Date.now()}`) as string,
+          name: typeof field?.name === "string" ? field.name.trim() : "",
+          title: typeof field?.title === "string" ? field.title.trim() : (typeof field?.name === "string" ? field.name : ""),
+          description: typeof field?.description === "string" ? field.description.trim() : "",
+          type: (field?.type as RegistrationFieldType) || "TEXT",
+          required: Boolean(field?.required),
+          options: Array.isArray(field?.options) ? field.options as string[] : [],
+          scale: field?.scale as RegistrationField['scale'] || undefined,
+        } as RegistrationField;
+      })
       .filter((item: RegistrationField) => item.name.length > 0);
     return sanitized.length > 0 ? sanitized : null;
   } catch (error) {
@@ -534,17 +582,34 @@ const CreateTournamentPage = () => {
                         >
                           <div className="flex items-center justify-between text-sm text-white font-medium">
                             <span>
-                              {index + 1}. {field.name}
+                              {index + 1}. {field.title || field.name}
                             </span>
                             <span className="text-xs text-gray-300">
                               {REGISTRATION_TYPE_LABELS[field.type]}
                             </span>
                           </div>
-                          <p className="mt-1 text-xs text-gray-400">
-                            {field.required
-                              ? "Обязательное поле"
-                              : "Необязательное поле"}
-                          </p>
+                          {field.description && (
+                            <p className="mt-1 text-xs text-gray-400">
+                              {field.description}
+                            </p>
+                          )}
+                          <div className="mt-2 flex items-center justify-between">
+                            <p className="text-xs text-gray-400">
+                              {field.required
+                                ? "Обязательное поле"
+                                : "Необязательное поле"}
+                            </p>
+                            {(field.type === "multiple_choice" || field.type === "checkboxes" || field.type === "dropdown") && (
+                              <p className="text-xs text-gray-400">
+                                {field.options.length} вариантов
+                              </p>
+                            )}
+                            {field.type === "linear_scale" && field.scale && (
+                              <p className="text-xs text-gray-400">
+                                Шкала {field.scale.min}-{field.scale.max}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

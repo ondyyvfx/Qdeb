@@ -129,8 +129,11 @@ const EditProfileForm = () => {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Accept": "application/json",
         },
         body: formDataToSend,
+        mode: "cors",
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Ошибка обновления профиля");
@@ -162,9 +165,12 @@ const EditProfileForm = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
+        mode: "cors",
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Ошибка добавления достижения");

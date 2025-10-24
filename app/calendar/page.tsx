@@ -39,8 +39,14 @@ export default async function CalendarPage() {
       : {};
 
     const res = await fetch(`${apiBase}/tournaments`, {
-      headers,
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
       cache: "no-store",
+      mode: "cors",
+      credentials: "include",
     });
 
     if (!res.ok) {

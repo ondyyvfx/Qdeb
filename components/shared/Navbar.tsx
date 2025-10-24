@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/stores/useUserStore";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import { safeParseResponse } from "@/lib/api";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -25,6 +26,22 @@ interface UserProfileResponse {
   avg_speech?: number;
   total_achievements?: number;
   roles?: string[];
+}
+
+interface Role {
+  id: number;
+  name: string;
+}
+
+interface TeamData {
+  id: number;
+  name: string;
+  joinCode: string;
+  leader?: {
+    id: number;
+    username: string;
+    fullName: string;
+  };
 }
 
 const Navbar = () => {
@@ -79,7 +96,11 @@ const Navbar = () => {
       const response = await fetch(`${apiBase}/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
         },
+        mode: "cors",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -87,7 +108,19 @@ const Navbar = () => {
         return;
       }
 
-      const data = await response.json();
+      const parseResult = await safeParseResponse(response);
+      
+      if (parseResult.error) {
+        console.error("Failed to parse profile response:", parseResult.error);
+        return;
+      }
+      
+      if (!parseResult.isJson) {
+        console.warn("Non-JSON response from profile:", parseResult.data);
+        return;
+      }
+      
+      const data = parseResult.data as UserProfileResponse;
       console.log("Navbar profile data:", data);
       console.log("Roles from API:", data.roles);
 
@@ -98,14 +131,30 @@ const Navbar = () => {
           const testResponse = await fetch(`${apiBase}/test/profile`, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json",
             },
+            mode: "cors",
+            credentials: "include",
           });
           if (testResponse.ok) {
-            const testData = await testResponse.json();
+            const testParseResult = await safeParseResponse(testResponse);
+            
+            if (testParseResult.error) {
+              console.error("Failed to parse test profile response:", testParseResult.error);
+              return;
+            }
+            
+            if (!testParseResult.isJson) {
+              console.warn("Non-JSON response from test profile:", testParseResult.data);
+              return;
+            }
+            
+            const testData = testParseResult.data as UserProfileResponse;
             console.log("Test profile data:", testData);
             // Роли приходят как массив объектов {id, name}, нужно извлечь только name
             roles = testData.roles
-              ? testData.roles.map((role: any) => role.name)
+              ? (testData.roles as unknown as Role[]).map((role: Role) => role.name)
               : [];
           }
         } catch (testError) {
@@ -117,22 +166,30 @@ const Navbar = () => {
       } else {
         // Если роли пришли в обычном профиле, проверим их формат
         if (roles.length > 0 && typeof roles[0] === "object") {
-          roles = roles.map((role: any) => role.name);
+          roles = (roles as unknown as Role[]).map((role: Role) => role.name);
         }
       }
 
       // Получаем данные команды отдельно
-      let teamData = null;
+      let teamData: TeamData | null = null;
       try {
         const teamResponse = await fetch(`${apiBase}/teams/my`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
           },
+          mode: "cors",
+          credentials: "include",
         });
         if (teamResponse.ok) {
-          teamData = await teamResponse.json();
+          const teamParseResult = await safeParseResponse(teamResponse);
+          
+          if (!teamParseResult.error && teamParseResult.isJson) {
+            teamData = teamParseResult.data as TeamData;
+          }
         }
-      } catch (teamError) {
+      } catch {
         console.log("Пользователь не состоит в команде");
       }
 
@@ -142,7 +199,7 @@ const Navbar = () => {
       const userData = {
         email: data.email || "",
         full_name: data.fullName || "",
-        avatar: resolveImageUrl(data.profilePicture) || "",
+        avatar: resolveImageUrl(data.profilePictureUrl) || "",
         phone: data.phone || "",
         description: data.description || "",
         roles: roles,
@@ -220,26 +277,26 @@ const Navbar = () => {
             href="/calendar"
             className="hover:text-accent transition-colors"
           >
-            Calendar
+            Календарь
           </Link>
           <Link
             href="/tournaments"
             className="hover:text-accent transition-colors"
           >
-            Tournaments
+            Турниры
           </Link>
           <Link href="/rating" className="hover:text-accent transition-colors">
-            Speaker Rating
+            Рейтинг спикеров
           </Link>
           <Link href="/about" className="hover:text-accent transition-colors">
-            About
+            О нас
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"
               className="hover:text-orange-400 transition-colors text-orange-500 font-semibold"
             >
-              Create Tournament
+              Создать турнир
             </Link>
           )}
         </nav>

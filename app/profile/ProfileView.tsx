@@ -65,7 +65,11 @@ const ProfileView = () => {
         const profileResponse = await fetch(`${apiBase}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
           },
+          mode: "cors",
+          credentials: "include",
         });
 
         if (!profileResponse.ok) {
@@ -85,7 +89,11 @@ const ProfileView = () => {
           const teamResponse = await fetch(`${apiBase}/teams/my`, {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json",
             },
+            mode: "cors",
+            credentials: "include",
           });
 
           if (teamResponse.ok) {
@@ -322,9 +330,12 @@ const TeamActionsNoTeam = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
+        mode: "cors",
+        credentials: "include",
       });
 
       console.log("Join team response status:", res.status);

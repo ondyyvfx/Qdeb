@@ -12,6 +12,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
+import { safeParseResponse } from "@/lib/api";
 //
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
@@ -32,8 +33,26 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      const data = await res.json();
-      useUserStore.getState().setUser(data);
+      const parseResult = await safeParseResponse(res);
+      
+      if (parseResult.error) {
+        console.error("Failed to parse profile response:", parseResult.error);
+        return;
+      }
+      
+      if (!parseResult.isJson) {
+        console.warn("Non-JSON response from profile:", parseResult.data);
+        return;
+      }
+      
+      useUserStore.getState().setUser({
+        email: "",
+        full_name: "",
+        avatar: "",
+        phone: "",
+        description: "",
+        roles: [],
+      });
       return;
     }
     console.error("Не удалось получить профиль пользователя");
@@ -63,7 +82,21 @@ export default function LoginPage() {
       console.log("Login response status:", res.status);
 
       if (res.ok) {
-        const data = await res.json();
+        const parseResult = await safeParseResponse(res);
+        
+        if (parseResult.error) {
+          console.error("Failed to parse login response:", parseResult.error);
+          toast.error("Ошибка обработки ответа сервера");
+          return;
+        }
+        
+        if (!parseResult.isJson) {
+          console.warn("Non-JSON response from login:", parseResult.data);
+          toast.error("Неожиданный формат ответа сервера");
+          return;
+        }
+        
+        const data = parseResult.data as { token: string };
 
         toast.success("Успешный вход!");
 
@@ -75,32 +108,20 @@ export default function LoginPage() {
 
         router.push("/");
       } else {
-        // Handle error response similar to register page
+        // Handle error response using safe parsing
         let message = "Ошибка входа. Проверьте данные.";
-        try {
-          const contentType = res.headers.get("content-type") || "";
-          if (contentType.includes("application/json")) {
-            const errorData: unknown = await res.json();
-            const asRecord = (val: unknown): Record<string, unknown> | null =>
-              val && typeof val === "object"
-                ? (val as Record<string, unknown>)
-                : null;
-            const errObj = asRecord(errorData);
-            if (errObj && errObj.detail) {
-              message = String(errObj.detail);
-            } else if (errObj && errObj.message) {
-              message = String(errObj.message);
-            } else if (errObj && errObj.error) {
-              message = String(errObj.error);
-            }
-          } else {
-            const text = await res.text();
-            if (text) message = text;
-          }
-        } catch (parseError) {
-          console.error("Error parsing response:", parseError);
-          // Use default message if parsing fails
+        const parseResult = await safeParseResponse(res);
+        
+        if (parseResult.error) {
+          console.error("Error parsing error response:", parseResult.error);
+          message = parseResult.error;
+        } else if (typeof parseResult.data === "string") {
+          message = parseResult.data;
+        } else if (parseResult.data && typeof parseResult.data === "object") {
+          const errorData = parseResult.data as Record<string, unknown>;
+          message = String(errorData.detail || errorData.message || errorData.error || message);
         }
+        
         toast.error(message);
       }
     } catch (err) {
@@ -136,14 +157,14 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
               <Label htmlFor="username" className="text-lg">
-                �?�?�? ���?�>�?���?�?���'��>�?
+                Никнейм
               </Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="�'�?��?��'�� ��?�? ���?�>�?���?�?���'��>�?"
+                placeholder="Никнейм"
                 className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
             </div>
