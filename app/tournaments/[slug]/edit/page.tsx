@@ -27,7 +27,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet } from "@/lib/api";
+import { apiGet, safeParseResponse } from "@/lib/api";
 
 interface TournamentFormData {
   name: string;
@@ -92,34 +92,39 @@ const EditTournamentPage = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
+      const parseResult = await safeParseResponse(response);
+      
+      if (parseResult.error) {
+        throw new Error(parseResult.error);
+      }
+
+      if (!parseResult.isJson || !parseResult.data) {
         throw new Error("Unexpected response format");
       }
 
-      const raw: any = await response.json();
+      const raw = parseResult.data as Record<string, unknown>;
 
       setFormData({
-        name: raw?.name || "",
-        shortName: raw?.shortName || raw?.name || "",
-        slug: raw?.slug || tournamentSlug,
-        organizerName: raw?.organizerName || "",
-        organizerContact: raw?.organizerContact || raw?.organizerContacts || "",
-        description: raw?.description || "",
-        eventDate: raw?.date || raw?.eventDate || "",
+        name: (raw?.name as string) || "",
+        shortName: (raw?.shortName as string) || (raw?.name as string) || "",
+        slug: (raw?.slug as string) || tournamentSlug,
+        organizerName: (raw?.organizerName as string) || "",
+        organizerContact: (raw?.organizerContact as string) || (raw?.organizerContacts as string) || "",
+        description: (raw?.description as string) || "",
+        eventDate: (raw?.date as string) || (raw?.eventDate as string) || "",
         active: Boolean(raw?.active),
         fee:
           typeof raw?.fee === "number"
             ? raw.fee
-            : Number.parseFloat(raw?.fee ?? "0") || 0,
+            : Number.parseFloat((raw?.fee as string) ?? "0") || 0,
         level: (raw?.level as TournamentFormData["level"]) || "LOCAL",
-        format: raw?.format || "",
+        format: (raw?.format as string) || "",
         photo: null,
       });
       setError(null);
     } catch (err) {
       console.error("Error fetching tournament:", err);
-      setError("�� ������� ��������� ������ �������.");
+      setError("Не удалось загрузить данные турнира.");
     } finally {
       setLoading(false);
     }
@@ -182,11 +187,11 @@ const EditTournamentPage = () => {
       }
 
       // TODO: PUT /api/tournaments/{slug}
-      toast.success("������ ������� ��������!");
+      toast.success("Турнир успешно обновлен!");
       router.push(`/tournaments/${tournamentSlug}`);
     } catch (err) {
       console.error("Error updating tournament:", err);
-      toast.error("��������� ������ ��� ���������� �������");
+      toast.error("Произошла ошибка при обновлении турнира");
     } finally {
       setSaving(false);
     }
@@ -199,7 +204,7 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4" />
-              <p className="text-lg">�������� �������...</p>
+              <p className="text-lg">Загрузка турнира...</p>
             </div>
           </div>
         </div>
@@ -212,7 +217,7 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle>������</CardTitle>
+                <CardTitle>Ошибка</CardTitle>
                 <CardDescription>{error}</CardDescription>
               </CardHeader>
               <CardContent>
@@ -220,7 +225,7 @@ const EditTournamentPage = () => {
                   onClick={() => router.push("/tournaments")}
                   className="w-full"
                 >
-                  ��������� � ������
+                  Вернуться к списку
                 </Button>
               </CardContent>
             </Card>
@@ -239,17 +244,17 @@ const EditTournamentPage = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              ����� � �������
+              Назад к турниру
             </Button>
           </div>
 
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                �������������� �������
+                Редактирование турнира
               </h1>
               <p className="text-lg text-gray-400 font-medium">
-                �������� ���������� � �������
+                Измените информацию о турнире
               </p>
             </div>
           </div>
@@ -259,13 +264,13 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  �������� ����������
+                  Основная информация
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">�������� ������� *</Label>
+                    <Label htmlFor="name">Название турнира *</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -275,7 +280,7 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="shortName">������� ��������</Label>
+                    <Label htmlFor="shortName">Краткое название</Label>
                     <Input
                       id="shortName"
                       value={formData.shortName}
@@ -288,7 +293,7 @@ const EditTournamentPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="slug">URL-����� (slug) *</Label>
+                  <Label htmlFor="slug">URL-адрес (slug) *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -299,14 +304,14 @@ const EditTournamentPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">��������</Label>
+                  <Label htmlFor="description">Описание</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) =>
                       handleInputChange("description", e.target.value)
                     }
-                    placeholder="��������� �������� �������"
+                    placeholder="Добавьте описание турнира"
                     rows={4}
                   />
                 </div>
@@ -317,13 +322,13 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  ���������� � �����������
+                  Даты и информация
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="eventDate">���� ���������� *</Label>
+                    <Label htmlFor="eventDate">Дата проведения *</Label>
                     <Input
                       id="eventDate"
                       type="date"
@@ -335,7 +340,7 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fee">��������� ������� (�����)</Label>
+                    <Label htmlFor="fee">Регистрационный взнос (₸)</Label>
                     <Input
                       id="fee"
                       type="number"
@@ -351,7 +356,7 @@ const EditTournamentPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="level">������� �������</Label>
+                    <Label htmlFor="level">Уровень турнира</Label>
                     <select
                       id="level"
                       value={formData.level}
@@ -359,16 +364,16 @@ const EditTournamentPage = () => {
                         handleInputChange("level", e.target.value)
                       }
                       className="w-full p-2 rounded-md border bg-background text-text"
-                      aria-label="������� �������"
+                      aria-label="Уровень турнира"
                     >
-                      <option value="LOCAL">�������</option>
-                      <option value="REGIONAL">������������</option>
-                      <option value="NATIONAL">������������</option>
-                      <option value="INTERNATIONAL">�������������</option>
+                      <option value="LOCAL">Локальный</option>
+                      <option value="REGIONAL">Региональный</option>
+                      <option value="NATIONAL">Национальный</option>
+                      <option value="INTERNATIONAL">Международный</option>
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="format">������ �������</Label>
+                    <Label htmlFor="format">Формат дебатов</Label>
                     <Input
                       id="format"
                       value={formData.format}
@@ -389,9 +394,9 @@ const EditTournamentPage = () => {
                       handleInputChange("active", e.target.checked)
                     }
                     className="rounded"
-                    aria-label="����������� �������"
+                    aria-label="Регистрация открыта"
                   />
-                  <Label htmlFor="active">����������� �������</Label>
+                  <Label htmlFor="active">Регистрация открыта</Label>
                 </div>
               </CardContent>
             </Card>
@@ -400,12 +405,12 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  ���������� �� ������������
+                  Информация об организаторе
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="organizerName">�������� ����������� *</Label>
+                  <Label htmlFor="organizerName">Название организации *</Label>
                   <Input
                     id="organizerName"
                     value={formData.organizerName}
@@ -418,7 +423,7 @@ const EditTournamentPage = () => {
                 </div>
                 <div>
                   <Label htmlFor="organizerContact">
-                    ���������� ����������
+                    Контактная информация
                   </Label>
                   <Input
                     id="organizerContact"
@@ -436,15 +441,15 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
-                  ����������� �������
+                  Изображение турнира
                 </CardTitle>
                 <CardDescription>
-                  ��������� ����� ����������� (�������������)
+                  Загрузите новое изображение (опционально)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>
-                  <Label htmlFor="photo">�������� ����</Label>
+                  <Label htmlFor="photo">Выберите файл</Label>
                   <Input
                     id="photo"
                     type="file"
@@ -465,7 +470,7 @@ const EditTournamentPage = () => {
                 onClick={() => router.push(`/tournaments/${tournamentSlug}`)}
                 disabled={saving}
               >
-                ������
+                Отмена
               </Button>
               <Button
                 type="submit"
@@ -473,7 +478,7 @@ const EditTournamentPage = () => {
                 className="flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {saving ? "����������..." : "��������� ���������"}
+                {saving ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </div>
           </form>
@@ -484,8 +489,8 @@ const EditTournamentPage = () => {
 
   return (
     <AdminOnlyPage
-      title="�������������� �������"
-      message="�������� ������ ���������������"
+      title="Недостаточно прав"
+      message="Только администраторы могут редактировать турниры"
     >
       <Navbar />
       <div className="min-h-screen bg-background text-text">

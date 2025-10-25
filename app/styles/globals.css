@@ -4,14 +4,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
-  font-family: "Involve";
-  src: url("../../public/fonts/Involve-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "Involve";
+    src: url("../../public/fonts/Involve-Bold.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 .font-involve {
-  font-family: "Involve", sans-serif !important;
+    font-family: "Involve", sans-serif !important;
 }
 
 /* .no-scrollbar::-webkit-scrollbar {
@@ -31,60 +31,60 @@
 } */
 
 .swiper {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 @layer utilities {
-  .animate-fade-in {
-    @apply opacity-0 animate-[fadeIn_0.8s_ease-out_forwards];
-  }
+    .animate-fade-in {
+        @apply opacity-0 animate-[fadeIn_0.8s_ease-out_forwards];
+    }
 
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(20px);
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
 
 .mobilehero {
-  @media (width > 1449px) {
-    display: none;
-  }
+    @media (width > 1449px) {
+        display: none;
+    }
 }
 
 .hero {
-  @media (width < 1450px) {
-    display: none;
-  }
+    @media (width < 1450px) {
+        display: none;
+    }
 }
 
 @theme {
-  --color-primary: #0e1425;
-  --color-secondary: #2a3b6f;
-  --color-accent: #ff6900;
-  --color-background: #070a12;
-  --color-text: #ffffff;
-  --color-cardbg: #151e37;
+    --color-primary: #0e1425;
+    --color-secondary: #2a3b6f;
+    --color-accent: #ff6900;
+    --color-background: #070a12;
+    --color-text: #ffffff;
+    --color-cardbg: #151e37;
 }
 
 :root {
-  --color-primary: #0e1425;
-  --color-secondary: #2a3b6f;
-  --color-accent: #ff6900;
-  --color-background: #070a12;
-  --color-text: #ffffff;
-  --color-cardbg: #151e37;
+    --color-primary: #0e1425;
+    --color-secondary: #2a3b6f;
+    --color-accent: #ff6900;
+    --color-background: #070a12;
+    --color-text: #ffffff;
+    --color-cardbg: #151e37;
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-text);
-  font-family: montserrat, sans-serif;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: montserrat, sans-serif;
 }
 
 /* @theme inline {
@@ -202,3 +202,14 @@ body {
     @apply bg-background text-foreground;
   }
 } */
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}

@@ -33,27 +33,32 @@ export const safeParseResponse = async (response: Response): Promise<{
   try {
     const contentType = response.headers.get("content-type") || "";
     
+    // Always try to get the response as text first to avoid issues with content-type headers
+    let responseText: string;
+    try {
+      responseText = await response.text();
+    } catch (textError) {
+      return { data: null, isJson: false, error: "Failed to get response text" };
+    }
+    
+    // If content-type suggests JSON, try to parse it
     if (contentType.includes("application/json")) {
       try {
-        const data = await response.json();
-        return { data, isJson: true };
-      } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError);
-        // Fallback to text if JSON parsing fails
-        try {
-          const text = await response.text();
-          return { data: text, isJson: false, error: "JSON parse failed" };
-        } catch (textError) {
-          return { data: null, isJson: false, error: "Failed to parse response" };
+        // Check if the response text looks like JSON (starts with { or [)
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          const data = JSON.parse(responseText);
+          return { data, isJson: true };
+        } else {
+          // Content-type says JSON but body is not JSON
+          return { data: responseText, isJson: false, error: "Content-type is JSON but body is not valid JSON" };
         }
+      } catch (jsonError) {
+        // JSON parsing failed, return as text
+        return { data: responseText, isJson: false, error: "JSON parse failed" };
       }
     } else {
-      try {
-        const text = await response.text();
-        return { data: text, isJson: false };
-      } catch (textError) {
-        return { data: null, isJson: false, error: "Failed to get text response" };
-      }
+      // Not JSON content-type, return as text
+      return { data: responseText, isJson: false };
     }
   } catch (error) {
     console.error("Error in safeParseResponse:", error);
