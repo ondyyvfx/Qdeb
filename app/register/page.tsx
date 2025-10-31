@@ -374,7 +374,7 @@ export default function RegisterPage() {
               <div className="flex items-center gap-4">
                 <label className="cursor-pointer rounded-lg  bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
                   Выбрать файл
-                  <input
+                  <Input
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}

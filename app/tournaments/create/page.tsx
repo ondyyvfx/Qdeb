@@ -64,7 +64,9 @@ interface TournamentFormData {
 const STORAGE_KEY = "tournamentRegistrationTemplate";
 
 // Map frontend field types to backend enum values
-const mapFieldTypeToBackend = (frontendType: RegistrationFieldType): "DESCRIPTION" | "TEXT" => {
+const mapFieldTypeToBackend = (
+    frontendType: RegistrationFieldType
+): "DESCRIPTION" | "TEXT" => {
     switch (frontendType) {
         case "TEXT":
         case "short_answer":
@@ -338,12 +340,21 @@ const CreateTournamentPage = () => {
                 let createdSlug = normalizedSlug;
 
                 const parseResult = await safeParseResponse(response);
-                
+
                 if (parseResult.error) {
-                    console.warn("Failed to parse tournament creation response:", parseResult.error);
+                    console.warn(
+                        "Failed to parse tournament creation response:",
+                        parseResult.error
+                    );
                 } else if (parseResult.isJson && parseResult.data) {
-                    const createdData = parseResult.data as Record<string, unknown>;
-                    if (createdData?.slug && typeof createdData.slug === "string") {
+                    const createdData = parseResult.data as Record<
+                        string,
+                        unknown
+                    >;
+                    if (
+                        createdData?.slug &&
+                        typeof createdData.slug === "string"
+                    ) {
                         createdSlug = createdData.slug;
                     } else if (createdData?.id) {
                         createdSlug = String(createdData.id);
@@ -354,16 +365,22 @@ const CreateTournamentPage = () => {
                 router.push(`/tournaments/${createdSlug}`);
             } else {
                 const parseResult = await safeParseResponse(response);
-                
+
                 let errorMessage = "Failed to create tournament";
-                
+
                 if (parseResult.error) {
                     errorMessage = parseResult.error;
                 } else if (typeof parseResult.data === "string") {
                     errorMessage = parseResult.data;
-                } else if (parseResult.data && typeof parseResult.data === "object") {
+                } else if (
+                    parseResult.data &&
+                    typeof parseResult.data === "object"
+                ) {
                     const data = parseResult.data as Record<string, unknown>;
-                    errorMessage = (data.message || data.error || data.detail || errorMessage) as string;
+                    errorMessage = (data.message ||
+                        data.error ||
+                        data.detail ||
+                        errorMessage) as string;
                 } else {
                     errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                 }
@@ -588,6 +605,19 @@ const CreateTournamentPage = () => {
                                                         );
                                                     }
                                                 }}
+                                                onKeyDown={(e) => {
+                                                    if (
+                                                        !/[0-9]/.test(e.key) && // разрешаем только цифры
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "Delete" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !==
+                                                            "ArrowRight" &&
+                                                        e.key !== "Tab"
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
                                                 min="0"
                                             />
                                         </div>
@@ -607,19 +637,31 @@ const CreateTournamentPage = () => {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full p-2 rounded-md border bg-background text-text"
+                                                className="w-full p-2 rounded-md border  text-text"
                                                 aria-label="Уровень турнира"
                                             >
-                                                <option value="LOCAL">
+                                                <option
+                                                    value="LOCAL"
+                                                    className="bg-[#0e1425] text-white"
+                                                >
                                                     Локальный
                                                 </option>
-                                                <option value="REGIONAL">
+                                                <option
+                                                    value="REGIONAL"
+                                                    className="bg-[#0e1425]  text-white"
+                                                >
                                                     Региональный
                                                 </option>
-                                                <option value="NATIONAL">
+                                                <option
+                                                    value="NATIONAL"
+                                                    className="bg-[#0e1425]  text-white"
+                                                >
                                                     Национальный
                                                 </option>
-                                                <option value="INTERNATIONAL">
+                                                <option
+                                                    value="INTERNATIONAL"
+                                                    className="bg-[#0e1425]  text-white"
+                                                >
                                                     Международный
                                                 </option>
                                             </select>

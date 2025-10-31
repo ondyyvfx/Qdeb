@@ -263,7 +263,7 @@ export default function RatingPage() {
         ))}
       </div>
 
-      <div className="bg-background min-h-screen text-white pt-16">
+      <div className="bg-background min-h-screen text-white ">
         {/* Desktop: Top 3 Podium */}
         <div className="hidden lg:flex justify-center items-end gap-0 px-4 pb-20">
           {podiumOrder.map((position) => {
@@ -562,9 +562,9 @@ export default function RatingPage() {
         </div>
 
         {/* Desktop: All Speakers Section (excluding top 3) */}
-        <div className="hidden lg:block max-w-6xl mx-auto px-6 pb-12">
+        <div className="hidden lg:block max-w-6xl mx-auto px-6 pb-6">
           {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold">Все спикеры</h2>
 
             {/* Search and Filter */}
@@ -635,7 +635,8 @@ export default function RatingPage() {
               </div>
             ) : filteredOthersSpeakers.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
-                Нет других спикеров
+                {/* Нет других спикеров */}
+                <span className="text-red-500 block">Эта функция находиться на стадии разработки</span>
               </div>
             ) : (
               filteredOthersSpeakers.map((speaker: Speaker) => {

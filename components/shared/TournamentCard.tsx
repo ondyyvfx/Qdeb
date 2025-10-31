@@ -1,10 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { Calendar, DollarSign, ExternalLink, MapPin } from "lucide-react";
+import { Calendar, DollarSign, ExternalLink, MapPin, Trophy } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Qlogo from "@/public/assets/Qclub.svg";
+import { buildTournamentUrl } from "@/lib/tabbycat";
 
 type TournamentCardProps = {
     id: number;
@@ -78,6 +80,15 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
         typeof registrationlink === "string" &&
         /^https?:\/\//i.test(registrationlink);
     const ctaLabel = registrationlink ? "Register" : "View details";
+    
+    // Tabbycat URL для турнира
+    const tabbycatUrl = buildTournamentUrl(slug);
+    
+    const handleTabbycatClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(tabbycatUrl, '_blank', 'noopener,noreferrer');
+    };
 
     return (
         <Card
@@ -95,10 +106,22 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
                     alt={title}
                     className="h-20 w-20 rounded-lg border border-white/30 object-cover shadow-md"
                 />
-                <div className="flex flex-col gap-3">
-                    <h3 className="text-lg font-semibold leading-tight">
-                        {title}
-                    </h3>
+                <div className="flex flex-col gap-3 flex-1">
+                    <div className="flex items-start justify-between">
+                        <h3 className="text-lg font-semibold leading-tight">
+                            {title}
+                        </h3>
+                        {/* TODO: Add Tabbycat button */}
+                        {/* <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleTabbycatClick}
+                            className="text-white/60 hover:text-white hover:bg-white/10 p-1 h-auto"
+                            title="Открыть в Tabbycat"
+                        >
+                            <Trophy className="h-4 w-4" />
+                        </Button> */}
+                    </div>
                     <div className="flex flex-col gap-2 text-sm text-white/80">
                         <span className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-white/60" />
