@@ -79,14 +79,16 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
           <>
             {/* Информация о пользователе */}
             <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-2">
-              {user.avatar ? (
-                <Image
-                  src={user.avatar}
-                  alt="avatar"
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-full object-cover border-2 border-white/20"
-                />
+              {user.avatar && user.avatar.trim() !== "" ? (
+                <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white/20">
+                  <Image
+                    src={user.avatar}
+                    alt="avatar"
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               ) : (
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center border-2 border-white/20">
                   <span className="text-white font-bold text-sm">

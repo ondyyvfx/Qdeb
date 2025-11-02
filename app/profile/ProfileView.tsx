@@ -66,7 +66,7 @@ const ProfileView = () => {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            "Accept": "application/json",
+            Accept: "application/json",
           },
           mode: "cors",
           credentials: "include",
@@ -90,7 +90,7 @@ const ProfileView = () => {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
-              "Accept": "application/json",
+              Accept: "application/json",
             },
             mode: "cors",
             credentials: "include",
@@ -180,7 +180,7 @@ const ProfileView = () => {
       {/* Заголовок профиля */}
       <div className="flex items-center gap-10">
         {resolveImageUrl(profile.profilePictureUrl) || user?.avatar ? (
-          <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-primary shadow-lg">
+          <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-secondary shadow-lg">
             <Image
               src={
                 resolveImageUrl(profile.profilePictureUrl) ||
@@ -330,7 +330,7 @@ const TeamActionsNoTeam = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
@@ -393,4 +393,3 @@ const TeamActionsNoTeam = () => {
 };
 
 export default ProfileView;
-

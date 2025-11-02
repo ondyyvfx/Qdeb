@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast, Toaster } from "react-hot-toast";
 import { apiGet, apiPost } from "@/lib/api";
 
 interface RegistrationField {
@@ -135,16 +135,40 @@ const TournamentJoinPage: React.FC = () => {
     );
     setSubmitting(false);
 
+    console.log("Application response:", {
+      status: res.status,
+      error: res.error,
+      data: res.data,
+    });
+
     if (res.status === 201 && res.data) {
       toast.success("Заявка отправлена");
       router.push(`/tournaments/${tournament.slug}`);
+      return;
+    }
+
+    // Проверяем статус 403 или текст ошибки про лидера/капитана
+    const errorMessage = res.error || "";
+    const isLeaderError =
+      res.status === 403 ||
+      errorMessage.toLowerCase().includes("лидер") ||
+      errorMessage.toLowerCase().includes("leader") ||
+      errorMessage.toLowerCase().includes("капитан") ||
+      errorMessage.toLowerCase().includes("captain") ||
+      errorMessage.toLowerCase().includes("только лидер");
+
+    if (isLeaderError) {
+      toast.error(
+        "Только лидер команды может подавать заявки на турниры. Попросите лидера команды подать заявку."
+      );
     } else {
-      toast.error(res.error || "Не удалось отправить заявку");
+      toast.error(errorMessage || "Не удалось отправить заявку");
     }
   };
 
   return (
     <div className="min-h-screen bg-background text-text">
+      <Toaster position="top-center" />
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
