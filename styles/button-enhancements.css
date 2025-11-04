@@ -101,12 +101,12 @@ button:disabled,
 }
 
 /* Фокус для доступности */
-button:focus,
+/* button:focus,
 .btn:focus,
 [role="button"]:focus {
   outline: 2px solid var(--accent, #3b82f6) !important;
   outline-offset: 2px !important;
-}
+} */
 
 /* Улучшения для мобильных устройств */
 @media (max-width: 768px) {

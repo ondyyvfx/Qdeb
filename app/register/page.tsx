@@ -184,14 +184,43 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="flex w-full md:w-1/2 items-center justify-center p-8 animate-fade-in">
+      <div className="flex w-full md:w-35% lg:w-1/2 items-center justify-center p-2 animate-fade-in">
         <Link href="/">
-          <X className="absolute right-[5%] top-[7%] w-5 h-5 text-white" />
+          <X className="absolute right-[5%] top-[2%] w-5 h-5 text-white" />
         </Link>
         <div className="w-full px-4 rounded-3xl shadow-lg bg-muted">
           <h1 className="text-4xl font-bold text-center mb-7">
             Создайте аккаунт
           </h1>
+
+          {/* Поле предупреждения */}
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+              <p className="text-sm text-yellow-300">
+                {/* Placeholder текст - замените на свой */}
+                Внимание: данные из этой формы будут использованы в вашем
+                профиле и интегрированы с Tabbycat. Во вкладке Tabbycat
+                отображается второе слово из поля «Полное имя». Например, если
+                вы введёте Иванов Сергей, система покажет Сергей. Пожалуйста,
+                вводите данные так, как хотите, чтобы они отображались в вашем
+                профиле - они также будут использоваться для функций вроде
+                рейтинга спикеров и достижений.
+              </p>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -202,7 +231,7 @@ export default function RegisterPage() {
                 id="full_name"
                 value={full_name}
                 onChange={(e) => setFull_name(e.target.value)}
-                placeholder="Имя и Фамилия"
+                placeholder="Фамилия Имя"
                 required
                 className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
               />
