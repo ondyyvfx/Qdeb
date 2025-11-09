@@ -35,7 +35,6 @@ import { apiGet, apiPost } from "@/lib/api";
 import TabbycatTournamentInfo from "@/components/shared/TabbycatTournamentInfo";
 import TournamentResults from "@/components/shared/TournamentResults";
 import TournamentStats from "@/components/shared/TournamentStats";
-import { Image } from "next/image";
 
 interface RegistrationField {
     id?: number;
