@@ -119,7 +119,10 @@ export const apiRequest = async <T = unknown>(
         errorMessage = parseResult.data;
       } else if (parseResult.data && typeof parseResult.data === "object") {
         const data = parseResult.data as Record<string, unknown>;
-        errorMessage = data.detail || data.message || data.error || errorMessage;
+        const detail = typeof data.detail === "string" ? data.detail : undefined;
+        const message = typeof data.message === "string" ? data.message : undefined;
+        const error = typeof data.error === "string" ? data.error : undefined;
+        errorMessage = detail || message || error || errorMessage;
       }
       
       return {
@@ -129,7 +132,7 @@ export const apiRequest = async <T = unknown>(
     }
 
     return {
-      data: parseResult.data,
+      data: parseResult.data as T | undefined,
       status: response.status,
     };
   } catch (error) {
