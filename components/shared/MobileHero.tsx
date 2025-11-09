@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,9 +10,6 @@ import { Autoplay } from "swiper/modules";
 import { slidesData } from "../../lib/sharedHeroData";
 
 const MobileHero = () => {
-  const swiperRef = useRef<any>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
   return (
     <section className="w-full py-4 relative mobilehero">
       <div className="px-3 md:px-10 lg:px-16">
@@ -23,8 +20,6 @@ const MobileHero = () => {
             slidesPerView={1}
             loop={true}
             autoplay={{ delay: 6000, disableOnInteraction: false }}
-            onSwiper={(swiper) => (swiperRef.current = swiper)}
-            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
           >
             {slidesData.map((slide) => (
               <SwiperSlide key={slide.id}>
@@ -85,21 +80,6 @@ const MobileHero = () => {
               </SwiperSlide>
             ))}
           </Swiper>
-
-          {/* Slider dots */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-            {slidesData.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => swiperRef.current?.slideToLoop(index)}
-                className={`transition-all duration-300 bg-white rounded-full ${
-                  activeIndex === index
-                    ? "w-20 h-1 opacity-100"
-                    : "w-20 h-1 opacity-50"
-                }`}
-              />
-            ))}
-          </div>
         </div>
       </div>
     </section>

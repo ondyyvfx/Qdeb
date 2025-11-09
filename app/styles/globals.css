@@ -34,6 +34,40 @@
     overflow: hidden;
 }
 
+/* Стили для индикаторов пагинации в Hero слайдере - переопределяют глобальные стили кнопок */
+.hero-pagination-dot {
+    min-height: unset !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: pointer !important;
+    outline: none !important;
+    appearance: none !important;
+}
+
+.hero-pagination-dot:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.hero-pagination-dot:active {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Полностью скрываем индикаторы пагинации на мобильных устройствах */
+@media (max-width: 767px) {
+    .hero-pagination-container {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
 @layer utilities {
     .animate-fade-in {
         @apply opacity-0 animate-[fadeIn_0.8s_ease-out_forwards];

@@ -1,9 +1,9 @@
 /* Улучшенные стили для кнопок - делаем их более кликабельными */
 
 /* Базовые стили для всех кнопок */
-button,
-.btn,
-[role="button"] {
+button:not(.hero-pagination-dot):not(.swiper-button-prev):not(.swiper-button-next),
+.btn:not(.hero-pagination-dot),
+[role="button"]:not(.hero-pagination-dot) {
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   border-radius: 12px !important;
@@ -12,18 +12,18 @@ button,
 }
 
 /* Эффекты при наведении */
-button:hover,
-.btn:hover,
-[role="button"]:hover {
+button:not(.hero-pagination-dot):not(.swiper-button-prev):not(.swiper-button-next):hover,
+.btn:not(.hero-pagination-dot):hover,
+[role="button"]:not(.hero-pagination-dot):hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Эффекты при нажатии */
-button:active,
-.btn:active,
-[role="button"]:active {
+button:not(.hero-pagination-dot):not(.swiper-button-prev):not(.swiper-button-next):active,
+.btn:not(.hero-pagination-dot):active,
+[role="button"]:not(.hero-pagination-dot):active {
   transform: translateY(0px) !important;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1),
     0 1px 2px -1px rgba(0, 0, 0, 0.06) !important;
@@ -110,9 +110,9 @@ button:disabled,
 
 /* Улучшения для мобильных устройств */
 @media (max-width: 768px) {
-  button,
-  .btn,
-  [role="button"] {
+  button:not(.hero-pagination-dot):not(.swiper-button-prev):not(.swiper-button-next),
+  .btn:not(.hero-pagination-dot),
+  [role="button"]:not(.hero-pagination-dot) {
     min-height: 44px !important; /* Минимальная высота для удобного нажатия */
     padding: 12px 20px !important;
   }
