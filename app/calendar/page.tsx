@@ -33,7 +33,7 @@ export default async function CalendarPage() {
 
     const apiOrigin = apiBase.replace(/\/api\/?$/, "");
 
-    const accessToken = cookies().get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
     const headers: HeadersInit = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : {};
