@@ -36,7 +36,8 @@ interface TournamentFormData {
   organizerName: string;
   organizerContact: string;
   description: string;
-  eventDate: string;
+  startDate: string;
+  endDate: string;
   active: boolean;
   fee: number;
   level: "LOCAL" | "REGIONAL" | "NATIONAL" | "INTERNATIONAL";
@@ -57,7 +58,8 @@ const EditTournamentPage = () => {
     organizerName: "",
     organizerContact: "",
     description: "",
-    eventDate: "",
+    startDate: "",
+    endDate: "",
     active: true,
     fee: 0,
     level: "LOCAL",
@@ -111,7 +113,8 @@ const EditTournamentPage = () => {
         organizerName: (raw?.organizerName as string) || "",
         organizerContact: (raw?.organizerContact as string) || (raw?.organizerContacts as string) || "",
         description: (raw?.description as string) || "",
-        eventDate: (raw?.date as string) || (raw?.eventDate as string) || "",
+        startDate: (raw?.startDate as string) || (raw?.date as string) || (raw?.eventDate as string) || "",
+        endDate: (raw?.endDate as string) || (raw?.date as string) || (raw?.eventDate as string) || "",
         active: Boolean(raw?.active),
         fee:
           typeof raw?.fee === "number"
@@ -172,7 +175,8 @@ const EditTournamentPage = () => {
         organizerName: formData.organizerName,
         organizerContact: formData.organizerContact,
         description: formData.description,
-        eventDate: formData.eventDate,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
         active: formData.active,
         fee: formData.fee,
         level: formData.level,
@@ -328,17 +332,32 @@ const EditTournamentPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="eventDate">Дата проведения *</Label>
+                    <Label htmlFor="startDate">Дата начала *</Label>
                     <Input
-                      id="eventDate"
+                      id="startDate"
                       type="date"
-                      value={formData.eventDate}
+                      value={formData.startDate}
                       onChange={(e) =>
-                        handleInputChange("eventDate", e.target.value)
+                        handleInputChange("startDate", e.target.value)
                       }
                       required
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="endDate">Дата окончания *</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) =>
+                        handleInputChange("endDate", e.target.value)
+                      }
+                      required
+                      min={formData.startDate}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="fee">Регистрационный взнос (₸)</Label>
                     <Input
@@ -501,4 +520,5 @@ const EditTournamentPage = () => {
   );
 };
 
+export default EditTournamentPage;
 export default EditTournamentPage;

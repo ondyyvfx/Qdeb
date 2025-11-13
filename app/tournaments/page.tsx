@@ -99,8 +99,8 @@ export default function TournamentsPage() {
                         id: t.id,
                         slug,
                         title: t.name || t.title || slug,
-                        start_date: t.date || t.startDate || t.eventDate,
-                        end_date: t.date || t.endDate || t.eventDate,
+                        start_date: t.startDate || t.date || t.eventDate || "",
+                        end_date: t.endDate || t.date || t.eventDate || "",
                         cost:
                             typeof t.fee === "number"
                                 ? t.fee
