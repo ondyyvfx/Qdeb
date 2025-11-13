@@ -297,6 +297,14 @@ const Navbar = () => {
           <Link href="/about" className="hover:text-accent transition-colors">
             О нас
           </Link>
+          <a
+            href="https://tabby.qdeb.kz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-accent transition-colors"
+          >
+            Tabbycat
+          </a>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"
