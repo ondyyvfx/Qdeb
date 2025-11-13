@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import Cookies from "js-cookie";
+import { resolveProfilePictureUrl } from "@/lib/profilePicture";
 
 interface UserProfile {
   id: number;
@@ -35,23 +36,6 @@ const ProfileView = () => {
 
   const apiBase =
     (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:4232/api";
-
-  const resolveImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    // Если уже полный URL - возвращаем как есть
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    
-    // Если содержит путь к profile-picture или uploads, извлекаем только имя файла
-    let fileName = url;
-    if (url.includes("/")) {
-      // Извлекаем имя файла из пути (например, "uploads/uuid.jpg" -> "uuid.jpg")
-      fileName = url.split("/").pop() || url;
-    }
-    
-    // Формируем правильный URL: https://api.qdeb.kz/api/files/profile-picture/{fileName}
-    const apiOrigin = apiBase.replace("/api", "");
-    return `${apiOrigin}/api/files/profile-picture/${fileName}`;
-  };
 
   // Загружаем профиль текущего пользователя
   useEffect(() => {
@@ -184,11 +168,11 @@ const ProfileView = () => {
     <div className="max-w-4xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8 flex flex-col gap-8">
       {/* Заголовок профиля */}
       <div className="flex items-center gap-10">
-        {resolveImageUrl(profile.profilePictureUrl) || user?.avatar ? (
+        {resolveProfilePictureUrl(profile.profilePictureUrl) || user?.avatar ? (
           <div className="w-32 h-32 relative rounded-full overflow-hidden border-4 border-secondary shadow-lg">
             <Image
               src={
-                resolveImageUrl(profile.profilePictureUrl) ||
+                resolveProfilePictureUrl(profile.profilePictureUrl) ||
                 (user?.avatar as string)
               }
               alt="User avatar"

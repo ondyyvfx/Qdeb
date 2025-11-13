@@ -1,6 +1,7 @@
 "use server";
 import { cookies } from "next/headers";
 import type { User } from "@/stores/useUserStore";
+import { resolveProfilePictureUrl } from "@/lib/profilePicture";
 
 const safeParseResponse = async (response: Response): Promise<{
   data: unknown;
@@ -82,16 +83,8 @@ const mapApiProfileToUser = (data: unknown, baseUrl: string): User | null => {
   
   // Если avatar - относительный путь или имя файла, преобразуем в полный URL
   if (avatar && !avatar.startsWith("http") && avatar.trim() !== "") {
-    const apiOrigin = baseUrl.replace(/\/api\/?$/, "");
-    
-    // Если содержит путь, извлекаем только имя файла
-    let fileName = avatar;
-    if (avatar.includes("/")) {
-      fileName = avatar.split("/").pop() || avatar;
-    }
-    
-    // Формируем правильный URL: https://api.qdeb.kz/api/files/profile-picture/{fileName}
-    avatar = `${apiOrigin}/api/files/profile-picture/${fileName}`;
+    const resolvedUrl = resolveProfilePictureUrl(avatar);
+    avatar = resolvedUrl || avatar;
   }
   
   // Если avatar пустой, используем дефолтное значение

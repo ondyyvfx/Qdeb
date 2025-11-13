@@ -12,6 +12,7 @@ import { safeParseResponse } from "@/lib/api";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { resolveProfilePictureUrl } from "@/lib/profilePicture";
 
 interface UserProfileResponse {
   id: number;
@@ -56,22 +57,6 @@ const Navbar = () => {
 
   const apiBase =
     (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:4232/api";
-  const resolveImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    // Если уже полный URL - возвращаем как есть
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    
-    // Если содержит путь к profile-picture или uploads, извлекаем только имя файла
-    let fileName = url;
-    if (url.includes("/")) {
-      // Извлекаем имя файла из пути (например, "uploads/uuid.jpg" -> "uuid.jpg")
-      fileName = url.split("/").pop() || url;
-    }
-    
-    // Формируем правильный URL: https://api.qdeb.kz/api/files/profile-picture/{fileName}
-    const apiOrigin = apiBase.replace("/api", "");
-    return `${apiOrigin}/api/files/profile-picture/${fileName}`;
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -213,7 +198,7 @@ const Navbar = () => {
       // Используем profilePicture (как в API) или profilePictureUrl (для совместимости)
       const profilePicture = data.profilePicture || data.profilePictureUrl;
       console.log("Navbar - profilePicture from API:", profilePicture);
-      const avatarUrl = resolveImageUrl(profilePicture);
+      const avatarUrl = resolveProfilePictureUrl(profilePicture);
       console.log("Navbar - resolved avatar URL:", avatarUrl);
       const userData = {
         email: data.email || "",
