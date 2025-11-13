@@ -521,4 +521,3 @@ const EditTournamentPage = () => {
 };
 
 export default EditTournamentPage;
-export default EditTournamentPage;
