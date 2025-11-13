@@ -63,7 +63,9 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
   const [applications, setApplications] = useState<ApplicationResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<"ALL" | ApplicationResponse["status"]>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "ALL" | ApplicationResponse["status"]
+  >("ALL");
 
   useEffect(() => {
     const loadApplications = async () => {
@@ -132,7 +134,9 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
           </h2>
           <p className="text-gray-400 mt-1">
             {applications.length > 0
-              ? `${applications.length} ${applications.length === 1 ? "заявка" : "заявки"} подано`
+              ? `${applications.length} ${
+                  applications.length === 1 ? "заявка" : "заявки"
+                } подано`
               : "Пока нет заявок."}
           </p>
         </div>
@@ -163,7 +167,9 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
         </Card>
       ) : error ? (
         <Card className="bg-red-500/10 border-red-500/20">
-          <CardContent className="p-6 text-sm text-red-300">{error}</CardContent>
+          <CardContent className="p-6 text-sm text-red-300">
+            {error}
+          </CardContent>
         </Card>
       ) : filteredApplications.length === 0 ? (
         <Card className="bg-white/5 border-white/10">
@@ -172,7 +178,8 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
               Заявок с выбранным статусом нет
             </h3>
             <p className="text-sm text-gray-400">
-              Как только команда подаст заявку на турнир, она появится в этом списке.
+              Как только команда подаст заявку на турнир, она появится в этом
+              списке.
             </p>
           </CardContent>
         </Card>
@@ -243,12 +250,11 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
 
       <Card className="bg-blue-500/10 border-blue-500/20">
         <CardContent className="p-6 space-y-2 text-sm text-gray-300">
-          <h3 className="text-white font-medium">
-            Как работает список заявок
-          </h3>
+          <h3 className="text-white font-medium">Как работает список заявок</h3>
           <p>
-            Здесь отображаются заявки вашей команды на турниры. Как только появится
-            возможность управлять статусами прямо из интерфейса, мы добавим соответствующие действия.
+            Здесь отображаются заявки вашей команды на турниры. Как только
+            появится возможность управлять статусами прямо из интерфейса, мы
+            добавим соответствующие действия.
           </p>
         </CardContent>
       </Card>

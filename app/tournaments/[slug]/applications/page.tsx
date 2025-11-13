@@ -276,38 +276,54 @@ export default function ApplicationsPage() {
                                                 <h4 className="text-sm font-medium text-gray-400 mb-2">
                                                     Информация о команде
                                                 </h4>
-                                                <div className="space-y-1 text-sm">
+                                                <div className="space-y-2 text-sm text-gray-300">
+                                                    <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                                                        <p className="text-gray-400 text-xs uppercase tracking-wide">
+                                                            Капитан
+                                                        </p>
+                                                        <p className="text-white font-medium">
+                                                            {application.team.leader?.fullName ||
+                                                                application.team.leader?.username ||
+                                                                "Не указан"}
+                                                        </p>
+                                                        {application.team.leader?.email && (
+                                                            <p className="text-gray-400 text-xs">
+                                                                {application.team.leader.email}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                                                        <p className="text-gray-400 text-xs uppercase tracking-wide">
+                                                            Напарник
+                                                        </p>
+                                                        <p className="text-white font-medium">
+                                                            {application.team.member?.fullName ||
+                                                                application.team.member?.username ||
+                                                                "Не указан"}
+                                                        </p>
+                                                        {application.team.member?.email && (
+                                                            <p className="text-gray-400 text-xs">
+                                                                {application.team.member.email}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                                                        <p className="text-gray-400 text-xs uppercase tracking-wide">
+                                                            Подана пользователем
+                                                        </p>
+                                                        <p className="text-white font-medium">
+                                                            {application.submittedBy.fullName ||
+                                                                application.submittedBy.username}
+                                                        </p>
+                                                        <p className="text-gray-400 text-xs">
+                                                            {application.submittedBy.email ?? "Email не указан"}
+                                                        </p>
+                                                    </div>
                                                     <p className="text-white">
                                                         <span className="text-gray-400">
-                                                            Капитан:
+                                                            Состав:
                                                         </span>{" "}
-                                                        {application.team.leader
-                                                            ?.fullName ||
-                                                            application.team
-                                                                .leader
-                                                                ?.username ||
-                                                            "Не указан"}
-                                                    </p>
-                                                    <p className="text-white">
-                                                        <span className="text-gray-400">
-                                                            Участников:
-                                                        </span>{" "}
-                                                        {
-                                                            application.team
-                                                                .memberCount
-                                                        }
-                                                        /2
-                                                    </p>
-                                                    <p className="text-white">
-                                                        <span className="text-gray-400">
-                                                            Подана
-                                                            пользователем:
-                                                        </span>{" "}
-                                                        {application.submittedBy
-                                                            .fullName ||
-                                                            application
-                                                                .submittedBy
-                                                                .username}
+                                                        {application.team.memberCount}/2
                                                     </p>
                                                 </div>
                                             </div>
@@ -385,6 +401,7 @@ export default function ApplicationsPage() {
                                                 </Button>
                                             </div>
                                         )}
+
                                     </CardContent>
                                 </Card>
                             ))

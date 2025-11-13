@@ -82,7 +82,7 @@ const Hero = () => {
           </Swiper>
 
           {/* Индикаторы пагинации - полностью скрыты на мобильных (до 768px), видны только на планшетах и десктопе */}
-          {/* <div className="hero-pagination-container absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row gap-1.5 md:gap-2">
+          <div className="hero-pagination-container absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row gap-1.5 md:gap-2">
             {slidesData.map((_, index) => (
               <button
                 key={index}
@@ -91,12 +91,12 @@ const Hero = () => {
                 aria-label={`Перейти к слайду ${index + 1}`}
                 className={`hero-pagination-dot transition-all duration-300 bg-white rounded-full ${
                   activeIndex === index
-                    ? "h-1.5 w-10 md:w-20 opacity-100"
-                    : "h-1.5 w-10 md:w-20 opacity-40 hover:opacity-60"
+                    ? "h-1 w-10 md:w-20 opacity-100"
+                    : "h-1 w-10 md:w-20 opacity-40 hover:opacity-60"
                 }`}
               />
             ))}
-          </div> */}
+          </div>
         </div>
       </div>
     </section>

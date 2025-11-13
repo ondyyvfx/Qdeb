@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { apiPost } from "@/lib/api";
+import { toast } from "react-hot-toast";
 
 type TeamInfo = {
   id: number;
@@ -15,6 +17,13 @@ type TeamInfo = {
 
 type TeamMembersProps = {
   team: TeamInfo;
+};
+
+type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+type ApplicationSummary = {
+  id: number;
+  status: ApplicationStatus;
 };
 
 type MemberSummary = {
@@ -34,12 +43,18 @@ export default function TeamMembers({ team }: TeamMembersProps) {
   const [members, setMembers] = useState<MemberSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [hasActiveApplication, setHasActiveApplication] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadMembers = async () => {
       try {
         setLoading(true);
         setError(null);
+        setApplicationsLoading(true);
+        setHasActiveApplication(false);
 
         const token = Cookies.get("accessToken");
         if (!token) {
@@ -65,6 +80,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
         const teamData = teamRes.ok ? await teamRes.json() : null;
 
         const collected = new Map<string, MemberSummary>();
+        let rosterLocked = false;
 
         // Лидер команды (если пришёл из API)
         if (teamData?.leader) {
@@ -95,11 +111,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
 
         // Второй участник (если известен только ID)
         const teammateId = profileData.team?.memberId;
-        if (
-          teammateId &&
-          !collected.has(String(teammateId)) &&
-          team.size > 1
-        ) {
+        if (teammateId && !collected.has(String(teammateId)) && team.size > 1) {
           collected.set(String(teammateId), {
             id: String(teammateId),
             role: "member",
@@ -108,14 +120,60 @@ export default function TeamMembers({ team }: TeamMembersProps) {
         }
 
         setMembers(Array.from(collected.values()));
+
+        if (team.id) {
+          try {
+            const applicationsRes = await fetch(
+              `${API_URL}/teams/${team.id}/applications`,
+              {
+                headers,
+              }
+            );
+
+            if (applicationsRes.ok) {
+              let applicationData: ApplicationSummary[] = [];
+              if (applicationsRes.status !== 204) {
+                applicationData =
+                  (await applicationsRes.json()) as ApplicationSummary[];
+              }
+
+              rosterLocked = Array.isArray(applicationData)
+                ? applicationData.some(
+                    (application) =>
+                      application.status === "PENDING" ||
+                      application.status === "APPROVED"
+                  )
+                : false;
+            } else if (applicationsRes.status !== 404) {
+              console.error(
+                "Не удалось получить заявки команды:",
+                applicationsRes.status
+              );
+            }
+          } catch (applicationsError) {
+            console.error(
+              "Ошибка загрузки статуса заявок команды:",
+              applicationsError
+            );
+          }
+        }
+
+        setHasActiveApplication(rosterLocked);
+        if (rosterLocked) {
+          setLeaveError(null);
+        }
       } catch (err) {
         console.error("Ошибка загрузки состава команды:", err);
         setError(
-          err instanceof Error ? err.message : "Не удалось загрузить участников команды."
+          err instanceof Error
+            ? err.message
+            : "Не удалось загрузить участников команды."
         );
         setMembers([]);
+        setHasActiveApplication(false);
       } finally {
         setLoading(false);
+        setApplicationsLoading(false);
       }
     };
 
@@ -132,6 +190,39 @@ export default function TeamMembers({ team }: TeamMembersProps) {
     [memberLimit, joinedCount]
   );
 
+  const isLeaveButtonDisabled =
+    applicationsLoading || hasActiveApplication || leaveLoading;
+
+  const handleLeaveTeam = async () => {
+    if (applicationsLoading || hasActiveApplication || leaveLoading) {
+      return;
+    }
+
+    try {
+      setLeaveLoading(true);
+      setLeaveError(null);
+
+      const response = await apiPost<unknown>("/teams/leave");
+
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Вы покинули команду");
+        window.location.href = "/team";
+        return;
+      }
+
+      const message = response.error || "Не удалось покинуть команду";
+      setLeaveError(message);
+      toast.error(message);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Не удалось покинуть команду";
+      setLeaveError(message);
+      toast.error(message);
+    } finally {
+      setLeaveLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -140,6 +231,30 @@ export default function TeamMembers({ team }: TeamMembersProps) {
           <p className="text-gray-400 mt-1">
             {joinedCount} из {memberLimit} участников
           </p>
+        </div>
+        <div className="flex flex-col items-start gap-2 sm:items-end sm:text-right">
+          <Button
+            onClick={handleLeaveTeam}
+            variant="destructive"
+            className="bg-red-600 hover:bg-red-700 text-white"
+            disabled={isLeaveButtonDisabled}
+          >
+            {leaveLoading ? "Выходим..." : "Покинуть команду"}
+          </Button>
+          {applicationsLoading && (
+            <span className="text-xs text-gray-400">
+              Проверяем активные заявки...
+            </span>
+          )}
+          {!applicationsLoading && hasActiveApplication && (
+            <span className="text-xs text-amber-300 max-w-xs">
+              После подачи заявки на турнир состав команды фиксируется до
+              завершения обработки заявки.
+            </span>
+          )}
+          {leaveError && !hasActiveApplication && (
+            <span className="text-xs text-red-400 max-w-xs">{leaveError}</span>
+          )}
         </div>
       </div>
 
@@ -151,7 +266,9 @@ export default function TeamMembers({ team }: TeamMembersProps) {
         </Card>
       ) : error ? (
         <Card className="bg-red-500/10 border-red-500/20">
-          <CardContent className="p-6 text-sm text-red-300">{error}</CardContent>
+          <CardContent className="p-6 text-sm text-red-300">
+            {error}
+          </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -167,7 +284,9 @@ export default function TeamMembers({ team }: TeamMembersProps) {
                       {member.fullName ?? "Участник команды"}
                     </CardTitle>
                     <p className="text-gray-400 text-sm">
-                      {member.username ? `@${member.username}` : "логин недоступен"}
+                      {member.username
+                        ? `@${member.username}`
+                        : "логин недоступен"}
                     </p>
                   </div>
                   <span
@@ -187,7 +306,9 @@ export default function TeamMembers({ team }: TeamMembersProps) {
                     {member.fullName ?? "Участник команды"}
                   </p>
                   <p className="text-gray-400">
-                    {member.username ? `@${member.username}` : "логин недоступен"}
+                    {member.username
+                      ? `@${member.username}`
+                      : "логин недоступен"}
                   </p>
                   <p className="text-gray-300">
                     {member.role === "leader" ? "Лидер" : "Участник"}

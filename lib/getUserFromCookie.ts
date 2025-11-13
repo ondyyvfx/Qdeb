@@ -80,12 +80,18 @@ const mapApiProfileToUser = (data: unknown, baseUrl: string): User | null => {
   // Получаем avatar из profilePicture, profilePictureUrl или avatar
   let avatar = apiData.avatar || apiData.profilePictureUrl || apiData.profilePicture || "";
   
-  // Если avatar - относительный путь, преобразуем в полный URL
+  // Если avatar - относительный путь или имя файла, преобразуем в полный URL
   if (avatar && !avatar.startsWith("http") && avatar.trim() !== "") {
     const apiOrigin = baseUrl.replace(/\/api\/?$/, "");
-    avatar = avatar.startsWith("/") 
-      ? `${apiOrigin}${avatar}` 
-      : `${apiOrigin}/${avatar}`;
+    
+    // Если содержит путь, извлекаем только имя файла
+    let fileName = avatar;
+    if (avatar.includes("/")) {
+      fileName = avatar.split("/").pop() || avatar;
+    }
+    
+    // Формируем правильный URL: https://api.qdeb.kz/api/files/profile-picture/{fileName}
+    avatar = `${apiOrigin}/api/files/profile-picture/${fileName}`;
   }
   
   // Если avatar пустой, используем дефолтное значение

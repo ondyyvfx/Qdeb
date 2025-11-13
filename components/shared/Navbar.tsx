@@ -58,19 +58,19 @@ const Navbar = () => {
     (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:4232/api";
   const resolveImageUrl = (url?: string | null) => {
     if (!url) return null;
+    // Если уже полный URL - возвращаем как есть
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    // Согласно документации, изображения доступны через /api/files/profile-picture/{fileName}
-    if (url.includes("profile-picture") || url.startsWith("uploads/")) {
-      // Извлекаем только имя файла из пути (например, "uploads/uuid-filename.jpg" -> "uuid-filename.jpg")
-      const fileName = url.includes("/") ? url.split("/").pop() : url;
-      return `${apiBase.replace(
-        "/api",
-        ""
-      )}/api/files/profile-picture/${fileName}`;
+    
+    // Если содержит путь к profile-picture или uploads, извлекаем только имя файла
+    let fileName = url;
+    if (url.includes("/")) {
+      // Извлекаем имя файла из пути (например, "uploads/uuid.jpg" -> "uuid.jpg")
+      fileName = url.split("/").pop() || url;
     }
-    // Для других файлов
-    const normalized = url.startsWith("/") ? url : `/${url}`;
-    return `${apiBase.replace("/api", "")}${normalized}`;
+    
+    // Формируем правильный URL: https://api.qdeb.kz/api/files/profile-picture/{fileName}
+    const apiOrigin = apiBase.replace("/api", "");
+    return `${apiOrigin}/api/files/profile-picture/${fileName}`;
   };
 
   useEffect(() => {
