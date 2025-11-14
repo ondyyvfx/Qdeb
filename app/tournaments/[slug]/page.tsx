@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
+import { resolveTournamentPictureUrl } from "@/lib/tournamentPicture";
 import { toast } from "sonner";
 import { useUserStore } from "@/stores/useUserStore";
 import Navbar from "@/components/shared/Navbar";
@@ -177,11 +178,12 @@ const TournamentDetailPage = () => {
         shortName:
           (rawData?.shortName as string) ?? (rawData?.name as string) ?? "",
         slug: (rawData?.slug as string) ?? tournamentSlug,
-        imageUrl:
+        imageUrl: resolveTournamentPictureUrl(
           (rawData?.imageURL as string) ||
           (rawData?.photoUrl as string) ||
           (rawData?.tournamentPicture as string) ||
-          undefined,
+          undefined
+        ) || undefined,
         organizerName: (rawData?.organizerName as string) ?? "",
         organizerContact:
           (rawData?.organizerContact as string) ??
@@ -453,11 +455,7 @@ const TournamentDetailPage = () => {
               {tournament.imageUrl && (
                 <div className="rounded-xl overflow-hidden border border-white/10">
                   <img
-                    src={
-                      tournament.imageUrl.startsWith("http")
-                        ? tournament.imageUrl
-                        : `${assetsBase}${tournament.imageUrl}`
-                    }
+                    src={tournament.imageUrl}
                     alt={tournament.name}
                     className="w-full h-auto object-cover"
                   />

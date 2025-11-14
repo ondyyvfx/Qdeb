@@ -15,6 +15,7 @@ import { Search, Calendar, Filter, Plus } from "lucide-react";
 import Link from "next/link";
 import TournamentCard from "@/components/shared/TournamentCard";
 import { useUserStore } from "@/stores/useUserStore";
+import { resolveTournamentPictureUrl } from "@/lib/tournamentPicture";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { isAdmin } from "@/lib/auth-utils";
@@ -90,10 +91,9 @@ export default function TournamentsPage() {
                         t.pictureUrl ||
                         t.imageURL ||
                         t.imageUrl ||
+                        t.tournamentPicture ||
                         "";
-                    const resolvedBackground = imagePath
-                        ? `${API_URL.replace("/api", "")}${imagePath}`
-                        : "/assets/Q.svg";
+                    const resolvedBackground = resolveTournamentPictureUrl(imagePath) || "/assets/Q.svg";
 
                     return {
                         id: t.id,

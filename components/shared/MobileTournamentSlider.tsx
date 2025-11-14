@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import TournamentCard from "./TournamentCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { resolveTournamentPictureUrl } from "@/lib/tournamentPicture";
 
 interface Tournament {
   id: number;
@@ -44,22 +45,10 @@ const MobileTournamentSlider = () => {
         const formatted = list.map((t: any) => {
           const slug = t.slug || String(t.id);
           const imagePath =
-            t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || "";
+            t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || t.tournamentPicture || "";
           
           // Формируем правильный URL для изображения турнира
-          let resolvedBackground = "/assets/Q.svg";
-          if (imagePath) {
-            // Если уже полный URL - используем как есть
-            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-              resolvedBackground = imagePath;
-            } else {
-              // Если относительный путь, формируем полный URL
-              const apiOrigin = API_URL.replace("/api", "");
-              // Убираем начальный слеш, если есть
-              const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-              resolvedBackground = `${apiOrigin}${cleanPath}`;
-            }
-          }
+          const resolvedBackground = resolveTournamentPictureUrl(imagePath) || "/assets/Q.svg";
 
           return {
             id: t.id,
