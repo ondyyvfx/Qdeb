@@ -12,6 +12,11 @@ module.exports = {
         hostname: "qdeb.kz",
         pathname: "/api/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.qdeb.kz",
+        pathname: "/api/files/profile-picture/**",
+      },
     ],
   },
   eslint: {

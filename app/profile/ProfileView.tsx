@@ -178,6 +178,7 @@ const ProfileView = () => {
               alt="User avatar"
               fill
               className="object-cover"
+              unoptimized
             />
           </div>
         ) : (
