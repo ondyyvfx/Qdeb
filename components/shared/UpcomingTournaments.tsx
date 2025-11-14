@@ -49,16 +49,28 @@ const UpcomingTournaments = () => {
           const slug = t.slug || String(t.id);
           const imagePath =
             t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || "";
-          const resolvedBackground = imagePath
-            ? `${API_URL.replace("/api", "")}${imagePath}`
-            : "/assets/Q.svg";
+          
+          // Формируем правильный URL для изображения турнира
+          let resolvedBackground = "/assets/Q.svg";
+          if (imagePath) {
+            // Если уже полный URL - используем как есть
+            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+              resolvedBackground = imagePath;
+            } else {
+              // Если относительный путь, формируем полный URL
+              const apiOrigin = API_URL.replace("/api", "");
+              // Убираем начальный слеш, если есть
+              const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+              resolvedBackground = `${apiOrigin}${cleanPath}`;
+            }
+          }
 
           return {
             id: t.id,
             slug,
             title: t.name || t.title || slug,
-            start_date: t.date || t.startDate || t.eventDate,
-            end_date: t.date || t.endDate || t.eventDate,
+            start_date: t.startDate || t.date || t.eventDate || "",
+            end_date: t.endDate || t.date || t.eventDate || "",
             cost:
               typeof t.fee === "number"
                 ? t.fee
