@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast, Toaster } from "react-hot-toast";
 import { apiGet, apiPost } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
+import LoadingState from "@/components/shared/LoadingState";
+import LoginRequiredMessage from "@/components/shared/LoginRequiredMessage";
 
 interface RegistrationField {
   id?: number;
@@ -48,6 +51,7 @@ interface TeamInfo {
 const TournamentJoinPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
+  const { isChecking, isNotLoggedIn, isAuthorized } = useAuth();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [team, setTeam] = useState<TeamInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +60,10 @@ const TournamentJoinPage: React.FC = () => {
 
   const tournamentSlug = params.slug as string;
 
+  // Загружаем данные только для авторизованных пользователей
   useEffect(() => {
+    if (!isAuthorized) return;
+
     (async () => {
       try {
         setLoading(true);
@@ -94,7 +101,7 @@ const TournamentJoinPage: React.FC = () => {
         setLoading(false);
       }
     })();
-  }, [tournamentSlug]);
+  }, [tournamentSlug, isAuthorized]);
 
   const canApply = useMemo(() => {
     if (!tournament?.active) return false;
@@ -165,6 +172,35 @@ const TournamentJoinPage: React.FC = () => {
       toast.error(errorMessage || "Не удалось отправить заявку");
     }
   };
+
+  // Показываем состояние загрузки при проверке авторизации
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-background text-text">
+        <Toaster position="top-center" />
+        <Navbar />
+        <LoadingState message="Проверка авторизации..." />
+        <Footer />
+      </div>
+    );
+  }
+
+  // Показываем сообщение о необходимости авторизации
+  if (isNotLoggedIn) {
+    return (
+      <div className="min-h-screen bg-background text-text">
+        <Toaster position="top-center" />
+        <Navbar />
+        <LoginRequiredMessage message="Необходимо войти в систему для подачи заявки на участие в турнире" />
+        <Footer />
+      </div>
+    );
+  }
+
+  // Показываем содержимое страницы только для авторизованных пользователей
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background text-text">
