@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -177,6 +177,7 @@ const CreateTournamentPage = () => {
   const [registrationFields, setRegistrationFields] = useState<
     RegistrationField[]
   >(DEFAULT_REGISTRATION_FIELDS);
+  const [isSlugDirty, setIsSlugDirty] = useState(false);
 
   useEffect(() => {
     const saved = readTemplateFromStorage();
@@ -184,6 +185,10 @@ const CreateTournamentPage = () => {
       setRegistrationFields(saved);
     }
   }, []);
+
+  const recommendedSlug = useMemo(() => {
+    return formData.name.trim() ? generateSlug(formData.name) : "";
+  }, [formData.name]);
 
   const handleInputChange = (
     field: keyof TournamentFormData,
@@ -263,10 +268,27 @@ const CreateTournamentPage = () => {
   };
 
   const handleNameChange = (name: string) => {
+    setFormData((prev) => {
+      const next = { ...prev, name };
+      if (!isSlugDirty) {
+        next.slug = name.trim() ? generateSlug(name) : "";
+      }
+      return next;
+    });
+  };
+
+  const handleSlugChange = (slugValue: string) => {
+    const trimmed = slugValue.trim();
+    setIsSlugDirty(Boolean(trimmed));
+    handleInputChange("slug", slugValue);
+  };
+
+  const applyRecommendedSlug = () => {
+    if (!recommendedSlug) return;
+    setIsSlugDirty(false);
     setFormData((prev) => ({
       ...prev,
-      name,
-      slug: generateSlug(name),
+      slug: recommendedSlug,
     }));
   };
 
@@ -444,12 +466,36 @@ const CreateTournamentPage = () => {
                     <Input
                       id="slug"
                       value={formData.slug}
-                      onChange={(e) =>
-                        handleInputChange("slug", e.target.value)
-                      }
+                      onChange={(e) => handleSlugChange(e.target.value)}
                       placeholder="qdeb-spring-championship-2024"
                       required
                     />
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                      {recommendedSlug ? (
+                        <>
+                          <span>
+                            Рекомендуемый slug:{" "}
+                            <span className="text-white">
+                              {recommendedSlug}
+                            </span>
+                          </span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={applyRecommendedSlug}
+                            className="h-6 px-2 text-xs"
+                          >
+                            Использовать
+                          </Button>
+                        </>
+                      ) : (
+                        <span>
+                          Укажите понятный адрес — он появится в ссылке на
+                          турнир.
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
