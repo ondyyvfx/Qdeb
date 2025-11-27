@@ -186,37 +186,6 @@ const CreateTournamentPage = () => {
     }
   }, []);
 
-  const recommendedSlug = useMemo(() => {
-    return formData.name.trim() ? generateSlug(formData.name) : "";
-  }, [formData.name]);
-
-  const handleInputChange = (
-    field: keyof TournamentFormData,
-    value: string | number | boolean | File | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleOpenFormBuilder = () => {
-    router.push("/tournaments/form-builder");
-  };
-
-  const handleRefreshRegistrationFields = () => {
-    const saved = readTemplateFromStorage();
-    if (saved) {
-      setRegistrationFields(saved);
-      toast.success("Шаблон формы обновлён.");
-    } else {
-      setRegistrationFields(DEFAULT_REGISTRATION_FIELDS);
-      toast.info(
-        "Сохранённый шаблон не найден. Откройте конструктор, чтобы создать его."
-      );
-    }
-  };
-
   const generateSlug = (value: string) => {
     const transliterationMap: Record<string, string> = {
       а: "a",
@@ -265,6 +234,37 @@ const CreateTournamentPage = () => {
       .replace(/^-|-$/g, "");
 
     return normalized || `tournament-${Date.now()}`;
+  };
+
+  const recommendedSlug = useMemo(() => {
+    return formData.name.trim() ? generateSlug(formData.name) : "";
+  }, [formData.name]);
+
+  const handleInputChange = (
+    field: keyof TournamentFormData,
+    value: string | number | boolean | File | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleOpenFormBuilder = () => {
+    router.push("/tournaments/form-builder");
+  };
+
+  const handleRefreshRegistrationFields = () => {
+    const saved = readTemplateFromStorage();
+    if (saved) {
+      setRegistrationFields(saved);
+      toast.success("Шаблон формы обновлён.");
+    } else {
+      setRegistrationFields(DEFAULT_REGISTRATION_FIELDS);
+      toast.info(
+        "Сохранённый шаблон не найден. Откройте конструктор, чтобы создать его."
+      );
+    }
   };
 
   const handleNameChange = (name: string) => {
