@@ -1,104 +1,104 @@
-"use client";
+"use client"
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { X, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
-import { Toaster, toast } from "react-hot-toast";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { X, Eye, EyeOff } from "lucide-react"
+import Link from "next/link"
+import { Toaster, toast } from "react-hot-toast"
 // import Cookies from "js-cookie";
 // import { useUserStore } from "@/stores/useUserStore";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [full_name, setFull_name] = useState("");
-  const [phone, setPhone] = useState("");
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
-  const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [full_name, setFull_name] = useState("")
+  const [phone, setPhone] = useState("")
+  const [avatar, setAvatar] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [emailTouched, setEmailTouched] = useState(false)
+  const [passwordTouched, setPasswordTouched] = useState(false)
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false)
+  const [isAgreedWithPolicy, setIsAgreedWithPolicy] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   // profilePicture is optional per backend docs
-  const [phoneError] = useState(false);
-  const [username, setUsername] = useState("");
-  const [gender, setGender] = useState<"M" | "F" | "O">("O");
+  const [phoneError] = useState(false)
+  const [username, setUsername] = useState("")
+  const [gender, setGender] = useState<"M" | "F" | "O">("O")
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
-      setAvatar(file);
-      setPreview(URL.createObjectURL(file));
+      setAvatar(file)
+      setPreview(URL.createObjectURL(file))
     } else {
-      setAvatar(null);
-      setPreview(null);
+      setAvatar(null)
+      setPreview(null)
     }
-  };
+  }
 
   const validateEmail = (email: string) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(email);
-  };
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    return re.test(email)
+  }
 
   const validatePassword = (password: string) => {
     const re =
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/;
-    return re.test(password);
-  };
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/
+    return re.test(password)
+  }
 
-  const validatePhone = (phone: string) => /^\+7\d{10}$/.test(phone);
+  const validatePhone = (phone: string) => /^\+7\d{10}$/.test(phone)
   const validateFullName = (name: string) =>
-    name.trim().split(/\s+/).length >= 2;
+    name.trim().split(/\s+/).length >= 2
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateEmail(email)) {
-      toast.error("Введите корректный email.");
-      return;
+      toast.error("Введите корректный email.")
+      return
     }
 
     if (!validatePassword(password)) {
       toast.error(
         "Пароль должен быть не менее 8 символов, содержать заглавную латинскую букву и спецсимвол."
-      );
-      return;
+      )
+      return
     }
 
     if (password !== confirmPassword) {
-      toast.error("Пароли не совпадают.");
-      return;
+      toast.error("Пароли не совпадают.")
+      return
     }
 
     if (!validateFullName(full_name)) {
-      toast.error("Полное имя должно состоять минимум из двух слов.");
-      return;
+      toast.error("Полное имя должно состоять минимум из двух слов.")
+      return
     }
 
     if (!validatePhone(phone)) {
-      toast.error("Телефон должен быть в формате +7XXXXXXXXXX.");
-      return;
+      toast.error("Телефон должен быть в формате +7XXXXXXXXXX.")
+      return
     }
 
     // avatar is optional
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
-      const formData = new FormData();
+      const formData = new FormData()
 
       const json = JSON.stringify({
         username,
@@ -108,13 +108,13 @@ export default function RegisterPage() {
         gender,
         phone,
         description: "Hello!",
-      });
+      })
 
       // send as plain string; browser sets multipart boundary automatically
-      formData.append("register", json);
+      formData.append("register", json)
 
       if (avatar) {
-        formData.append("profilePicture", avatar);
+        formData.append("profilePicture", avatar)
       }
 
       // no debug logs in production
@@ -123,56 +123,55 @@ export default function RegisterPage() {
         method: "POST",
         body: formData,
         credentials: "include",
-      });
+      })
 
       if (!res.ok) {
         // Попробуем разобрать JSON с ошибками валидации
-        let message = "Ошибка регистрации";
+        let message = "Ошибка регистрации"
         try {
-          const contentType = res.headers.get("content-type") || "";
+          const contentType = res.headers.get("content-type") || ""
           if (contentType.includes("application/json")) {
-            const errorData: unknown = await res.json();
+            const errorData: unknown = await res.json()
             const asRecord = (val: unknown): Record<string, unknown> | null =>
               val && typeof val === "object"
                 ? (val as Record<string, unknown>)
-                : null;
-            const errObj = asRecord(errorData);
+                : null
+            const errObj = asRecord(errorData)
             if (errObj && errObj.errors && typeof errObj.errors === "object") {
               const details = Object.entries(
                 errObj.errors as Record<string, unknown>
               )
                 .map(([field, msg]) => `${String(field)}: ${String(msg)}`)
-                .join("; ");
-              message = details || message;
+                .join("; ")
+              message = details || message
             } else if (errObj && errObj.error) {
-              message = String(errObj.error);
+              message = String(errObj.error)
             } else if (errObj && errObj.message) {
-              message = String(errObj.message);
+              message = String(errObj.message)
             }
           } else {
-            const text = await res.text();
-            if (text) message = text;
+            const text = await res.text()
+            if (text) message = text
           }
         } catch {}
-        throw new Error(message);
+        throw new Error(message)
       }
 
-      toast.success("Регистрация успешна!");
-      router.push("/login");
+      toast.success("Регистрация успешна!")
+      router.push("/login")
     } catch (err) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Ошибка при подключении к серверу.";
-      toast.error(message);
+        err instanceof Error ? err.message : "Ошибка при подключении к серверу."
+      toast.error(message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="register-form flex bg-[#070A12] text-foreground selection:text-accent">
+    <div className="register-form flex min-h-screen bg-[#070A12] text-foreground selection:text-accent px-4 md:px-8">
       <Toaster position="top-center" />
+
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
         <div className="w-full h-full relative rounded-2xl overflow-hidden">
           <Image
@@ -184,17 +183,18 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="flex w-full md:w-35% lg:w-1/2 items-center justify-center p-2 animate-fade-in">
+      <div className="flex w-full md:w-1/2 items-center justify-center px-4 py-6 md:px-8 animate-fade-in">
         <Link href="/">
-          <X className="absolute right-[5%] top-[2%] w-5 h-5 text-white" />
+          <X className="absolute right-6 top-6 w-5 h-5 text-white opacity-70 hover:opacity-100" />
         </Link>
-        <div className="w-full px-4 rounded-3xl shadow-lg bg-muted">
-          <h1 className="text-4xl font-bold text-center mb-7">
+
+        <div className="w-full max-w-[1240px] rounded-3xl shadow-lg bg-muted px-6 py-8 md:px-8 md:py-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
             Создайте аккаунт
           </h1>
 
           {/* Поле предупреждения */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-5 py-4 mb-8">
             <div className="flex items-start gap-3">
               <svg
                 className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5"
@@ -210,7 +210,6 @@ export default function RegisterPage() {
                 />
               </svg>
               <p className="text-sm text-yellow-300">
-                {/* Placeholder текст - замените на свой */}
                 Внимание: данные из этой формы будут использованы в вашем
                 профиле и интегрированы с Tabbycat. Пожалуйста, вводите данные
                 так, как хотите, чтобы они отображались в вашем профиле - они
@@ -220,7 +219,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-7">
             <div className="space-y-2">
               <Label htmlFor="full_name" className="text-lg">
                 Полное имя
@@ -344,6 +343,7 @@ export default function RegisterPage() {
                   спецсимвол
                 </p>
               )}
+
               <div className="relative">
                 <Input
                   id="confirm_password"
@@ -399,7 +399,7 @@ export default function RegisterPage() {
                 Фото профиля
               </Label>
               <div className="flex items-center gap-4">
-                <label className="cursor-pointer rounded-lg  bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
+                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
                   Выбрать файл
                   <Input
                     type="file"
@@ -417,6 +417,7 @@ export default function RegisterPage() {
                 )}
               </div>
             </div>
+
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="remember"
@@ -461,6 +462,7 @@ export default function RegisterPage() {
                 "Зарегистрироваться"
               )}
             </Button>
+
             <div className="flex justify-center text-base">
               <span className="text-muted-foreground">
                 Уже есть аккаунт?&nbsp;
@@ -476,5 +478,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

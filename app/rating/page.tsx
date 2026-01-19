@@ -1,175 +1,175 @@
-"use client";
+"use client"
 
-import { useState, useMemo, useEffect } from "react";
-import Navbar from "@/components/shared/Navbar";
-import { getTopSpeakers } from "../../lib/topspeakers";
-import Image from "next/image";
-import { Search, Filter, ArrowUpRight, X } from "lucide-react";
+import { useState, useMemo, useEffect } from "react"
+import Navbar from "@/components/shared/Navbar"
+import { getTopSpeakers } from "../../lib/topspeakers"
+import Image from "next/image"
+import { Search, Filter, ArrowUpRight, X } from "lucide-react"
 
 type Speaker = {
-  id: string;
-  name: string;
-  image: string;
-  avg_speech: number;
-  elo: number;
-  num_tournaments: number;
-  organization?: string;
-  achievements?: string[];
-};
+  id: string
+  name: string
+  image: string
+  avg_speech: number
+  elo: number
+  num_tournaments: number
+  organization?: string
+  achievements?: string[]
+}
 
-type SortOption = "elo" | "avg_speech" | "num_tournaments";
+type SortOption = "elo" | "avg_speech" | "num_tournaments"
 
-type ToastType = "success" | "info" | "warning" | "error";
+type ToastType = "success" | "info" | "warning" | "error"
 
 interface Toast {
-  id: string;
-  message: string;
-  type: ToastType;
+  id: string
+  message: string
+  type: ToastType
 }
 
 export default function RatingPage() {
-  const [speakers, setSpeakers] = useState<Speaker[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("elo");
-  const [isLoading, setIsLoading] = useState(true);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [speakers, setSpeakers] = useState<Speaker[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState<SortOption>("elo")
+  const [isLoading, setIsLoading] = useState(true)
+  const [toasts, setToasts] = useState<Toast[]>([])
 
   // Toast functions
   const addToast = (message: string, type: ToastType = "info") => {
-    const id = Date.now().toString();
-    const newToast: Toast = { id, message, type };
-    setToasts((prev) => [...prev, newToast]);
+    const id = Date.now().toString()
+    const newToast: Toast = { id, message, type }
+    setToasts((prev) => [...prev, newToast])
 
     // Auto remove toast after 3 seconds
     setTimeout(() => {
-      removeToast(id);
-    }, 3000);
-  };
+      removeToast(id)
+    }, 3000)
+  }
 
   const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  }
 
   // Load speakers data
   useEffect(() => {
     const loadSpeakers = async () => {
       try {
-        const data = await getTopSpeakers();
-        setSpeakers(data);
+        const data = await getTopSpeakers()
+        setSpeakers(data)
       } catch (error) {
-        console.error("Error loading speakers:", error);
-        addToast("Ошибка при загрузке данных спикеров", "error");
+        console.error("Error loading speakers:", error)
+        addToast("Ошибка при загрузке данных спикеров", "error")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadSpeakers();
-  }, []);
+    loadSpeakers()
+  }, [])
 
   // Sort all speakers first to get consistent rankings
   const sortedSpeakers = useMemo(() => {
     return [...speakers].sort((a, b) => {
       switch (sortBy) {
         case "elo":
-          return b.elo - a.elo;
+          return b.elo - a.elo
         case "avg_speech":
-          return b.avg_speech - a.avg_speech;
+          return b.avg_speech - a.avg_speech
         case "num_tournaments":
-          return b.num_tournaments - a.num_tournaments;
+          return b.num_tournaments - a.num_tournaments
         default:
-          return 0;
+          return 0
       }
-    });
-  }, [speakers, sortBy]);
+    })
+  }, [speakers, sortBy])
 
   // Get stable top 3 and others
-  const stableTop3 = sortedSpeakers.slice(0, 3);
-  const othersSpeakers = sortedSpeakers.slice(3);
+  const stableTop3 = sortedSpeakers.slice(0, 3)
+  const othersSpeakers = sortedSpeakers.slice(3)
 
   // Filter others based on search (case-insensitive) - DESKTOP ONLY
   const filteredOthersSpeakers = useMemo(() => {
     if (!appliedSearchQuery.trim()) {
-      return othersSpeakers;
+      return othersSpeakers
     }
 
     return othersSpeakers.filter((speaker) =>
       speaker.name.toLowerCase().includes(appliedSearchQuery.toLowerCase())
-    );
-  }, [othersSpeakers, appliedSearchQuery]);
+    )
+  }, [othersSpeakers, appliedSearchQuery])
 
   // Filter ALL speakers for mobile (including top 3)
   const filteredAllSpeakers = useMemo(() => {
     if (!appliedSearchQuery.trim()) {
-      return sortedSpeakers;
+      return sortedSpeakers
     }
 
     return sortedSpeakers.filter((speaker) =>
       speaker.name.toLowerCase().includes(appliedSearchQuery.toLowerCase())
-    );
-  }, [sortedSpeakers, appliedSearchQuery]);
+    )
+  }, [sortedSpeakers, appliedSearchQuery])
 
   // Function to get speaker's actual rank in full sorted list
   const getSpeakerRank = (speakerId: string) => {
     const index = sortedSpeakers.findIndex(
       (speaker) => speaker.id === speakerId
-    );
-    return index + 1; // Convert to 1-based ranking
-  };
+    )
+    return index + 1 // Convert to 1-based ranking
+  }
 
   const handleApplyFilters = () => {
-    setAppliedSearchQuery(searchQuery);
+    setAppliedSearchQuery(searchQuery)
 
-    const searchText = searchQuery.trim() ? `"${searchQuery}"` : "не указан";
-    const sortText = getSortLabel(sortBy);
+    const searchText = searchQuery.trim() ? `"${searchQuery}"` : "не указан"
+    const sortText = getSortLabel(sortBy)
 
     addToast(
       `Фильтры применены: поиск ${searchText}, сортировка ${sortText}`,
       "success"
-    );
-  };
+    )
+  }
 
   const handleClearSearch = () => {
-    setSearchQuery("");
-    setAppliedSearchQuery("");
-    addToast("Поиск очищен", "info");
-  };
+    setSearchQuery("")
+    setAppliedSearchQuery("")
+    addToast("Поиск очищен", "info")
+  }
 
   const getSortLabel = (sort: SortOption) => {
     switch (sort) {
       case "elo":
-        return "по ELO";
+        return "по ELO"
       case "avg_speech":
-        return "по среднему баллу";
+        return "по среднему баллу"
       case "num_tournaments":
-        return "по количеству турниров";
+        return "по количеству турниров"
       default:
-        return "по ELO";
+        return "по ELO"
     }
-  };
+  }
 
   const getToastColors = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "bg-green-600 border-green-500";
+        return "bg-green-600 border-green-500"
       case "error":
-        return "bg-red-600 border-red-500";
+        return "bg-red-600 border-red-500"
       case "warning":
-        return "bg-yellow-600 border-yellow-500";
+        return "bg-yellow-600 border-yellow-500"
       case "info":
       default:
-        return "bg-blue-600 border-blue-500";
+        return "bg-blue-600 border-blue-500"
     }
-  };
+  }
 
   const gradients = [
     "from-[rgba(223,159,32,0)] to-[rgba(223,159,32,0.45)]",
     "from-[rgba(191,191,191,0)] to-[rgba(191,191,191,0.45)]",
     "from-[rgba(185,128,70,0)] to-[rgba(185,128,70,0.45)]",
-  ];
+  ]
 
-  const podiumOrder = [1, 0, 2];
+  const podiumOrder = [1, 0, 2]
 
   const getRankData = (position: number) => {
     switch (position) {
@@ -178,23 +178,23 @@ export default function RatingPage() {
           numberColor: "text-[#df9f20]",
           borderColor: "border-[#df9f20]",
           scale: "scale-110",
-        };
+        }
       case 1:
         return {
           numberColor: "text-[#bfbfbf]",
           borderColor: "border-[#bfbfbf]",
           scale: "scale-100",
-        };
+        }
       case 2:
         return {
           numberColor: "text-[#b98046]",
           borderColor: "border-[#b98046]",
           scale: "scale-100",
-        };
+        }
       default:
-        return {};
+        return {}
     }
-  };
+  }
 
   const getRankStyling = (position: number) => {
     switch (position) {
@@ -203,27 +203,27 @@ export default function RatingPage() {
           bgGradient: "from-[rgba(223,159,32,0)] to-[rgba(223,159,32,0.45)]",
           numberColor: "text-[#df9f20]",
           borderColor: "border-[#df9f20]",
-        };
+        }
       case 1:
         return {
           bgGradient: "from-[rgba(191,191,191,0)] to-[rgba(191,191,191,0.45)]",
           numberColor: "text-[#bfbfbf]",
           borderColor: "border-[#bfbfbf]",
-        };
+        }
       case 2:
         return {
           bgGradient: "from-[rgba(185,128,70,0)] to-[rgba(185,128,70,0.45)]",
           numberColor: "text-[#b98046]",
           borderColor: "border-[#b98046]",
-        };
+        }
       default:
         return {
           bgGradient: "",
           numberColor: "text-white",
           borderColor: "border-gray-600",
-        };
+        }
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -233,7 +233,7 @@ export default function RatingPage() {
           <div className="text-xl">Загрузка...</div>
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -267,12 +267,12 @@ export default function RatingPage() {
         {/* Desktop: Top 3 Podium */}
         <div className="hidden lg:flex justify-center items-end gap-0 px-4 pb-20">
           {podiumOrder.map((position) => {
-            const speaker = stableTop3[position];
-            if (!speaker) return null;
+            const speaker = stableTop3[position]
+            if (!speaker) return null
 
-            const rankData = getRankData(position);
-            const gradient = gradients[position];
-            const isFirst = position === 0;
+            const rankData = getRankData(position)
+            const gradient = gradients[position]
+            const isFirst = position === 0
 
             return (
               <div
@@ -343,7 +343,7 @@ export default function RatingPage() {
                   </div>
                 </div>
               </div>
-            );
+            )
           })}
         </div>
 
@@ -426,15 +426,15 @@ export default function RatingPage() {
                 </div>
               ) : (
                 filteredAllSpeakers.map((speaker: Speaker) => {
-                  const actualRank = getSpeakerRank(speaker.id);
-                  const isTop3 = actualRank <= 3;
+                  const actualRank = getSpeakerRank(speaker.id)
+                  const isTop3 = actualRank <= 3
                   const styling = isTop3
                     ? getRankStyling(actualRank - 1)
                     : {
                         bgGradient: "",
                         numberColor: "text-white",
                         borderColor: "border-gray-600",
-                      };
+                      }
 
                   return (
                     <div
@@ -554,7 +554,7 @@ export default function RatingPage() {
                         )}
                       </div>
                     </div>
-                  );
+                  )
                 })
               )}
             </div>
@@ -636,11 +636,13 @@ export default function RatingPage() {
             ) : filteredOthersSpeakers.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
                 {/* Нет других спикеров */}
-                <span className="text-red-500 block">Эта функция находиться на стадии разработки</span>
+                <span className="text-red-500 block">
+                  Эта функция находиться на стадии разработки
+                </span>
               </div>
             ) : (
               filteredOthersSpeakers.map((speaker: Speaker) => {
-                const actualRank = getSpeakerRank(speaker.id);
+                const actualRank = getSpeakerRank(speaker.id)
 
                 return (
                   <div
@@ -712,12 +714,12 @@ export default function RatingPage() {
                       </div>
                     </div>
                   </div>
-                );
+                )
               })
             )}
           </div>
         </div>
       </div>
     </>
-  );
+  )
 }

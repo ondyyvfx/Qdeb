@@ -270,45 +270,51 @@ const Navbar = () => {
 
   return (
     <header className="w-full bg-background text-text border-b border-white/10 flex justify-center sticky top-0 z-50">
-      <div className="w-full my-3.5 py-4 flex items-center justify-between px-3 md:px-10 xl:px-19">
-        <Link href="/" passHref>
-          <Image src={logoImage} alt="QDeb Logo" width={90} height={25} />
+      <div className="w-full py-5 md:py-6 flex items-center justify-between px-3 md:px-10 xl:px-19">
+        <Link href="/" passHref className="flex-shrink-0">
+          <Image src={logoImage} alt="QDeb Logo" width={110} height={30} className="h-auto" />
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex gap-8 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
           <Link
             href="/calendar"
-            className="hover:text-accent transition-colors"
+            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
             Календарь
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments"
-              className="hover:text-accent transition-colors"
+              className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
             >
               Турниры
             </Link>
           )}
-          <Link href="/rating" className="hover:text-accent transition-colors">
+          <Link 
+            href="/rating" 
+            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
+          >
             Рейтинг спикеров
           </Link>
-          <Link href="/about" className="hover:text-accent transition-colors">
+          <Link 
+            href="/about" 
+            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
+          >
             О нас
           </Link>
           <a
             href="https://tabby.qdeb.kz"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-accent transition-colors"
+            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
             Tabbycat
           </a>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"
-              className="hover:text-orange-400 transition-colors text-orange-500 font-semibold"
+              className="px-5 py-2.5 text-base lg:text-lg font-bold text-accent hover:text-white hover:bg-accent transition-all rounded-lg border border-accent/50 hover:border-accent"
             >
               Создать турнир
             </Link>
@@ -318,10 +324,10 @@ const Navbar = () => {
         {/* Desktop user avatar or login */}
         <div className="hidden md:flex items-center relative" ref={menuRef}>
           {!hasHydrated ? (
-            <div className="h-10 w-[140px] rounded-md bg-white/10 animate-pulse" />
+            <div className="h-12 w-[160px] rounded-md bg-white/10 animate-pulse" />
           ) : user ? (
             <div
-              className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg px-2 py-1 transition-all duration-200"
+              className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg px-3 py-2 transition-all duration-200"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
               {user.avatar && user.avatar.trim() !== "" ? (
@@ -342,7 +348,7 @@ const Navbar = () => {
                   </span>
                 </div>
               )}
-              <span className="text-base font-semibold text-white">
+              <span className="text-base lg:text-lg font-semibold text-white">
                 {formatUserName(user)}
               </span>
             </div>
@@ -358,7 +364,7 @@ const Navbar = () => {
               <Button
                 onClick={() => router.push("/register")}
                 variant="default"
-                className="border border-gray-600 bg-background text-white hover:bg-orange-500 hover:border-accent transition-colors py-5 px-6 ml-2"
+                className="border border-gray-600 bg-background text-white hover:bg-orange-500 hover:border-accent transition-colors py-3 px-6 text-base lg:text-lg font-semibold"
               >
                 Регистрация
               </Button>

@@ -1,50 +1,37 @@
-"use client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-import { useUserStore } from "@/stores/useUserStore";
-import Image from "next/image";
-import { X } from "lucide-react";
-import Link from "next/link";
-import { Toaster, toast } from "react-hot-toast";
-import { safeParseResponse } from "@/lib/api";
-//
+"use client"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react"
+import { Eye, EyeOff, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
+import { useUserStore } from "@/stores/useUserStore"
+import Image from "next/image"
+import Link from "next/link"
+import { Toaster, toast } from "react-hot-toast"
+import { safeParseResponse } from "@/lib/api"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(false);
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberDevice, setRememberDevice] = useState(false)
 
-  const router = useRouter();
+  const router = useRouter()
 
   const fetchProfile = async (accessToken: string) => {
     const res = await fetch(`${API_URL}/profile`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
 
     if (res.ok) {
-      const parseResult = await safeParseResponse(res);
-      
-      if (parseResult.error) {
-        console.error("Failed to parse profile response:", parseResult.error);
-        return;
-      }
-      
-      if (!parseResult.isJson) {
-        console.warn("Non-JSON response from profile:", parseResult.data);
-        return;
-      }
-      
+      const parseResult = await safeParseResponse(res)
+      if (parseResult.error || !parseResult.isJson) return
+
       useUserStore.getState().setUser({
         email: "",
         full_name: "",
@@ -52,18 +39,12 @@ export default function LoginPage() {
         phone: "",
         description: "",
         roles: [],
-      });
-      return;
+      })
     }
-    console.error("Не удалось получить профиль пользователя");
-  };
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    console.log("Attempting login with:", { username, password: "***" });
-    console.log("API URL:", `${API_URL}/auth/signin`);
-    console.log("Request body:", JSON.stringify({ username, password: "***" }));
+    e.preventDefault()
 
     try {
       const res = await fetch(`${API_URL}/auth/signin`, {
@@ -73,87 +54,75 @@ export default function LoginPage() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-      });
-
-      console.log("Login response status:", res.status);
+        body: JSON.stringify({ username, password }),
+      })
 
       if (res.ok) {
-        const parseResult = await safeParseResponse(res);
-        
-        if (parseResult.error) {
-          console.error("Failed to parse login response:", parseResult.error);
-          toast.error("Ошибка обработки ответа сервера");
-          return;
+        const parseResult = await safeParseResponse(res)
+        if (parseResult.error || !parseResult.isJson) {
+          toast.error("Ошибка обработки ответа сервера")
+          return
         }
-        
-        if (!parseResult.isJson) {
-          console.warn("Non-JSON response from login:", parseResult.data);
-          toast.error("Неожиданный формат ответа сервера");
-          return;
-        }
-        
-        const data = parseResult.data as { token: string };
 
-        toast.success("Успешный вход!");
+        const data = parseResult.data as { token: string }
+
+        toast.success("Успешный вход!")
 
         Cookies.set("accessToken", data.token, {
           expires: rememberDevice ? 7 : 1,
-        });
+        })
 
-        await fetchProfile(data.token);
-
-        router.push("/");
+        await fetchProfile(data.token)
+        router.push("/")
       } else {
-        // Handle error response using safe parsing
-        let message = "Ошибка входа. Проверьте данные.";
-        const parseResult = await safeParseResponse(res);
-        
+        let message = "Ошибка входа. Проверьте данные."
+        const parseResult = await safeParseResponse(res)
+
         if (parseResult.error) {
-          console.error("Error parsing error response:", parseResult.error);
-          message = parseResult.error;
+          message = parseResult.error
         } else if (typeof parseResult.data === "string") {
-          message = parseResult.data;
+          message = parseResult.data
         } else if (parseResult.data && typeof parseResult.data === "object") {
-          const errorData = parseResult.data as Record<string, unknown>;
-          message = String(errorData.detail || errorData.message || errorData.error || message);
+          const errorData = parseResult.data as Record<string, unknown>
+          message = String(
+            errorData.detail || errorData.message || errorData.error || message
+          )
         }
-        
-        toast.error(message);
+
+        toast.error(message)
       }
-    } catch (err) {
-      toast.error("Произошла ошибка. Попробуйте снова.");
-      console.error(err);
+    } catch {
+      toast.error("Произошла ошибка. Попробуйте снова.")
     }
-  };
+  }
 
   return (
-    <div className="login-form flex min-h-screen bg-[#070A12] text-foreground">
-      <Toaster position="top-center" reverseOrder={false} />
-      {/* Левая сторона с картинкой */}
+    <div className="login-form flex min-h-screen bg-[#070A12] text-foreground px-4 md:px-8">
+      <Toaster position="top-center" />
+
+      {/* Левая сторона с баннером */}
       <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
-        <div className="relative w-full h-full bg-primary rounded-2xl overflow-hidden">
+        <div className="relative w-full h-full rounded-2xl overflow-hidden">
           <Image
-            src="/assets/banner.png" // путь к твоей картинке
+            src="/assets/banner.png"
             alt="Login Banner"
             fill
-            className="object-cover rounded-2xl"
+            className="object-cover"
           />
         </div>
       </div>
 
-      {/* Правая сторона с формой */}
-      <div className="flex w-full md:w-1/2 items-center justify-center p-12 md:p-24 animate-fade-in">
-        <div className="w-full">
-          <Link href="/" className="">
-            <X className="absolute right-[5%] top-[7%] w-5 h-5 text-white" />
-          </Link>
-          <h1 className="text-4xl text-center mb-10 font-bold">
+      {/* Правая сторона — ФОРМА ПО ЦЕНТРУ */}
+      <div className="flex w-full md:w-1/2 min-h-full items-center justify-center px-8 lg:px-16 py-8 animate-fade-in relative">
+        <Link href="/">
+          <X className="absolute right-6 top-6 w-5 h-5 text-white opacity-70 hover:opacity-100" />
+        </Link>
+
+        <div className="w-full max-w-[640px] lg:max-w-[1240px] rounded-3xl shadow-lg bg-muted px-8 py-10">
+          <h1 className="text-3xl md:text-4xl text-center mb-10 mt-2 font-bold">
             Войдите в аккаунт
           </h1>
+
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
               <Label htmlFor="username" className="text-lg">
@@ -161,7 +130,6 @@ export default function LoginPage() {
               </Label>
               <Input
                 id="username"
-                type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Никнейм"
@@ -178,24 +146,26 @@ export default function LoginPage() {
                   Забыли пароль?
                 </a>
               </div>
+
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Введите пароль"
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
               />
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-14 right-4 text-gray-400 hover:text-gray-300"
+                className="absolute top-[56px] right-4 text-gray-400 hover:text-gray-300"
+                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
               >
                 {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
               </button>
             </div>
 
-            {/* Чекбокс */}
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="remember"
@@ -229,6 +199,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-
