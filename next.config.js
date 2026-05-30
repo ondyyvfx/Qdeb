@@ -8,13 +8,13 @@ module.exports = {
         pathname: "/api/**",
       },
       {
-        protocol: "https",
-        hostname: "qdeb.kz",
+        protocol: "http",
+        hostname: "89.218.15.230",
         pathname: "/api/**",
       },
       {
-        protocol: "https",
-        hostname: "api.qdeb.kz",
+        protocol: "http",
+        hostname: "89.218.15.230",
         pathname: "/api/files/profile-picture/**",
       },
     ],
