@@ -63,6 +63,7 @@ export default function RatingPage() {
           teamName: string
           rating: number
           roundsPlayed: number
+          avgSpeech: number
         }> = await res.json()
         setSpeakers(data.map(s => ({
           id: String(s.speakerId),
