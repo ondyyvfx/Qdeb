@@ -303,14 +303,6 @@ const Navbar = () => {
           >
             О нас
           </Link>
-          <a
-            href="https://tabby.qdeb.kz"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-          >
-            Tabbycat
-          </a>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"

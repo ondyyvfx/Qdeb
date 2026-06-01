@@ -317,14 +317,6 @@ export default function AboutPage() {
                 <Trophy className="w-8 h-8 text-accent" />
               </div>
               <h3 className="text-xl font-semibold">Tabbycat</h3>
-              <a
-                href="https://tabby.qdeb.kz"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline block"
-              >
-                tabby.qdeb.kz
-              </a>
             </div>
           </div>
         </div>

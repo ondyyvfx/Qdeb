@@ -88,14 +88,6 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             О нас
           </Link>
           
-          <a
-            href="https://tabby.qdeb.kz"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
-          >
-            Tabbycat
-          </a>
           
           {user?.roles?.includes("ROLE_ADMIN") && (
             <Link
