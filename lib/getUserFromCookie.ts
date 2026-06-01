@@ -130,7 +130,7 @@ export const getUserFromCookie = async (): Promise<User | null> => {
   if (!token) return null;
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+    const baseUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
     const res = await fetch(`${baseUrl}/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,

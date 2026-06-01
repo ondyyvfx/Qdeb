@@ -29,9 +29,10 @@ export default async function CalendarPage() {
 
   try {
     const apiBase =
-      process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== ""
+      process.env.BACKEND_URL ||
+      (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== "" && process.env.NEXT_PUBLIC_API_URL.startsWith("http")
         ? process.env.NEXT_PUBLIC_API_URL
-        : FALLBACK_API;
+        : FALLBACK_API);
 
     const apiOrigin = apiBase.replace(/\/api\/?$/, "");
 

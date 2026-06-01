@@ -18,7 +18,7 @@ export function resolveProfilePictureUrl(
   }
 
   // Получаем базовый URL API из переменной окружения
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
+  const apiBase = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
   
   // Убираем /api из конца, если есть (для получения origin)
   const apiOrigin = apiBase.replace(/\/api\/?$/, "");
