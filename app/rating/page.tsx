@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import Navbar from "@/components/shared/Navbar"
 import Image from "next/image"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { Search, Filter, ArrowUpRight, X } from "lucide-react"
 
 type Speaker = {
@@ -27,6 +28,7 @@ interface Toast {
 }
 
 export default function RatingPage() {
+  const { t } = useLanguage()
   const [speakers, setSpeakers] = useState<Speaker[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [appliedSearchQuery, setAppliedSearchQuery] = useState("")
@@ -150,19 +152,15 @@ export default function RatingPage() {
   const handleClearSearch = () => {
     setSearchQuery("")
     setAppliedSearchQuery("")
-    addToast("Поиск очищен", "info")
+    addToast(t.rating.search, "info")
   }
 
-  const getSortLabel = (sort: SortOption) => {
+  const getSortLabel = (sort: SortOption): string => {
     switch (sort) {
-      case "elo":
-        return "по ELO"
-      case "avg_speech":
-        return "по среднему баллу"
-      case "num_tournaments":
-        return "по количеству турниров"
-      default:
-        return "по ELO"
+      case "elo": return t.rating.sortByElo
+      case "avg_speech": return t.rating.sortByAvg
+      case "num_tournaments": return t.rating.sortByTournaments
+      default: return t.rating.sortByElo
     }
   }
 
@@ -247,7 +245,7 @@ export default function RatingPage() {
       <>
         <Navbar />
         <div className="bg-background min-h-screen text-white pt-16 flex items-center justify-center">
-          <div className="text-xl">Загрузка...</div>
+          <div className="text-xl">{t.common.loading}</div>
         </div>
       </>
     )
@@ -347,13 +345,13 @@ export default function RatingPage() {
                     </div>
                     <div className="text-center">
                       <div className={`font-bold ${isFirst ? "text-2xl" : "text-xl"}`}>{speaker.avg_speech.toFixed(1)}</div>
-                      <div className="text-xs text-gray-400">Средний балл</div>
+                      <div className="text-xs text-gray-400">{t.rating.avgSpeech}</div>
                     </div>
                   </div>
 
                   <div className="text-sm text-gray-300">
                     <div>{speaker.organization}</div>
-                    <div className="text-gray-400 mt-1">{speaker.num_tournaments} раундов сыграно</div>
+                    <div className="text-gray-400 mt-1">{speaker.num_tournaments} {t.rating.roundsPlayed}</div>
                   </div>
                 </div>
               </div>
@@ -366,7 +364,7 @@ export default function RatingPage() {
           <div className="max-w-6xl mx-auto px-4 pb-12">
             {/* Section Header */}
             <div className="flex flex-col items-start justify-between mb-8 gap-4">
-              <h2 className="text-2xl font-bold">Рейтинг спикеров</h2>
+              <h2 className="text-2xl font-bold">{t.rating.title}</h2>
 
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
@@ -374,7 +372,7 @@ export default function RatingPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Поиск по имени спикера"
+                    placeholder={t.rating.search}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) =>
@@ -397,12 +395,12 @@ export default function RatingPage() {
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                   className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                 >
-                  <option value="elo">Сортировать по ELO</option>
+                  <option value="elo">{t.rating.sortByElo}</option>
                   <option value="avg_speech">
-                    Сортировать по среднему баллу
+                    {t.rating.sortByAvg}
                   </option>
                   <option value="num_tournaments">
-                    Сортировать по турнирам
+                    {t.rating.sortByTournaments}
                   </option>
                 </select>
 
@@ -411,7 +409,7 @@ export default function RatingPage() {
                   className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Filter className="w-4 h-4" />
-                  Применить фильтры
+                  {t.rating.applyFilters}
                 </button>
               </div>
             </div>
@@ -419,7 +417,7 @@ export default function RatingPage() {
             {/* Current filters display */}
             {appliedSearchQuery && (
               <div className="mb-4 flex items-center gap-2">
-                <span className="text-sm text-gray-400">Активный поиск:</span>
+                <span className="text-sm text-gray-400">{t.rating.search}:</span>
                 <div className="bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
                   {appliedSearchQuery}
                   <button
@@ -436,7 +434,7 @@ export default function RatingPage() {
             <div className="space-y-3">
               {filteredAllSpeakers.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  Спикеры не найдены
+                  {t.rating.notFound}
                 </div>
               ) : (
                 filteredAllSpeakers.map((speaker: Speaker) => {
@@ -533,7 +531,7 @@ export default function RatingPage() {
                               {speaker.avg_speech.toFixed(1)}
                             </div>
                             <div className="text-xs text-gray-400">
-                              Средний балл
+                              {t.rating.avgSpeech}
                             </div>
                           </div>
                           <div>
@@ -544,7 +542,7 @@ export default function RatingPage() {
                             >
                               {speaker.num_tournaments}
                             </div>
-                            <div className="text-xs text-gray-400">Турниры</div>
+                            <div className="text-xs text-gray-400">{t.rating.tournaments}</div>
                           </div>
                         </div>
 
@@ -561,7 +559,7 @@ export default function RatingPage() {
         <div className="hidden lg:block max-w-6xl mx-auto px-6 pb-6">
           {/* Section Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold">Все спикеры</h2>
+            <h2 className="text-3xl font-bold">{t.rating.allSpeakers}</h2>
 
             {/* Search and Filter */}
             <div className="flex items-center gap-4">
@@ -627,7 +625,7 @@ export default function RatingPage() {
           <div className="space-y-3">
             {filteredOthersSpeakers.length === 0 && appliedSearchQuery ? (
               <div className="text-center py-8 text-gray-400">
-                Спикеры не найдены среди мест 4+
+                {t.rating.notFoundBelow}
               </div>
             ) : filteredOthersSpeakers.length === 0 ? (
               <div className="text-center py-8 text-gray-400">
@@ -699,7 +697,7 @@ export default function RatingPage() {
                             {speaker.num_tournaments}
                           </div>
                           <div className="text-sm text-gray-400">
-                            Кол-во турниров
+                            {t.rating.tournamentsCount}
                           </div>
                         </div>
                       </div>

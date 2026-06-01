@@ -9,6 +9,7 @@ import { Swiper as SwiperCore } from "swiper";
 import { Navigation } from "swiper/modules";
 import MobileTournamentSlider from "./MobileTournamentSlider";
 import { resolveTournamentPictureUrl } from "@/lib/tournamentPicture";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Tournament {
   id: number;
@@ -25,6 +26,7 @@ interface Tournament {
 const UpcomingTournaments = () => {
   const [cards, setCards] = useState<Tournament[]>([]);
   const swiperRef = useRef<SwiperCore | null>(null);
+  const { t } = useLanguage();
   const API_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
@@ -88,9 +90,9 @@ const UpcomingTournaments = () => {
   return (
     <div className="my-14 px-3 md:px-10 xl:px-20">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Ближайшие турниры</h1>
+        <h1 className="text-3xl font-bold">{t.home.upcomingTournaments}</h1>
         <a href="/calendar" className="text-sm text-blue-500 hover:underline">
-          Посмотреть все
+          {t.home.viewAll}
         </a>
       </div>
 

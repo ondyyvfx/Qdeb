@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import { useMemo } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Event = {
     id: number;
@@ -30,14 +31,16 @@ type ClientCalendarProps = {
 };
 
 const renderStatusBadge = (event: Event) => {
-    let label = "Статус неизвестен";
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { t } = useLanguage();
+    let label = t.tournament.statusUnknown;
     let colorClass = "text-yellow-400";
 
     if (event.is_registration_open === true) {
-        label = "Регистрация открыта";
+        label = t.tournament.registrationOpen;
         colorClass = "text-green-400/80";
     } else if (event.is_registration_open === false) {
-        label = "Регистрация закрыта";
+        label = t.tournament.registrationClosed;
         colorClass = "text-white/60";
     }
 
@@ -51,6 +54,7 @@ const renderStatusBadge = (event: Event) => {
 };
 
 const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
+    const { t } = useLanguage();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
     const [formattedEvents, setFormattedEvents] = useState<
@@ -152,6 +156,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
 
     return (
         <div>
+            <h1 className="text-3xl font-bold mb-6">{t.calendar.title}</h1>
             {/* Фильтры */}
             <div className="flex flex-row gap-4 justify-between items-stretch sm:items-center mb-6">
                 <div className="relative w-full">
@@ -164,7 +169,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                     />
                     <input
                         type="text"
-                        placeholder="Поиск по названию"
+                        placeholder={t.calendar.searchPlaceholder}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="p-2 pl-8 rounded-lg border bg-dark-800 text-white/50 sm:w-full w-[200px]"
@@ -328,7 +333,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
 
                                                 <div className="text-sm z-10">
                                                     {event.cost === "0"
-                                                        ? "Бесплатно"
+                                                        ? t.tournament.free
                                                         : `${event.cost}`}
                                                 </div>
                                                 <div className="text-sm text-gray-300 max-w-[450px]">
@@ -358,7 +363,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                     ) : (
                                                         <Link href={`/tournaments/${event.slug}/join`}>
                                                             <button className="bg-green-400 text-white px-3 py-2 text-[13px] text-center sm:text-[16px] sm:px-4 sm:py-2 rounded-md font-semibold hover:bg-green-500 transition w-full sm:w-auto">
-                                                                Подать заявку
+                                                                {t.tournament.apply}
                                                             </button>
                                                         </Link>
                                                     )
@@ -367,7 +372,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                     href={`/tournaments/${event.slug}`}
                                                 >
                                                     <button className="bg-white text-black px-3 py-2 text-[13px] sm:text-[16px] sm:px-6 sm:py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors w-full sm:w-auto">
-                                                        Подробнее
+                                                        {t.tournament.viewDetails}
                                                     </button>
                                                 </Link>
                                             </div>

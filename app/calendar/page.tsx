@@ -200,7 +200,6 @@ export default async function CalendarPage() {
     <div>
       <Navbar />
       <div className="mx-3 md:mx-10 xl:mx-19 my-15 animate-fade-in">
-        <h1 className="text-3xl font-bold mb-6">Календарь турниров</h1>
         <ClientCalendar events={groupedByMonth} categories={categories} />
       </div>
       <Footer />

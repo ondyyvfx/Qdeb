@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { useUserStore, type User } from "@/stores/useUserStore";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 export const AppWrapper = ({
   children,
@@ -21,5 +22,5 @@ export const AppWrapper = ({
     }
   }, [initialUser, setUser]);
 
-  return <>{children}</>;
+  return <LanguageProvider>{children}</LanguageProvider>;
 };

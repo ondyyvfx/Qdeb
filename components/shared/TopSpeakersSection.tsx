@@ -1,4 +1,8 @@
+"use client"
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type SpeakerRating = {
     speakerId: number
@@ -15,31 +19,29 @@ const rankColors = [
     { number: "text-[#b98046]", bg: "border-[#b98046]/30" },
 ]
 
-const TopSpeakersSection = async () => {
-    let speakers: SpeakerRating[] = []
+const TopSpeakersSection = () => {
+    const [speakers, setSpeakers] = useState<SpeakerRating[]>([])
+    const { t } = useLanguage()
 
-    try {
-        const apiBase = process.env.BACKEND_URL || "http://localhost:4232/api"
-        const res = await fetch(`${apiBase}/rating/speakers`, { cache: "no-store" })
-        if (res.ok) {
-            const data = await res.json()
-            speakers = Array.isArray(data) ? data.slice(0, 10) : []
-        }
-    } catch {
-        // ignore
-    }
+    useEffect(() => {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api"
+        fetch(`${apiBase}/rating/speakers`, { cache: "no-store" })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setSpeakers(Array.isArray(data) ? data.slice(0, 10) : []))
+            .catch(() => {})
+    }, [])
 
     return (
         <section className="my-24 mx-4 md:mx-10 xl:mx-19">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold">Лучшие спикеры</h1>
+                <h1 className="text-3xl font-bold">{t.home.topSpeakers}</h1>
                 <Link href="/rating" className="text-sm text-gray-400 hover:text-white transition-colors">
-                    Полный рейтинг →
+                    {t.home.fullRating}
                 </Link>
             </div>
 
             {speakers.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">Нет данных</p>
+                <p className="text-gray-500 text-center py-8">{t.common.noData}</p>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {speakers.map((speaker, index) => {

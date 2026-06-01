@@ -13,6 +13,7 @@ import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { resolveProfilePictureUrl } from "@/lib/profilePicture";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserProfileResponse {
   id: number;
@@ -50,6 +51,7 @@ const Navbar = () => {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+  const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -281,14 +283,14 @@ const Navbar = () => {
             href="/calendar"
             className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
-            Календарь
+            {t.nav.calendar}
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments"
               className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
             >
-              Турниры
+              {t.nav.tournaments}
             </Link>
           )}
           <a
@@ -303,22 +305,29 @@ const Navbar = () => {
             href="/rating"
             className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
-            Рейтинг спикеров
+            {t.nav.rating}
           </Link>
-          <Link 
-            href="/about" 
+          <Link
+            href="/about"
             className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
-            О нас
+            {t.nav.about}
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
             <Link
               href="/tournaments/create"
               className="px-5 py-2.5 text-base lg:text-lg font-bold text-accent hover:text-white hover:bg-accent transition-all rounded-lg border border-accent/50 hover:border-accent"
             >
-              Создать турнир
+              {t.nav.createTournament}
             </Link>
           )}
+          {/* Language toggle */}
+          <button
+            onClick={() => setLang(lang === "ru" ? "kk" : "ru")}
+            className="px-3 py-1.5 text-sm font-bold border border-white/20 rounded-lg hover:border-white/50 transition-colors text-white/70 hover:text-white"
+          >
+            {lang === "ru" ? "ҚАЗ" : "РУС"}
+          </button>
         </nav>
 
         {/* Desktop user avatar or login */}
@@ -366,7 +375,7 @@ const Navbar = () => {
                 variant="default"
                 className="border border-gray-600 bg-background text-white hover:bg-orange-500 hover:border-accent transition-colors py-3 px-6 text-base lg:text-lg font-semibold"
               >
-                Регистрация
+                {t.nav.register}
               </Button>
             </>
           )}
