@@ -68,7 +68,7 @@ export default function RatingPage() {
           id: String(s.speakerId),
           name: s.speakerName,
           image: "/assets/Qback.svg",
-          avg_speech: 0,
+          avg_speech: s.avgSpeech,
           elo: s.rating,
           num_tournaments: s.roundsPlayed,
           organization: s.teamName,
@@ -345,17 +345,9 @@ export default function RatingPage() {
                     </div>
                   </div>
 
-                  {/* Achievements */}
-                  <div className="text-sm text-gray-200 space-y-1 leading-relaxed">
-                    <div>
-                      <strong>NCYD</strong> - Полу-финалист, Лучший спикер
-                    </div>
-                    <div>
-                      <strong>ACS Cup</strong> - Лучший спикер
-                    </div>
-                    <div>
-                      <strong>Quantum Cup</strong> - Победитель
-                    </div>
+                  <div className="text-sm text-gray-300">
+                    <div>{speaker.organization}</div>
+                    <div className="text-gray-400 mt-1">{speaker.num_tournaments} раундов сыграно</div>
                   </div>
                 </div>
               </div>
@@ -550,23 +542,6 @@ export default function RatingPage() {
                           </div>
                         </div>
 
-                        {/* Top 3 achievements */}
-                        {isTop3 && (
-                          <div className="mt-2">
-                            <div className="text-xs text-gray-200 space-y-1 leading-relaxed">
-                              <div>
-                                <strong>NCYD</strong> - Полу-финалист, Лучший
-                                спикер
-                              </div>
-                              <div>
-                                <strong>ACS Cup</strong> - Лучший спикер
-                              </div>
-                              <div>
-                                <strong>Quantum Cup</strong> - Победитель
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )
