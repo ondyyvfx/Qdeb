@@ -18,21 +18,16 @@ export function resolveTournamentPictureUrl(
     return tournamentPicture;
   }
 
-  // Получаем базовый URL API из переменной окружения
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
-  
-  // Убираем /api из конца, если есть (для получения origin)
-  const apiOrigin = apiBase.replace(/\/api\/?$/, "");
-
-  // Извлекаем только имя файла из пути (если был путь типа "uploads/uuid.jpg")
-  let fileName = tournamentPicture;
-  if (tournamentPicture.includes("/")) {
-    fileName = tournamentPicture.split("/").pop() || tournamentPicture;
+  // Если уже относительный путь /api/... - возвращаем как есть (пойдёт через Vercel proxy)
+  if (tournamentPicture.startsWith("/api/")) {
+    return tournamentPicture;
   }
 
-  // Формируем правильный URL: {apiOrigin}/api/files/profile-picture/{fileName}
-  // Используем тот же путь, что и для аватаров, так как бэкенд возвращает просто UUID с расширением
-  // Например: https://api.qdeb.kz/api/files/profile-picture/30e1f290-e639-468c-aa6f-15f14133f391.png
-  return `${apiOrigin}/api/files/profile-picture/${fileName}`;
+  // Извлекаем только имя файла
+  const fileName = tournamentPicture.includes("/")
+    ? tournamentPicture.split("/").pop() || tournamentPicture
+    : tournamentPicture;
+
+  return `/api/files/${fileName}`;
 }
 
