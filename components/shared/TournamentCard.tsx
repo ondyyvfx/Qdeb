@@ -74,7 +74,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
     registrationlink,
     backgroundUrl,
 }) => {
-    const imageSrc = backgroundUrl || Qlogo.src;
+    const imageSrc = backgroundUrl || "/assets/default-avatar.svg";
     const ctaHref = registrationlink || `/tournaments/${slug}`;
     const isExternalLink =
         typeof registrationlink === "string" &&

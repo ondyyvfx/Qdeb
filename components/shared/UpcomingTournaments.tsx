@@ -52,7 +52,7 @@ const UpcomingTournaments = () => {
             t.photoUrl || t.pictureUrl || t.imageURL || t.imageUrl || t.tournamentPicture || "";
           
           // Формируем правильный URL для изображения турнира
-          const resolvedBackground = resolveTournamentPictureUrl(imagePath) || "/assets/Q.svg";
+          const resolvedBackground = resolveTournamentPictureUrl(imagePath) || "/assets/default-avatar.svg";
 
           return {
             id: t.id,
