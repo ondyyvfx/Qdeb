@@ -1,4 +1,6 @@
-﻿import Navbar from "@/components/shared/Navbar";
+﻿export const dynamic = "force-dynamic";
+
+import Navbar from "@/components/shared/Navbar";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import ClientCalendar from "./ClientCalendar";
