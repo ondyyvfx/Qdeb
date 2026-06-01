@@ -201,10 +201,8 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                         {renderStatusBadge(event)}
                                         <div className="relative w-full aspect-[4/3] md:w-48 md:aspect-square flex-shrink-0 overflow-hidden rounded-xl bg-white/5">
                                             <img
-                                                src={
-                                                    event.imageUrl ||
-                                                    "/assets/Qback.svg"
-                                                }
+                                                src={event.imageUrl || "/assets/default-avatar.svg"}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = "/assets/default-avatar.svg" }}
                                                 alt={event.title}
                                                 className="absolute inset-0 h-full w-full object-cover"
                                             />
