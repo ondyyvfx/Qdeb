@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Navbar from "@/components/shared/Navbar"
-import { getTopSpeakers } from "../../lib/topspeakers"
 import Image from "next/image"
 import { Search, Filter, ArrowUpRight, X } from "lucide-react"
 
@@ -55,8 +54,25 @@ export default function RatingPage() {
   useEffect(() => {
     const loadSpeakers = async () => {
       try {
-        const data = await getTopSpeakers()
-        setSpeakers(data)
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api"
+        const res = await fetch(`${apiBase}/rating/speakers`, { cache: "no-store" })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data: Array<{
+          speakerId: number
+          speakerName: string
+          teamName: string
+          rating: number
+          roundsPlayed: number
+        }> = await res.json()
+        setSpeakers(data.map(s => ({
+          id: String(s.speakerId),
+          name: s.speakerName,
+          image: "/assets/Qback.svg",
+          avg_speech: 0,
+          elo: s.rating,
+          num_tournaments: s.roundsPlayed,
+          organization: s.teamName,
+        })))
       } catch (error) {
         console.error("Error loading speakers:", error)
         addToast("Ошибка при загрузке данных спикеров", "error")
@@ -492,9 +508,8 @@ export default function RatingPage() {
                             </div>
                             <div className="text-xs text-gray-400 flex flex-col gap-1">
                               <div className="bg-gray-700 rounded px-2 py-1 text-xs inline-block w-fit">
-                                Парасат
+                                {speaker.organization || "—"}
                               </div>
-                              <span>Астана, ЕНУ</span>
                             </div>
                           </div>
                         </div>
@@ -676,9 +691,8 @@ export default function RatingPage() {
                           </div>
                           <div className="text-sm text-gray-400 flex items-center gap-1">
                             <div className="bg-gray-700 rounded px-2 py-1 text-xs">
-                              Парасат
+                              {speaker.organization || "—"}
                             </div>
-                            <span>Астана, ЕНУ</span>
                           </div>
                         </div>
                       </div>
