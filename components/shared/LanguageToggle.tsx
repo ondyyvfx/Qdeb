@@ -11,7 +11,7 @@ export default function LanguageToggle() {
       <Globe className="w-3.5 h-3.5 text-white/40 ml-1" />
       <button
         onClick={() => setLang("ru")}
-        className={`relative px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+        className={`w-8 py-1 text-xs font-semibold rounded-full transition-all duration-200 text-center ${
           lang === "ru"
             ? "bg-white text-black shadow-sm"
             : "text-white/50 hover:text-white/80"
@@ -21,7 +21,7 @@ export default function LanguageToggle() {
       </button>
       <button
         onClick={() => setLang("kk")}
-        className={`relative px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+        className={`w-8 py-1 text-xs font-semibold rounded-full transition-all duration-200 text-center ${
           lang === "kk"
             ? "bg-white text-black shadow-sm"
             : "text-white/50 hover:text-white/80"
