@@ -64,7 +64,7 @@ const TopSpeakersSection = () => {
                                     </div>
                                     <div>
                                         <div className="text-sm font-bold">{speaker.avgSpeech.toFixed(1)}</div>
-                                        <div className="text-[10px] text-gray-500">Ср. балл</div>
+                                        <div className="text-[10px] text-gray-500">{t.rating.avgSpeech}</div>
                                     </div>
                                 </div>
                             </div>

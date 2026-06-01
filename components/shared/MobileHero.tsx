@@ -8,8 +8,11 @@ import "swiper/css";
 import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
 import { slidesData } from "../../lib/sharedHeroData";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const MobileHero = () => {
+  const { t } = useLanguage();
+  const slides = slidesData.map((s, i) => ({ ...s, ...t.hero[i] }));
   return (
     <section className="w-full py-4 relative mobilehero">
       <div className="px-3 md:px-10 lg:px-16">
@@ -21,7 +24,7 @@ const MobileHero = () => {
             loop={true}
             autoplay={{ delay: 6000, disableOnInteraction: false }}
           >
-            {slidesData.map((slide) => (
+            {slides.map((slide) => (
               <SwiperSlide key={slide.id}>
                 <div className="relative w-full h-[260px] flex flex-col  overflow-hidden justify-between items-center text-center px-4 py-4">
                   {/* Background */}

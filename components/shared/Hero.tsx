@@ -10,10 +10,13 @@ import { Autoplay } from "swiper/modules";
 import { slidesData } from "../../lib/sharedHeroData";
 
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Hero = () => {
   const swiperRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { t } = useLanguage();
+  const slides = slidesData.map((s, i) => ({ ...s, ...t.hero[i] }));
 
   return (
     <section className="hero w-full py-8 relative ">
@@ -29,7 +32,7 @@ const Hero = () => {
             onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
             className="bg-primary rounded-2xl overflow-hidden relative"
           >
-            {slidesData.map((slide) => (
+            {slides.map((slide) => (
               <SwiperSlide key={slide.id}>
                 <div className="relative px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:pr-20 flex flex-col md:flex-row justify-between items-center min-h-[280px]">
                   {slide.id === 1 && (
@@ -83,7 +86,7 @@ const Hero = () => {
 
           {/* Индикаторы пагинации - полностью скрыты на мобильных (до 768px), видны только на планшетах и десктопе */}
           <div className="hero-pagination-container absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-row gap-1.5 md:gap-2">
-            {slidesData.map((_, index) => (
+            {slides.map((_, index) => (
               <button
                 key={index}
                 type="button"

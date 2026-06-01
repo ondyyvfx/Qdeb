@@ -14,6 +14,7 @@ import MobileMenu from "./MobileMenu";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { resolveProfilePictureUrl } from "@/lib/profilePicture";
 import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageToggle from "./LanguageToggle";
 
 interface UserProfileResponse {
   id: number;
@@ -51,7 +52,7 @@ const Navbar = () => {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -321,13 +322,7 @@ const Navbar = () => {
               {t.nav.createTournament}
             </Link>
           )}
-          {/* Language toggle */}
-          <button
-            onClick={() => setLang(lang === "ru" ? "kk" : "ru")}
-            className="px-3 py-1.5 text-sm font-bold border border-white/20 rounded-lg hover:border-white/50 transition-colors text-white/70 hover:text-white"
-          >
-            {lang === "ru" ? "ҚАЗ" : "РУС"}
-          </button>
+          <LanguageToggle />
         </nav>
 
         {/* Desktop user avatar or login */}

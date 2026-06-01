@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
+import { kk } from "date-fns/locale/kk";
 import { useMemo } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -54,7 +55,8 @@ const renderStatusBadge = (event: Event) => {
 };
 
 const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
+    const locale = lang === "kk" ? kk : ru;
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
     const [formattedEvents, setFormattedEvents] = useState<
@@ -80,7 +82,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
 
                     const monthKey = format(startDate, "yyyy-MM");
                     const displayMonth = format(startDate, "LLLL yyyy", {
-                        locale: ru,
+                        locale,
                     });
 
                     const formattedEvent: Event = {
@@ -111,7 +113,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
         };
 
         formatEvents();
-    }, [events]);
+    }, [events, locale]);
 
     const filteredEvents = Object.entries(formattedEvents).map(
         ([month, eventsList]) => {
@@ -253,7 +255,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                                 )[0]
                                                             ),
                                                             "d MMMM, EEEE",
-                                                            { locale: ru }
+                                                            { locale }
                                                         )}
                                                         {event.end_date &&
                                                         event.end_date !==
@@ -263,7 +265,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                                       event.end_date
                                                                   ),
                                                                   "d MMMM, EEEE",
-                                                                  { locale: ru }
+                                                                  { locale }
                                                               )}`
                                                             : null}
                                                     </div>
@@ -277,7 +279,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                             )[0]
                                                         ),
                                                         "d MMMM, EEEE",
-                                                        { locale: ru }
+                                                        { locale }
                                                     )}
                                                     {event.end_date &&
                                                     event.end_date !==
@@ -287,7 +289,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                                   event.end_date
                                                               ),
                                                               "d MMMM, EEEE",
-                                                              { locale: ru }
+                                                              { locale }
                                                           )}`
                                                         : null}
                                                 </div>
