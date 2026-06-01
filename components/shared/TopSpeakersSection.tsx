@@ -1,14 +1,77 @@
-import SpeakerSlider from "./SpeakerSlider";
+import Link from "next/link";
 
-const TopSpeakersSection = () => {
+type SpeakerRating = {
+    speakerId: number
+    speakerName: string
+    teamName: string
+    rating: number
+    roundsPlayed: number
+    avgSpeech: number
+}
+
+const rankColors = [
+    { number: "text-[#df9f20]", bg: "border-[#df9f20]/30" },
+    { number: "text-[#bfbfbf]", bg: "border-[#bfbfbf]/30" },
+    { number: "text-[#b98046]", bg: "border-[#b98046]/30" },
+]
+
+const TopSpeakersSection = async () => {
+    let speakers: SpeakerRating[] = []
+
+    try {
+        const apiBase = process.env.BACKEND_URL || "http://localhost:4232/api"
+        const res = await fetch(`${apiBase}/rating/speakers`, { cache: "no-store" })
+        if (res.ok) {
+            const data = await res.json()
+            speakers = Array.isArray(data) ? data.slice(0, 10) : []
+        }
+    } catch {
+        // ignore
+    }
+
     return (
         <section className="my-24 mx-4 md:mx-10 xl:mx-19">
-            <h1 className="text-3xl font-bold mb-6">Лучшие спикеры</h1>
-            <p className="text-center text-red-400">
-                В данный момент эта функция находится на стадии разработки
-            </p>
-        </section>
-    );
-};
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-3xl font-bold">Лучшие спикеры</h1>
+                <Link href="/rating" className="text-sm text-gray-400 hover:text-white transition-colors">
+                    Полный рейтинг →
+                </Link>
+            </div>
 
-export default TopSpeakersSection;
+            {speakers.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Нет данных</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {speakers.map((speaker, index) => {
+                        const rank = index + 1
+                        const color = rankColors[index] ?? { number: "text-white/60", bg: "border-white/10" }
+                        return (
+                            <div
+                                key={speaker.speakerId}
+                                className={`bg-primary border ${color.bg} rounded-xl p-4 flex flex-col gap-2 relative`}
+                            >
+                                <span className={`text-3xl font-black leading-none ${color.number} opacity-80`}>
+                                    {rank}
+                                </span>
+                                <div className="font-semibold text-sm leading-tight">{speaker.speakerName}</div>
+                                <div className="text-xs text-gray-500 truncate">{speaker.teamName}</div>
+                                <div className="flex gap-3 mt-1">
+                                    <div>
+                                        <div className="text-sm font-bold">{speaker.rating.toFixed(0)}</div>
+                                        <div className="text-[10px] text-gray-500">ELO</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold">{speaker.avgSpeech.toFixed(1)}</div>
+                                        <div className="text-[10px] text-gray-500">Ср. балл</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+        </section>
+    )
+}
+
+export default TopSpeakersSection
