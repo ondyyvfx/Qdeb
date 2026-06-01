@@ -105,6 +105,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
                     src={imageSrc}
                     alt={title}
                     className="h-20 w-20 rounded-lg border border-white/30 object-cover shadow-md"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/assets/default-avatar.svg" }}
                 />
                 <div className="flex flex-col gap-3 flex-1">
                     <div className="flex items-start justify-between">
