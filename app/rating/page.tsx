@@ -339,10 +339,15 @@ export default function RatingPage() {
                     {speaker.name}
                   </h2>
 
-                  {/* Average Score */}
-                  <div className="mb-4">
-                    <div className="text-gray-300 text-sm">
-                      Средний балл - {speaker.avg_speech.toFixed(1)}
+                  {/* Stats */}
+                  <div className="flex justify-center gap-6 mb-4">
+                    <div className="text-center">
+                      <div className={`font-bold ${isFirst ? "text-2xl" : "text-xl"}`}>{speaker.elo.toFixed(1)}</div>
+                      <div className="text-xs text-gray-400">ELO</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`font-bold ${isFirst ? "text-2xl" : "text-xl"}`}>{speaker.avg_speech.toFixed(1)}</div>
+                      <div className="text-xs text-gray-400">Средний балл</div>
                     </div>
                   </div>
 
