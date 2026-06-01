@@ -80,6 +80,14 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             Рейтинг спикеров
           </Link>
           
+          <a
+            href="http://89.218.15.230:8000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
+          >
+            Tabbycat
+          </a>
           <Link
             href="/about"
             onClick={() => onNavigate("/about")}

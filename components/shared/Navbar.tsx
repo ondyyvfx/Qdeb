@@ -291,8 +291,16 @@ const Navbar = () => {
               Турниры
             </Link>
           )}
-          <Link 
-            href="/rating" 
+          <a
+            href="http://89.218.15.230:8000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
+          >
+            Tabbycat
+          </a>
+          <Link
+            href="/rating"
             className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
           >
             Рейтинг спикеров
