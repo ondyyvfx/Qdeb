@@ -68,7 +68,7 @@ export default function RatingPage() {
         setSpeakers(data.map(s => ({
           id: String(s.speakerId),
           name: s.speakerName,
-          image: "/assets/Qback.svg",
+          image: "/assets/default-avatar.svg",
           avg_speech: s.avgSpeech,
           elo: s.rating,
           num_tournaments: s.roundsPlayed,
