@@ -15,6 +15,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { resolveProfilePictureUrl } from "@/lib/profilePicture";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageToggle from "./LanguageToggle";
+import { ChevronDown } from "lucide-react";
 
 interface UserProfileResponse {
   id: number;
@@ -279,48 +280,33 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-          <Link
-            href="/calendar"
-            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-          >
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          <Link href="/calendar" className="px-3 py-2 text-sm font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap">
             {t.nav.calendar}
           </Link>
-          {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
-            <Link
-              href="/tournaments"
-              className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-            >
-              {t.nav.tournaments}
-            </Link>
-          )}
-          <a
-            href="http://89.218.15.230:8000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-          >
+          <a href="http://89.218.15.230:8000" target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap">
             Tabbycat
           </a>
-          <Link
-            href="/rating"
-            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-          >
+          <Link href="/rating" className="px-3 py-2 text-sm font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap">
             {t.nav.rating}
           </Link>
-          <Link
-            href="/about"
-            className="px-4 py-2.5 text-base lg:text-lg font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5"
-          >
+          <Link href="/about" className="px-3 py-2 text-sm font-semibold hover:text-accent transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap">
             {t.nav.about}
           </Link>
           {hasHydrated && user?.roles?.includes("ROLE_ADMIN") && (
-            <Link
-              href="/tournaments/create"
-              className="px-5 py-2.5 text-base lg:text-lg font-bold text-accent hover:text-white hover:bg-accent transition-all rounded-lg border border-accent/50 hover:border-accent"
-            >
-              {t.nav.createTournament}
-            </Link>
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors rounded-lg whitespace-nowrap">
+                Admin <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              <div className="absolute top-full left-0 mt-1 w-48 bg-[#0f1220] border border-white/10 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 py-1">
+                <Link href="/tournaments" className="block px-4 py-2.5 text-sm hover:bg-white/5 hover:text-accent transition-colors rounded-lg mx-1">
+                  {t.nav.tournaments}
+                </Link>
+                <Link href="/tournaments/create" className="block px-4 py-2.5 text-sm hover:bg-white/5 hover:text-accent transition-colors rounded-lg mx-1">
+                  {t.nav.createTournament}
+                </Link>
+              </div>
+            </div>
           )}
           <LanguageToggle />
         </nav>
