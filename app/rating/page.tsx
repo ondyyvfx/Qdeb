@@ -567,7 +567,7 @@ export default function RatingPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Поиск по имени (только среди спикеров ниже топ-3)"
+                  placeholder={t.rating.search}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleApplyFilters()}
@@ -588,11 +588,9 @@ export default function RatingPage() {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="bg-background border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
               >
-                <option value="elo">Сортировать по ELO</option>
-                <option value="avg_speech">
-                  Сортировать по среднему баллу
-                </option>
-                <option value="num_tournaments">Сортировать по турнирам</option>
+                <option value="elo">{t.rating.sortByElo}</option>
+                <option value="avg_speech">{t.rating.sortByAvg}</option>
+                <option value="num_tournaments">{t.rating.sortByTournaments}</option>
               </select>
 
               <button
@@ -600,7 +598,7 @@ export default function RatingPage() {
                 className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <Filter className="w-4 h-4" />
-                Применить фильтры
+                {t.rating.applyFilters}
               </button>
             </div>
           </div>
@@ -689,7 +687,7 @@ export default function RatingPage() {
                             {speaker.avg_speech.toFixed(1)}
                           </div>
                           <div className="text-sm text-gray-400">
-                            Средний балл
+                            {t.rating.avgSpeech}
                           </div>
                         </div>
                         <div>

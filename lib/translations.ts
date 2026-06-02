@@ -145,6 +145,11 @@ export const translations = {
       title: "Дебатные клубы",
       details: "Подробнее",
     },
+    footer: {
+      rights: "© 2025 QDeb. Все права защищены.",
+      privacy: "Политика конфиденциальности",
+      contact: "Свяжитесь с нами:",
+    },
     common: {
       loading: "Загрузка...",
       noData: "Нет данных",
@@ -212,6 +217,11 @@ export const translations = {
     clubs: {
       title: "Дебат клубтары",
       details: "Толығырақ",
+    },
+    footer: {
+      rights: "© 2025 QDeb. Барлық құқықтар қорғалған.",
+      privacy: "Құпиялылық саясаты",
+      contact: "Бізбен байланысыңыз:",
     },
     common: {
       loading: "Жүктелуде...",
