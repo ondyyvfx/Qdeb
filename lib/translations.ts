@@ -141,6 +141,10 @@ export const translations = {
       roundsPlayed: "раундов сыграно",
     },
     about: about.ru,
+    clubs: {
+      title: "Дебатные клубы",
+      details: "Подробнее",
+    },
     common: {
       loading: "Загрузка...",
       noData: "Нет данных",
@@ -205,6 +209,10 @@ export const translations = {
       roundsPlayed: "раунд ойналды",
     },
     about: about.kk,
+    clubs: {
+      title: "Дебат клубтары",
+      details: "Толығырақ",
+    },
     common: {
       loading: "Жүктелуде...",
       noData: "Деректер жоқ",
