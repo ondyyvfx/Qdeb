@@ -109,12 +109,12 @@ export default function RegisterPage() {
       </div>
 
       {/* Form side */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-10 md:px-12 lg:px-16 relative">
+      <div className="flex-1 flex flex-col justify-center pl-10 pr-8 md:pl-16 lg:pl-20 py-10 relative">
         <Link href="/" className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
           <X className="w-5 h-5" />
         </Link>
 
-        <div className="w-full max-w-lg mx-auto">
+        <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-1">Создайте аккаунт</h1>

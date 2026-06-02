@@ -1,4 +1,5 @@
 "use client"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberDevice, setRememberDevice] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
 
@@ -27,174 +29,141 @@ export default function LoginPage() {
     const res = await fetch(`${API_URL}/profile`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-
     if (res.ok) {
       const parseResult = await safeParseResponse(res)
       if (parseResult.error || !parseResult.isJson) return
-
-      useUserStore.getState().setUser({
-        email: "",
-        full_name: "",
-        avatar: "",
-        phone: "",
-        description: "",
-        roles: [],
-      })
+      useUserStore.getState().setUser({ email: "", full_name: "", avatar: "", phone: "", description: "", roles: [] })
     }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    setIsLoading(true)
     try {
       const res = await fetch(`${API_URL}/auth/signin`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ username, password }),
       })
 
       if (res.ok) {
         const parseResult = await safeParseResponse(res)
-        if (parseResult.error || !parseResult.isJson) {
-          toast.error("Ошибка обработки ответа сервера")
-          return
-        }
-
+        if (parseResult.error || !parseResult.isJson) { toast.error("Ошибка обработки ответа сервера"); return }
         const data = parseResult.data as { token: string }
-
         toast.success("Успешный вход!")
-
-        Cookies.set("accessToken", data.token, {
-          expires: rememberDevice ? 7 : 1,
-        })
-
+        Cookies.set("accessToken", data.token, { expires: rememberDevice ? 7 : 1 })
         await fetchProfile(data.token)
         router.push("/")
       } else {
         let message = "Ошибка входа. Проверьте данные."
         const parseResult = await safeParseResponse(res)
-
-        if (parseResult.error) {
-          message = parseResult.error
-        } else if (typeof parseResult.data === "string") {
-          message = parseResult.data
-        } else if (parseResult.data && typeof parseResult.data === "object") {
-          const errorData = parseResult.data as Record<string, unknown>
-          message = String(
-            errorData.detail || errorData.message || errorData.error || message
-          )
+        if (parseResult.error) message = parseResult.error
+        else if (typeof parseResult.data === "string") message = parseResult.data
+        else if (parseResult.data && typeof parseResult.data === "object") {
+          const err = parseResult.data as Record<string, unknown>
+          message = String(err.detail || err.message || err.error || message)
         }
-
         toast.error(message)
       }
     } catch {
       toast.error("Произошла ошибка. Попробуйте снова.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
+  const inputClass = "border-white/10 bg-white/5 focus-visible:border-accent focus-visible:ring-0 h-12 rounded-xl text-white placeholder:text-white/30 transition-colors"
+
   return (
-    <div className="login-form flex min-h-screen bg-[#070A12] text-foreground px-4 md:px-8">
+    <div className="min-h-screen bg-[#070A12] text-white flex">
       <Toaster position="top-center" />
 
-      {/* Левая сторона с баннером */}
-      <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
-        <div className="relative w-full h-full rounded-2xl overflow-hidden">
-          <Image
-            src="/assets/banner.png"
-            alt="Login Banner"
-            fill
-            className="object-cover"
-          />
-        </div>
+      {/* Left banner */}
+      <div className="hidden lg:flex w-[42%] relative overflow-hidden">
+        <Image src="/assets/banner.png" alt="Banner" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#070A12]" />
       </div>
 
-      {/* Правая сторона — ФОРМА ПО ЦЕНТРУ */}
-      <div className="flex w-full md:w-1/2 min-h-full items-center justify-center px-8 lg:px-16 py-8 animate-fade-in relative">
-        <Link href="/">
-          <X className="absolute right-6 top-6 w-5 h-5 text-white opacity-70 hover:opacity-100" />
+      {/* Form side */}
+      <div className="flex-1 flex flex-col justify-center pl-10 pr-8 md:pl-16 lg:pl-20 py-10 relative">
+        <Link href="/" className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
+          <X className="w-5 h-5" />
         </Link>
 
-        <div className="w-full max-w-[640px] lg:max-w-[1240px] rounded-3xl shadow-lg bg-muted px-8 py-10">
-          <h1 className="text-3xl md:text-4xl text-center mb-10 mt-2 font-bold">
-            Войдите в аккаунт
-          </h1>
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-1">Войдите в аккаунт</h1>
+            <p className="text-white/40 text-sm">
+              Нет учётной записи?{" "}
+              <Link href="/register" className="text-accent hover:underline">Зарегистрироваться</Link>
+            </p>
+          </div>
 
-          <form onSubmit={handleLogin} className="space-y-8">
-            <div className="space-y-3">
-              <Label htmlFor="username" className="text-lg">
-                Никнейм
-              </Label>
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Username */}
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/60">Никнейм</Label>
               <Input
-                id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Никнейм"
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
+                placeholder="username"
+                required
+                className={inputClass}
               />
             </div>
 
-            <div className="space-y-3 relative">
+            {/* Password */}
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <Label htmlFor="password" className="text-lg">
-                  Пароль
-                </Label>
-                <a href="#" className="text-sm text-accent hover:underline">
-                  Забыли пароль?
-                </a>
+                <Label className="text-sm text-white/60">Пароль</Label>
+                <a href="#" className="text-xs text-accent hover:underline">Забыли пароль?</a>
               </div>
-
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Введите пароль"
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-[56px] right-4 text-gray-400 hover:text-gray-300"
-                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-              >
-                {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-              </button>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Введите пароль"
+                  required
+                  className={`${inputClass} pr-10`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            {/* Remember */}
+            <div className="flex items-center gap-3">
               <Checkbox
                 id="remember"
                 checked={rememberDevice}
-                onCheckedChange={(checked) => setRememberDevice(!!checked)}
+                onCheckedChange={(c) => setRememberDevice(!!c)}
               />
-              <Label htmlFor="remember" className="text-sm">
+              <Label htmlFor="remember" className="text-sm text-white/50 cursor-pointer">
                 Запомнить это устройство
               </Label>
             </div>
 
+            {/* Submit */}
             <Button
               type="submit"
-              className="w-full h-14 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-lg"
+              disabled={isLoading}
+              className="w-full h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-base disabled:opacity-50 transition-all"
             >
-              Войти
+              {isLoading ? (
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              ) : "Войти"}
             </Button>
-
-            <div className="flex justify-center text-base">
-              <span className="text-muted-foreground">
-                Нет учетной записи?&nbsp;
-              </span>
-              <a
-                href="/register"
-                className="text-accent hover:underline font-medium"
-              >
-                Создайте аккаунт
-              </a>
-            </div>
           </form>
         </div>
       </div>
