@@ -7,11 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { X, Eye, EyeOff } from "lucide-react"
+import { X, Eye, EyeOff, AlertTriangle, Upload, User } from "lucide-react"
 import Link from "next/link"
 import { Toaster, toast } from "react-hot-toast"
-// import Cookies from "js-cookie";
-// import { useUserStore } from "@/stores/useUserStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
 
@@ -32,8 +30,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  // profilePicture is optional per backend docs
-  const [phoneError] = useState(false)
   const [username, setUsername] = useState("")
   const [gender, setGender] = useState<"M" | "F" | "O">("O")
 
@@ -48,107 +44,41 @@ export default function RegisterPage() {
     }
   }
 
-  const validateEmail = (email: string) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    return re.test(email)
-  }
+  const validateEmail = (email: string) =>
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
 
-  const validatePassword = (password: string) => {
-    const re =
-      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/
-    return re.test(password)
-  }
+  const validatePassword = (password: string) =>
+    /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])(?=.{8,})(?!.*[^a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/.test(password)
 
   const validatePhone = (phone: string) => /^\+7\d{10}$/.test(phone)
-  const validateFullName = (name: string) =>
-    name.trim().split(/\s+/).length >= 2
+  const validateFullName = (name: string) => name.trim().split(/\s+/).length >= 2
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateEmail(email)) {
-      toast.error("Введите корректный email.")
-      return
-    }
-
-    if (!validatePassword(password)) {
-      toast.error(
-        "Пароль должен быть не менее 8 символов, содержать заглавную латинскую букву и спецсимвол."
-      )
-      return
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Пароли не совпадают.")
-      return
-    }
-
-    if (!validateFullName(full_name)) {
-      toast.error("Полное имя должно состоять минимум из двух слов.")
-      return
-    }
-
-    if (!validatePhone(phone)) {
-      toast.error("Телефон должен быть в формате +7XXXXXXXXXX.")
-      return
-    }
-
-    // avatar is optional
+    if (!validateEmail(email)) { toast.error("Введите корректный email."); return }
+    if (!validatePassword(password)) { toast.error("Пароль: мин. 8 символов, заглавная буква и спецсимвол."); return }
+    if (password !== confirmPassword) { toast.error("Пароли не совпадают."); return }
+    if (!validateFullName(full_name)) { toast.error("Введите имя и фамилию."); return }
+    if (!validatePhone(phone)) { toast.error("Телефон в формате +7XXXXXXXXXX."); return }
 
     setIsLoading(true)
-
     try {
       const formData = new FormData()
+      formData.append("register", JSON.stringify({ username, email, password, fullName: full_name, gender, phone, description: "Hello!" }))
+      if (avatar) formData.append("profilePicture", avatar)
 
-      const json = JSON.stringify({
-        username,
-        email,
-        password,
-        fullName: full_name,
-        gender,
-        phone,
-        description: "Hello!",
-      })
-
-      // send as plain string; browser sets multipart boundary automatically
-      formData.append("register", json)
-
-      if (avatar) {
-        formData.append("profilePicture", avatar)
-      }
-
-      // no debug logs in production
-
-      const res = await fetch(`${API_URL}/auth/signup`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      })
+      const res = await fetch(`${API_URL}/auth/signup`, { method: "POST", body: formData, credentials: "include" })
 
       if (!res.ok) {
-        // Попробуем разобрать JSON с ошибками валидации
         let message = "Ошибка регистрации"
         try {
-          const contentType = res.headers.get("content-type") || ""
-          if (contentType.includes("application/json")) {
-            const errorData: unknown = await res.json()
-            const asRecord = (val: unknown): Record<string, unknown> | null =>
-              val && typeof val === "object"
-                ? (val as Record<string, unknown>)
-                : null
-            const errObj = asRecord(errorData)
-            if (errObj && errObj.errors && typeof errObj.errors === "object") {
-              const details = Object.entries(
-                errObj.errors as Record<string, unknown>
-              )
-                .map(([field, msg]) => `${String(field)}: ${String(msg)}`)
-                .join("; ")
-              message = details || message
-            } else if (errObj && errObj.error) {
-              message = String(errObj.error)
-            } else if (errObj && errObj.message) {
-              message = String(errObj.message)
-            }
+          const ct = res.headers.get("content-type") || ""
+          if (ct.includes("application/json")) {
+            const err: any = await res.json()
+            if (err?.errors) message = Object.entries(err.errors).map(([f, m]) => `${f}: ${m}`).join("; ")
+            else if (err?.error) message = String(err.error)
+            else if (err?.message) message = String(err.message)
           } else {
             const text = await res.text()
             if (text) message = text
@@ -160,320 +90,152 @@ export default function RegisterPage() {
       toast.success("Регистрация успешна!")
       router.push("/login")
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Ошибка при подключении к серверу."
-      toast.error(message)
+      toast.error(err instanceof Error ? err.message : "Ошибка при подключении к серверу.")
     } finally {
       setIsLoading(false)
     }
   }
 
+  const inputClass = "border-white/10 bg-white/5 focus-visible:border-accent focus-visible:ring-0 h-12 rounded-xl text-white placeholder:text-white/30 transition-colors"
+
   return (
-    <div className="register-form flex min-h-screen bg-[#070A12] text-foreground selection:text-accent px-4 md:px-8">
+    <div className="min-h-screen bg-[#070A12] text-white flex">
       <Toaster position="top-center" />
 
-      <div className="hidden md:flex w-1/2 items-center justify-center overflow-hidden animate-fade-in p-6">
-        <div className="w-full h-full relative rounded-2xl overflow-hidden">
-          <Image
-            src="/assets/banner.png"
-            alt="Banner"
-            fill
-            className="object-cover w-full h-full"
-          />
-        </div>
+      {/* Left banner */}
+      <div className="hidden lg:flex w-[42%] relative overflow-hidden">
+        <Image src="/assets/banner.png" alt="Banner" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#070A12]" />
       </div>
 
-      <div className="flex w-full md:w-1/2 items-center justify-center px-4 py-6 md:px-8 animate-fade-in">
-        <Link href="/">
-          <X className="absolute right-6 top-6 w-5 h-5 text-white opacity-70 hover:opacity-100" />
+      {/* Form side */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-10 md:px-12 lg:px-16 relative">
+        <Link href="/" className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
+          <X className="w-5 h-5" />
         </Link>
 
-        <div className="w-full max-w-[1240px] rounded-3xl shadow-lg bg-muted px-6 py-8 md:px-8 md:py-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Создайте аккаунт
-          </h1>
-
-          {/* Поле предупреждения */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-5 py-4 mb-8">
-            <div className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-              <p className="text-sm text-yellow-300">
-                Внимание: данные из этой формы будут использованы в вашем
-                профиле и интегрированы с Tabbycat. Пожалуйста, вводите данные
-                так, как хотите, чтобы они отображались в вашем профиле - они
-                также будут использоваться для функций вроде рейтинга спикеров и
-                достижений.
-              </p>
-            </div>
+        <div className="w-full max-w-lg mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-1">Создайте аккаунт</h1>
+            <p className="text-white/40 text-sm">Уже есть аккаунт? <Link href="/login" className="text-accent hover:underline">Войти</Link></p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-7">
-            <div className="space-y-2">
-              <Label htmlFor="full_name" className="text-lg">
-                Полное имя
-              </Label>
-              <Input
-                id="full_name"
-                value={full_name}
-                onChange={(e) => setFull_name(e.target.value)}
-                placeholder="Фамилия Имя"
-                required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
+          {/* Warning */}
+          <div className="flex gap-3 bg-amber-500/8 border border-amber-500/20 rounded-xl px-4 py-3 mb-8">
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-300/80 leading-relaxed">
+              Данные используются в профиле и интегрируются с Tabbycat для рейтинга спикеров.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name + Username */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm text-white/60">Полное имя</Label>
+                <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} placeholder="Фамилия Имя" required className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm text-white/60">Nickname</Label>
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" required className={inputClass} />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-lg">
-                Nickname
-              </Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Nickname"
-                required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-lg">
-                Электронная почта
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => setEmailTouched(true)}
-                placeholder="example@gmail.com"
-                required
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
+            {/* Email */}
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/60">Электронная почта</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setEmailTouched(true)} placeholder="example@gmail.com" required className={inputClass} />
               {emailTouched && !validateEmail(email) && (
-                <p className="text-red-500 text-sm mt-1">
-                  Пожалуйста, введите корректный email (например,
-                  example@gmail.com)
-                </p>
+                <p className="text-red-400 text-xs">Введите корректный email</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="gender" className="text-lg">
-                Гендер
-              </Label>
-              <div className="inline-flex rounded-xl overflow-hidden border border-white/10 bg-white/5">
-                <button
-                  type="button"
-                  onClick={() => setGender("M")}
-                  className={`px-4 py-2 text-sm transition-colors ${
-                    gender === "M"
-                      ? "bg-accent text-white"
-                      : "text-gray-300 hover:bg-white/10"
-                  }`}
-                >
-                  Мужской
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGender("F")}
-                  className={`px-4 py-2 text-sm transition-colors ${
-                    gender === "F"
-                      ? "bg-accent text-white"
-                      : "text-gray-300 hover:bg-white/10"
-                  }`}
-                >
-                  Женский
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGender("O")}
-                  className={`px-4 py-2 text-sm transition-colors ${
-                    gender === "O"
-                      ? "bg-accent text-white"
-                      : "text-gray-300 hover:bg-white/10"
-                  }`}
-                >
-                  Другое
-                </button>
+            {/* Gender */}
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/60">Гендер</Label>
+              <div className="flex rounded-xl overflow-hidden border border-white/10 bg-white/5 w-fit">
+                {(["M", "F", "O"] as const).map((g, i) => (
+                  <button key={g} type="button" onClick={() => setGender(g)}
+                    className={`px-5 py-2 text-sm font-medium transition-colors ${i > 0 ? "border-l border-white/10" : ""} ${gender === g ? "bg-accent text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
+                    {g === "M" ? "Муж" : g === "F" ? "Жен" : "Другое"}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-lg">
-                Пароль
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onBlur={() => setPasswordTouched(true)}
-                  placeholder="Придумайте пароль"
-                  required
-                  className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-gray-300"
-                  aria-label={
-                    showPassword ? "Скрыть пароль" : "Показать пароль"
-                  }
-                >
-                  {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-                </button>
+            {/* Password */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm text-white/60">Пароль</Label>
+                <div className="relative">
+                  <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onBlur={() => setPasswordTouched(true)} placeholder="Мин. 8 символов" required className={`${inputClass} pr-10`} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {passwordTouched && !validatePassword(password) && (
+                  <p className="text-red-400 text-xs">Мин. 8 символов, заглавная буква и спецсимвол</p>
+                )}
               </div>
-              {passwordTouched && !validatePassword(password) && (
-                <p className="text-red-500 text-sm mt-1">
-                  Пароль должен быть не менее 8 символов, заглавную букву и
-                  спецсимвол
-                </p>
-              )}
-
-              <div className="relative">
-                <Input
-                  id="confirm_password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  onBlur={() => setConfirmPasswordTouched(true)}
-                  placeholder="Подтвердите пароль"
-                  required
-                  className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-400 hover:text-gray-300"
-                  aria-label={
-                    showConfirmPassword ? "Скрыть пароль" : "Показать пароль"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={24} />
-                  ) : (
-                    <Eye size={24} />
-                  )}
-                </button>
-              </div>
-              {confirmPasswordTouched && password !== confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">Пароли не совпадают</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-lg">
-                Номер телефона
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+77XXXXXXXXX"
-                className="border-gray-700 bg-gray-900 focus-visible:border-accent focus-visible:ring-accent h-[60px] rounded-xl"
-              />
-              {phoneError && (
-                <p className="text-red-500 text-sm mt-2 text-center">
-                  Пожалуйста, введите номер.
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="avatar" className="text-lg">
-                Фото профиля
-              </Label>
-              <div className="flex items-center gap-4">
-                <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-sm hover:bg-accent/90 transition">
-                  Выбрать файл
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-                {preview && (
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="h-25 w-25 rounded-full object-cover border"
-                  />
+              <div className="space-y-1.5">
+                <Label className="text-sm text-white/60">Подтверждение</Label>
+                <div className="relative">
+                  <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={() => setConfirmPasswordTouched(true)} placeholder="Повторите пароль" required className={`${inputClass} pr-10`} />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {confirmPasswordTouched && password !== confirmPassword && (
+                  <p className="text-red-400 text-xs">Пароли не совпадают</p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="remember"
-                checked={isAgreedWithPolicy}
-                onCheckedChange={(checked) => setIsAgreedWithPolicy(!!checked)}
-              />
-              <Label htmlFor="remember" className="text-md">
+            {/* Phone */}
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/60">Номер телефона</Label>
+              <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+77XXXXXXXXX" className={inputClass} />
+            </div>
+
+            {/* Avatar */}
+            <div className="space-y-1.5">
+              <Label className="text-sm text-white/60">Фото профиля <span className="text-white/30">(необязательно)</span></Label>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 group-hover:border-accent/50 transition-colors overflow-hidden flex items-center justify-center flex-shrink-0">
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-white/30" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                  <Upload className="w-4 h-4" />
+                  <span>{avatar ? avatar.name : "Загрузить фото"}</span>
+                </div>
+                <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+              </label>
+            </div>
+
+            {/* Agreement */}
+            <div className="flex items-center gap-3">
+              <Checkbox id="policy" checked={isAgreedWithPolicy} onCheckedChange={(c) => setIsAgreedWithPolicy(!!c)} />
+              <Label htmlFor="policy" className="text-sm text-white/50 cursor-pointer">
                 Я согласен(-на) с{" "}
-                <a href="/privacy-policy" className="">
-                  Условиями пользования
-                </a>
+                <Link href="/privacy-policy" className="text-accent hover:underline">Условиями пользования</Link>
               </Label>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 rounded-lg bg-accent hover:bg-accent/90 text-white text-lg font-semibold flex items-center justify-center"
-              disabled={isLoading}
-            >
+            {/* Submit */}
+            <Button type="submit" disabled={isLoading || !isAgreedWithPolicy}
+              className="w-full h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-base disabled:opacity-50 transition-all">
               {isLoading ? (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-              ) : (
-                "Зарегистрироваться"
-              )}
+              ) : "Зарегистрироваться"}
             </Button>
-
-            <div className="flex justify-center text-base">
-              <span className="text-muted-foreground">
-                Уже есть аккаунт?&nbsp;
-              </span>
-              <a
-                href="/login"
-                className="text-accent hover:underline font-medium"
-              >
-                Войти в аккаунт
-              </a>
-            </div>
           </form>
         </div>
       </div>
