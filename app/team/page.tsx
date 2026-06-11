@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import TeamDashboard from "./TeamDashboard";
 
 interface TeamUser {
@@ -39,6 +40,7 @@ interface TeamInfo {
 
 export default function TeamPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [team, setTeam] = useState<TeamInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [joinCode, setJoinCode] = useState("");
@@ -70,7 +72,7 @@ export default function TeamPage() {
     const handleJoin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!joinCode.trim()) {
-            toast.error("Введите код приглашения команды");
+            toast.error(t.team.enterCodeError);
             return;
         }
         setSubmitting(true);
@@ -79,14 +81,14 @@ export default function TeamPage() {
                 joinCode: joinCode.trim(),
             });
             if (res.status === 200 && res.data) {
-                toast.success("Вы присоединились к команде");
+                toast.success(t.team.joinedSuccess);
                 await loadTeam();
             } else {
-                toast.error(res.error || "Не удалось присоединиться к команде");
+                toast.error(res.error || t.team.joinFailed);
             }
         } catch (error) {
             console.error("Error joining team:", error);
-            toast.error("Произошла ошибка при присоединении к команде");
+            toast.error(t.team.joinError);
         } finally {
             setSubmitting(false);
         }
@@ -99,7 +101,7 @@ export default function TeamPage() {
                 <main className="flex-grow container mx-auto px-4 py-8">
                     <div className="flex flex-col items-center gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-                        <p className="text-lg text-white">Загрузка...</p>
+                        <p className="text-lg text-white">{t.team.loading}</p>
                     </div>
                 </main>
                 <Footer />
@@ -117,7 +119,7 @@ export default function TeamPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-4xl md:text-5xl font-bold text-white">
-                                    Команда
+                                    {t.team.title}
                                 </h1>
                                 <p className="text-xl text-gray-300 mt-2">
                                     {team.name}
@@ -153,17 +155,17 @@ export default function TeamPage() {
                         <CardHeader>
                             <CardTitle className="text-2xl text-white flex items-center gap-2">
                                 <Users className="w-6 h-6" />
-                                Присоединиться к команде
+                                {t.team.joinTitle}
                             </CardTitle>
                             <CardDescription>
-                                Введите код приглашения для вступления в команду
+                                {t.team.joinDescription}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleJoin} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="joinCode">
-                                        Код приглашения
+                                        {t.team.joinCodeLabel}
                                     </Label>
                                     <Input
                                         id="joinCode"
@@ -171,7 +173,7 @@ export default function TeamPage() {
                                         onChange={(e) =>
                                             setJoinCode(e.target.value)
                                         }
-                                        placeholder="Например: ABC12345"
+                                        placeholder={t.team.joinCodePlaceholder}
                                         className="bg-white/5 border-white/10"
                                     />
                                 </div>
@@ -182,15 +184,15 @@ export default function TeamPage() {
                                         className="flex-1"
                                     >
                                         {submitting
-                                            ? "Присоединяем..."
-                                            : "Присоединиться"}
+                                            ? t.team.joining
+                                            : t.team.joinButton}
                                     </Button>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={() => router.push("/team/create")}
                                     >
-                                        Создать команду
+                                        {t.team.createButton}
                                     </Button>
                                 </div>
                             </form>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type TeamInfo = {
   id: number;
@@ -41,25 +42,19 @@ type ApplicationResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
-const statusConfig: Record<
-  ApplicationResponse["status"],
-  { label: string; badgeClass: string }
-> = {
-  PENDING: {
-    label: "На рассмотрении",
-    badgeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  },
-  APPROVED: {
-    label: "Одобрена",
-    badgeClass: "bg-green-500/20 text-green-300 border-green-500/30",
-  },
-  REJECTED: {
-    label: "Отклонена",
-    badgeClass: "bg-red-500/20 text-red-300 border-red-500/30",
-  },
+const statusBadgeClass: Record<ApplicationResponse["status"], string> = {
+  PENDING: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+  APPROVED: "bg-green-500/20 text-green-300 border-green-500/30",
+  REJECTED: "bg-red-500/20 text-red-300 border-red-500/30",
 };
 
 export default function TeamApplications({ team }: TeamApplicationsProps) {
+  const { t } = useLanguage();
+  const statusLabel: Record<ApplicationResponse["status"], string> = {
+    PENDING: t.team.statusPending,
+    APPROVED: t.team.statusApproved,
+    REJECTED: t.team.statusRejected,
+  };
   const [applications, setApplications] = useState<ApplicationResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +70,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
 
         const token = Cookies.get("accessToken");
         if (!token) {
-          setError("Не удалось определить текущего пользователя.");
+          setError(t.team.couldNotIdentifyUser);
           setApplications([]);
           return;
         }
@@ -90,7 +85,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
         );
 
         if (!response.ok) {
-          throw new Error("Не удалось получить заявки команды.");
+          throw new Error(t.team.couldNotGetApplications);
         }
 
         const data: ApplicationResponse[] = await response.json();
@@ -98,7 +93,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
       } catch (err) {
         console.error("Ошибка загрузки заявок команды:", err);
         setError(
-          err instanceof Error ? err.message : "Не удалось загрузить заявки."
+          err instanceof Error ? err.message : t.team.couldNotLoadApplications
         );
         setApplications([]);
       } finally {
@@ -109,7 +104,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
     if (team.id) {
       loadApplications();
     }
-  }, [team.id]);
+  }, [team.id, t]);
 
   const filteredApplications = useMemo(() => {
     if (selectedStatus === "ALL") {
@@ -119,7 +114,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
   }, [applications, selectedStatus]);
 
   const formatDate = (value: string) =>
-    new Date(value).toLocaleDateString("ru-RU", {
+    new Date(value).toLocaleDateString(t.team.dateLocale, {
       day: "2-digit",
       month: "long",
       year: "numeric",
@@ -130,19 +125,17 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-white">
-            Заявки команды на турниры
+            {t.team.applicationsTitle}
           </h2>
           <p className="text-gray-400 mt-1">
             {applications.length > 0
-              ? `${applications.length} ${
-                  applications.length === 1 ? "заявка" : "заявки"
-                } подано`
-              : "Пока нет заявок."}
+              ? t.team.applicationsCount(applications.length)
+              : t.team.noApplicationsYet}
           </p>
         </div>
         {applications.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Статус:</span>
+            <span className="text-sm text-gray-400">{t.team.statusFilterLabel}</span>
             <select
               value={selectedStatus}
               onChange={(event) =>
@@ -150,10 +143,10 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
               }
               className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none"
             >
-              <option value="ALL">Все</option>
-              <option value="PENDING">На рассмотрении</option>
-              <option value="APPROVED">Одобрены</option>
-              <option value="REJECTED">Отклонены</option>
+              <option value="ALL">{t.team.filterAll}</option>
+              <option value="PENDING">{t.team.filterPending}</option>
+              <option value="APPROVED">{t.team.filterApproved}</option>
+              <option value="REJECTED">{t.team.filterRejected}</option>
             </select>
           </div>
         )}
@@ -162,7 +155,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
       {loading ? (
         <Card className="bg-white/5 border-white/10">
           <CardContent className="p-6 text-sm text-gray-400">
-            Загрузка заявок...
+            {t.team.loadingApplications}
           </CardContent>
         </Card>
       ) : error ? (
@@ -175,18 +168,16 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
         <Card className="bg-white/5 border-white/10">
           <CardContent className="p-6">
             <h3 className="text-lg font-medium text-white mb-1">
-              Заявок с выбранным статусом нет
+              {t.team.noApplicationsWithStatus}
             </h3>
             <p className="text-sm text-gray-400">
-              Как только команда подаст заявку на турнир, она появится в этом
-              списке.
+              {t.team.applicationWillAppear}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           {filteredApplications.map((application) => {
-            const status = statusConfig[application.status];
             return (
               <Card
                 key={application.id}
@@ -199,14 +190,14 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
                         {application.tournamentName}
                       </CardTitle>
                       <p className="text-sm text-gray-400">
-                        Подана {formatDate(application.createdAt)}
+                        {t.team.submittedOn(formatDate(application.createdAt))}
                       </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className={`${status.badgeClass} border`}
+                      className={`${statusBadgeClass[application.status]} border`}
                     >
-                      {status.label}
+                      {statusLabel[application.status]}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -214,7 +205,7 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
                   {application.fields && application.fields.length > 0 && (
                     <div className="space-y-2">
                       <h4 className="text-sm font-semibold text-white">
-                        Указанные данные
+                        {t.team.providedData}
                       </h4>
                       <div className="grid gap-2">
                         {application.fields.map((field) => (
@@ -233,11 +224,13 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
                   {application.submittedBy && (
                     <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-gray-300">
                       <p className="text-white font-medium">
-                        Заявку отправил(а): {application.submittedBy.fullName}
+                        {t.team.submittedByLabel(
+                          application.submittedBy.fullName
+                        )}
                       </p>
                       <p className="text-gray-400">
                         @{application.submittedBy.username} ·{" "}
-                        {application.submittedBy.email ?? "email не указан"}
+                        {application.submittedBy.email ?? t.team.emailNotSpecified}
                       </p>
                     </div>
                   )}
@@ -250,12 +243,8 @@ export default function TeamApplications({ team }: TeamApplicationsProps) {
 
       <Card className="bg-blue-500/10 border-blue-500/20">
         <CardContent className="p-6 space-y-2 text-sm text-gray-300">
-          <h3 className="text-white font-medium">Как работает список заявок</h3>
-          <p>
-            Здесь отображаются заявки вашей команды на турниры. Как только
-            появится возможность управлять статусами прямо из интерфейса, мы
-            добавим соответствующие действия.
-          </p>
+          <h3 className="text-white font-medium">{t.team.howItWorksTitle}</h3>
+          <p>{t.team.howItWorksText}</p>
         </CardContent>
       </Card>
     </div>

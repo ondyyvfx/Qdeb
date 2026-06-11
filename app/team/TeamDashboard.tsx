@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import TeamMembers from "./TeamMembers";
 import TeamApplications from "./TeamApplications";
 import TeamStats from "./TeamStats";
@@ -26,15 +27,16 @@ type DashboardTab =
     | "create-form"
     | "settings";
 
-const tabs: { id: DashboardTab; label: string }[] = [
-    { id: "overview", label: "Обзор" },
-    { id: "members", label: "Участники" },
-    { id: "applications", label: "Заявки" },
-    { id: "settings", label: "Настройки" },
-];
-
 export default function TeamDashboard({ team }: TeamDashboardProps) {
+    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+
+    const tabs: { id: DashboardTab; label: string }[] = [
+        { id: "overview", label: t.team.tabOverview },
+        { id: "members", label: t.team.tabMembers },
+        { id: "applications", label: t.team.tabApplications },
+        { id: "settings", label: t.team.tabSettings },
+    ];
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -69,22 +71,21 @@ export default function TeamDashboard({ team }: TeamDashboardProps) {
                         <CardHeader>
                             <CardTitle className="text-white flex items-center gap-2">
                                 <span className="text-xl">⚙️</span>
-                                Настройки команды
+                                {t.team.settingsTitle}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                                     <p className="text-yellow-400 text-sm">
-                                        Раздел в разработке: скоро появятся
-                                        роли, интеграции и автоматизация задач.
+                                        {t.team.settingsDev}
                                     </p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="p-4 bg-white/5 rounded-lg">
                                         <h3 className="text-white font-medium mb-2">
-                                            Пригласительный код
+                                            {t.team.inviteCode}
                                         </h3>
                                         <div className="flex items-center gap-2">
                                             <code className="bg-black/20 px-3 py-1 rounded text-white font-mono">
@@ -99,19 +100,19 @@ export default function TeamDashboard({ team }: TeamDashboardProps) {
                                                 }
                                                 className="bg-accent hover:bg-accent/90"
                                             >
-                                                Скопировать
+                                                {t.team.copy}
                                             </Button>
                                         </div>
                                     </div>
 
                                     <div className="p-4 bg-white/5 rounded-lg">
                                         <h3 className="text-white font-medium mb-2">
-                                            Статус команды
+                                            {t.team.status}
                                         </h3>
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                                             <span className="text-white">
-                                                Активна
+                                                {t.team.active}
                                             </span>
                                         </div>
                                     </div>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { apiPost } from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type TeamInfo = {
   id: number;
@@ -40,6 +41,7 @@ type MemberSummary = {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function TeamMembers({ team }: TeamMembersProps) {
+  const { t } = useLanguage();
   const [members, setMembers] = useState<MemberSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
 
         const token = Cookies.get("accessToken");
         if (!token) {
-          setError("Не удалось определить текущего пользователя.");
+          setError(t.team.couldNotIdentifyUser);
           setMembers([]);
           return;
         }
@@ -73,7 +75,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
         ]);
 
         if (!profileRes.ok) {
-          throw new Error("Не удалось получить информацию о профиле.");
+          throw new Error(t.team.couldNotGetProfile);
         }
 
         const profileData = await profileRes.json();
@@ -91,7 +93,8 @@ export default function TeamMembers({ team }: TeamMembersProps) {
             email: teamData.leader.email,
             role: "leader",
             joinedAt: teamData.createdAt ?? null,
-            note: teamData.leader.id === profileData.id ? "Это вы" : undefined,
+            note:
+              teamData.leader.id === profileData.id ? t.team.itsYou : undefined,
           };
           collected.set(leader.id, leader);
         }
@@ -104,7 +107,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
           email: profileData.email,
           role: profileData.team?.role === "LEADER" ? "leader" : "member",
           joinedAt: profileData.team?.joinedAt ?? null,
-          note: "Это вы",
+          note: t.team.itsYou,
           isSelf: true,
         };
         collected.set(currentUser.id, currentUser);
@@ -115,7 +118,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
           collected.set(String(teammateId), {
             id: String(teammateId),
             role: "member",
-            note: "Информация об участнике появится после подключения профиля.",
+            note: t.team.memberInfoLater,
           });
         }
 
@@ -165,9 +168,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
       } catch (err) {
         console.error("Ошибка загрузки состава команды:", err);
         setError(
-          err instanceof Error
-            ? err.message
-            : "Не удалось загрузить участников команды."
+          err instanceof Error ? err.message : t.team.couldNotLoadMembers
         );
         setMembers([]);
         setHasActiveApplication(false);
@@ -178,7 +179,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
     };
 
     loadMembers();
-  }, [team.id]);
+  }, [team.id, team.size, t]);
 
   const memberLimit = 2;
   const joinedCount = useMemo(
@@ -205,17 +206,17 @@ export default function TeamMembers({ team }: TeamMembersProps) {
       const response = await apiPost<unknown>("/teams/leave");
 
       if (response.status >= 200 && response.status < 300) {
-        toast.success("Вы покинули команду");
+        toast.success(t.team.leftTeam);
         window.location.href = "/team";
         return;
       }
 
-      const message = response.error || "Не удалось покинуть команду";
+      const message = response.error || t.team.leaveFailed;
       setLeaveError(message);
       toast.error(message);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Не удалось покинуть команду";
+        err instanceof Error ? err.message : t.team.leaveFailed;
       setLeaveError(message);
       toast.error(message);
     } finally {
@@ -227,9 +228,9 @@ export default function TeamMembers({ team }: TeamMembersProps) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">Состав команды</h2>
+          <h2 className="text-2xl font-bold text-white">{t.team.rosterTitle}</h2>
           <p className="text-gray-400 mt-1">
-            {joinedCount} из {memberLimit} участников
+            {t.team.membersOf(joinedCount, memberLimit)}
           </p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end sm:text-right">
@@ -239,17 +240,16 @@ export default function TeamMembers({ team }: TeamMembersProps) {
             className="bg-red-600 hover:bg-red-700 text-white"
             disabled={isLeaveButtonDisabled}
           >
-            {leaveLoading ? "Выходим..." : "Покинуть команду"}
+            {leaveLoading ? t.team.leaving : t.team.leaveTeam}
           </Button>
           {applicationsLoading && (
             <span className="text-xs text-gray-400">
-              Проверяем активные заявки...
+              {t.team.checkingApplications}
             </span>
           )}
           {!applicationsLoading && hasActiveApplication && (
             <span className="text-xs text-amber-300 max-w-xs">
-              После подачи заявки на турнир состав команды фиксируется до
-              завершения обработки заявки.
+              {t.team.rosterLockedNote}
             </span>
           )}
           {leaveError && !hasActiveApplication && (
@@ -261,7 +261,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
       {loading ? (
         <Card className="bg-white/5 border-white/10">
           <CardContent className="p-6 text-sm text-gray-400">
-            Загрузка состава команды...
+            {t.team.loadingRoster}
           </CardContent>
         </Card>
       ) : error ? (
@@ -281,12 +281,12 @@ export default function TeamMembers({ team }: TeamMembersProps) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-white text-lg">
-                      {member.fullName ?? "Участник команды"}
+                      {member.fullName ?? t.team.teamMember}
                     </CardTitle>
                     <p className="text-gray-400 text-sm">
                       {member.username
                         ? `@${member.username}`
-                        : "логин недоступен"}
+                        : t.team.loginUnavailable}
                     </p>
                   </div>
                   <span
@@ -296,37 +296,39 @@ export default function TeamMembers({ team }: TeamMembersProps) {
                         : "bg-blue-500/20 text-blue-300"
                     }`}
                   >
-                    {member.role === "leader" ? "Лидер" : "Участник"}
+                    {member.role === "leader" ? t.team.leader : t.team.member}
                   </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="space-y-1">
                   <p className="text-white">
-                    {member.fullName ?? "Участник команды"}
+                    {member.fullName ?? t.team.teamMember}
                   </p>
                   <p className="text-gray-400">
                     {member.username
                       ? `@${member.username}`
-                      : "логин недоступен"}
+                      : t.team.loginUnavailable}
                   </p>
                   <p className="text-gray-300">
-                    {member.role === "leader" ? "Лидер" : "Участник"}
+                    {member.role === "leader" ? t.team.leader : t.team.member}
                   </p>
                 </div>
                 <div className="space-y-1 text-gray-300">
                   <p>
-                    Email{" "}
+                    {t.team.emailLabel}{" "}
                     <span className="text-white">
-                      {member.email ?? "не указан"}
+                      {member.email ?? t.team.notSpecified}
                     </span>
                   </p>
                   <p>
-                    Дата присоединения{" "}
+                    {t.team.joinDate}{" "}
                     <span className="text-white">
                       {member.joinedAt
-                        ? new Date(member.joinedAt).toLocaleDateString("ru-RU")
-                        : "недоступно"}
+                        ? new Date(member.joinedAt).toLocaleDateString(
+                            t.team.dateLocale
+                          )
+                        : t.team.unavailable}
                     </span>
                   </p>
                 </div>
@@ -346,11 +348,10 @@ export default function TeamMembers({ team }: TeamMembersProps) {
           <CardContent className="p-6 space-y-3">
             <div className="flex flex-col gap-2">
               <h3 className="text-white font-medium">
-                До полного состава осталось {freeSlots}
-                {freeSlots === 1 ? " место" : " места"}
+                {t.team.slotsLeft(freeSlots)}
               </h3>
               <p className="text-gray-400 text-sm">
-                Поделитесь кодом, чтобы пригласить нового участника.
+                {t.team.shareCodeToInvite}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <code className="bg-black/30 px-3 py-1 rounded text-white font-mono text-sm">
@@ -361,7 +362,7 @@ export default function TeamMembers({ team }: TeamMembersProps) {
                   onClick={() => navigator.clipboard.writeText(team.code)}
                   className="bg-accent hover:bg-accent/90"
                 >
-                  Скопировать
+                  {t.team.copy}
                 </Button>
               </div>
             </div>
