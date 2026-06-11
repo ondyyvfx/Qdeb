@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import Navbar from "@/components/shared/Navbar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api";
 
 export default function CreateTeamPage() {
+  const { t } = useLanguage();
   const [teamName, setTeamName] = useState("");
   const [loading, setLoading] = useState(false);
   const [createdTeam, setCreatedTeam] = useState<{
@@ -24,7 +26,7 @@ export default function CreateTeamPage() {
     e.preventDefault();
 
     if (!teamName.trim()) {
-      toast.error("Введите название команды");
+      toast.error(t.team.enterTeamName);
       return;
     }
 
@@ -46,18 +48,18 @@ export default function CreateTeamPage() {
         if (res.status === 400) {
           const data = await res.json().catch(() => ({} as any));
           const message =
-            data?.message || data?.detail || "Вы уже состоите в команде";
+            data?.message || data?.detail || t.team.alreadyInTeam;
           toast.error(message);
           return;
         }
         const text = await res.text();
-        toast.error(text || "Не удалось создать команду");
+        toast.error(text || t.team.couldNotCreate);
         return;
       }
 
       const data = await res.json();
 
-      toast.success(`Команда "${data.name}" создана 🎉`);
+      toast.success(t.team.teamCreated(data.name));
       // Покажем код приглашения сразу после создания
       setCreatedTeam({ name: data.name, code: data.joinCode });
       // Подтвердим, что создатель стал участником и лидером (бэк должен сделать это по токену)
@@ -71,12 +73,12 @@ export default function CreateTeamPage() {
         if (profileResponse.ok) {
           const profileData = await profileResponse.json();
           if (profileData.team?.id) {
-            toast.success("Вы добавлены в команду и являетесь лидером");
+            toast.success(t.team.addedAsLeader);
           }
         }
       } catch {}
     } catch (err: any) {
-      toast.error(err?.message || "Что-то пошло не так при создании команды");
+      toast.error(err?.message || t.team.createError);
     } finally {
       setLoading(false);
     }
@@ -88,32 +90,32 @@ export default function CreateTeamPage() {
       <div className="flex justify-center items-center">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-xl">Создать команду</CardTitle>
+            <CardTitle className="text-xl">{t.team.createButton}</CardTitle>
           </CardHeader>
           <CardContent>
             {!createdTeam ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
                   type="text"
-                  placeholder="Введите название команды"
+                  placeholder={t.team.enterTeamName}
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
                 />
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Создание..." : "Создать"}
+                  {loading ? t.team.creating : t.team.create}
                 </Button>
               </form>
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Команда создана:
+                  {t.team.teamCreatedLabel}
                 </p>
                 <div className="bg-gray-900 border border-gray-700 rounded-md p-3">
                   <p className="text-white font-medium">{createdTeam.name}</p>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm text-muted-foreground">
-                        Код приглашения
+                        {t.team.inviteCodeShort}
                       </p>
                       <p className="text-white font-semibold text-lg tracking-wider">
                         {createdTeam.code}
@@ -124,13 +126,13 @@ export default function CreateTeamPage() {
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(createdTeam.code);
-                          toast.success("Код скопирован");
+                          toast.success(t.team.codeCopied);
                         } catch {
-                          toast.error("Не удалось скопировать код");
+                          toast.error(t.team.couldNotCopy);
                         }
                       }}
                     >
-                      Скопировать
+                      {t.team.copy}
                     </Button>
                   </div>
                 </div>
@@ -140,10 +142,10 @@ export default function CreateTeamPage() {
                     variant="secondary"
                     onClick={() => router.push("/team")}
                   >
-                    Перейти к команде
+                    {t.team.goToTeam}
                   </Button>
                   <Button type="button" onClick={() => router.push("/profile")}>
-                    К профилю
+                    {t.team.toProfile}
                   </Button>
                 </div>
               </div>

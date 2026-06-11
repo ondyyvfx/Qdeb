@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
     FileText,
     Plus,
@@ -60,28 +61,6 @@ const generateId = () =>
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
-
-const TYPE_OPTIONS: { value: RegistrationFieldType; label: string }[] = [
-    { value: "TEXT", label: "Краткий ответ" },
-    { value: "DESCRIPTION", label: "Развернутый ответ" },
-    { value: "short_answer", label: "Короткий ответ" },
-    { value: "paragraph", label: "Развернутый ответ" },
-    { value: "multiple_choice", label: "Один вариант" },
-    { value: "checkboxes", label: "Несколько вариантов" },
-    { value: "dropdown", label: "Выпадающий список" },
-    { value: "linear_scale", label: "Шкала" },
-];
-
-const TYPE_DESCRIPTIONS: Record<RegistrationFieldType, string> = {
-    TEXT: "Краткий ответ (одно короткое поле ввода)",
-    DESCRIPTION: "Развернутый ответ (многострочное поле)",
-    short_answer: "Краткий ответ (одно короткое поле ввода)",
-    paragraph: "Развернутый ответ (многострочное поле)",
-    multiple_choice: "Выбор одного варианта из списка",
-    checkboxes: "Выбор нескольких вариантов из списка",
-    dropdown: "Выпадающий список вариантов",
-    linear_scale: "Шкала оценки",
-};
 
 const usesOptions = (type: RegistrationFieldType) =>
     type === "multiple_choice" || type === "checkboxes" || type === "dropdown";
@@ -176,6 +155,27 @@ const saveTemplate = (fields: RegistrationField[]) => {
 
 export default function TournamentFormBuilderPage() {
     const router = useRouter();
+    const { t } = useLanguage();
+    const typeOptions: { value: RegistrationFieldType; label: string }[] = [
+        { value: "TEXT", label: t.formBuilder.typeShortAnswer },
+        { value: "DESCRIPTION", label: t.formBuilder.typeLongAnswer },
+        { value: "short_answer", label: t.formBuilder.typeShortAnswer2 },
+        { value: "paragraph", label: t.formBuilder.typeLongAnswer },
+        { value: "multiple_choice", label: t.formBuilder.typeSingleChoice },
+        { value: "checkboxes", label: t.formBuilder.typeMultiChoice },
+        { value: "dropdown", label: t.formBuilder.typeDropdown },
+        { value: "linear_scale", label: t.formBuilder.typeScale },
+    ];
+    const typeDescriptions: Record<RegistrationFieldType, string> = {
+        TEXT: t.formBuilder.descShortAnswer,
+        DESCRIPTION: t.formBuilder.descLongAnswer,
+        short_answer: t.formBuilder.descShortAnswer,
+        paragraph: t.formBuilder.descLongAnswer,
+        multiple_choice: t.formBuilder.descSingleChoice,
+        checkboxes: t.formBuilder.descMultiChoice,
+        dropdown: t.formBuilder.descDropdown,
+        linear_scale: t.formBuilder.descScale,
+    };
     const [fields, setFields] = useState<RegistrationField[]>(DEFAULT_TEMPLATE);
     const [saving, setSaving] = useState(false);
     const [activeFieldId, setActiveFieldId] = useState<string>(
@@ -348,7 +348,7 @@ export default function TournamentFormBuilderPage() {
     const handleResetTemplate = () => {
         setFields(DEFAULT_TEMPLATE);
         setActiveFieldId(DEFAULT_TEMPLATE[0]?.id ?? "");
-        toast.success("Шаблон сброшен к стандартным полям.");
+        toast.success(t.formBuilder.templateReset);
     };
 
     const handleSaveTemplate = () => {
@@ -362,7 +362,7 @@ export default function TournamentFormBuilderPage() {
             .filter((field) => field.name.length > 0);
 
         if (sanitized.length === 0) {
-            toast.error("Добавьте хотя бы одно поле и заполните его название.");
+            toast.error(t.formBuilder.addFieldFirst);
             return;
         }
 
@@ -370,12 +370,10 @@ export default function TournamentFormBuilderPage() {
         try {
             saveTemplate(sanitized);
             setFields(sanitized);
-            toast.success(
-                "Шаблон формы сохранён. Теперь его можно использовать при создании турнира."
-            );
+            toast.success(t.formBuilder.templateSaved);
         } catch (error) {
             console.error("Failed to save template:", error);
-            toast.error("Не удалось сохранить шаблон. Попробуйте ещё раз.");
+            toast.error(t.formBuilder.couldNotSaveTemplate);
         } finally {
             setSaving(false);
         }
@@ -387,8 +385,8 @@ export default function TournamentFormBuilderPage() {
 
     return (
         <AdminOnlyPage
-            title="Конструктор формы регистрации"
-            message="Страница доступна только организаторам"
+            title={t.formBuilder.builderTitle}
+            message={t.formBuilder.onlyOrganizers}
         >
             <div className="min-h-screen bg-background text-text">
                 <Navbar />
@@ -398,13 +396,10 @@ export default function TournamentFormBuilderPage() {
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-semibold text-white flex items-center gap-3">
                                     <FileText className="w-8 h-8 text-accent" />
-                                    Конструктор формы регистрации
+                                    {t.formBuilder.builderTitle}
                                 </h1>
                                 <p className="mt-2 text-gray-400 text-sm md:text-base max-w-2xl">
-                                    Создайте набор полей, которые команды будут
-                                    заполнять при подаче заявки на турнир.
-                                    Сохранённый шаблон автоматически подставится
-                                    на странице создания турнира.
+                                    {t.formBuilder.builderSubtitle}
                                 </p>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -413,8 +408,8 @@ export default function TournamentFormBuilderPage() {
                                     onClick={handleBackToCreate}
                                     className="flex items-center gap-2"
                                 >
-                                    <ArrowLeft className="w-4 h-4" />К созданию
-                                    турнира
+                                    <ArrowLeft className="w-4 h-4" />
+                                    {t.formBuilder.backToCreate}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -422,7 +417,7 @@ export default function TournamentFormBuilderPage() {
                                     className="flex items-center gap-2"
                                 >
                                     <Undo className="w-4 h-4" />
-                                    Сбросить
+                                    {t.formBuilder.reset}
                                 </Button>
                                 <Button
                                     onClick={handleSaveTemplate}
@@ -431,8 +426,8 @@ export default function TournamentFormBuilderPage() {
                                 >
                                     <Save className="w-4 h-4" />
                                     {saving
-                                        ? "Сохранение..."
-                                        : "Сохранить шаблон"}
+                                        ? t.formBuilder.saving
+                                        : t.formBuilder.saveTemplate}
                                 </Button>
                             </div>
                         </div>
@@ -470,7 +465,7 @@ export default function TournamentFormBuilderPage() {
                                                             }`}
                                                         >
                                                             <Dot className="size-5" />
-                                                            Поле {index + 1}
+                                                            {t.formBuilder.fieldN(index + 1)}
                                                         </button>
                                                     </div>
                                                     <Input
@@ -485,7 +480,7 @@ export default function TournamentFormBuilderPage() {
                                                                     .value,
                                                             })
                                                         }
-                                                        placeholder="Заголовок поля"
+                                                        placeholder={t.formBuilder.fieldTitlePlaceholder}
                                                         className="h-12 border-none bg-white/10 text-lg font-semibold text-white focus-visible:ring-2 focus-visible:ring-accent"
                                                     />
                                                     <Textarea
@@ -499,13 +494,13 @@ export default function TournamentFormBuilderPage() {
                                                                         .value,
                                                             })
                                                         }
-                                                        placeholder="Описание поля (необязательно)"
+                                                        placeholder={t.formBuilder.fieldDescPlaceholder}
                                                         className="min-h-[70px] border-none bg-white/10 text-sm text-white/80 focus-visible:ring-2 focus-visible:ring-accent"
                                                     />
                                                 </div>
                                                 <div className="flex max-w-[220px] flex-col gap-3">
                                                     <Label className="text-xs uppercase tracking-wide text-white/60">
-                                                        Тип поля
+                                                        {t.formBuilder.fieldType}
                                                     </Label>
                                                     <select
                                                         value={field.type}
@@ -517,9 +512,9 @@ export default function TournamentFormBuilderPage() {
                                                             )
                                                         }
                                                         className="h-10 rounded-md border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
-                                                        title="Выберите тип поля"
+                                                        title={t.formBuilder.fieldType}
                                                     >
-                                                        {TYPE_OPTIONS.map(
+                                                        {typeOptions.map(
                                                             (option) => (
                                                                 <option
                                                                     key={
@@ -538,7 +533,7 @@ export default function TournamentFormBuilderPage() {
                                                     </select>
                                                     <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2">
                                                         <span className="text-xs font-medium text-white/70">
-                                                            Обязательное
+                                                            {t.formBuilder.required}
                                                         </span>
                                                         <Checkbox
                                                             checked={
@@ -639,7 +634,7 @@ export default function TournamentFormBuilderPage() {
                                                             }
                                                         >
                                                             <Plus className="size-4" />
-                                                            Добавить вариант
+                                                            {t.formBuilder.addOption}
                                                         </Button>
                                                     </div>
                                                 )}
@@ -650,7 +645,7 @@ export default function TournamentFormBuilderPage() {
                                                         <div className="grid gap-4 sm:grid-cols-2">
                                                             <div className="space-y-2">
                                                                 <Label className="text-xs uppercase text-white/60">
-                                                                    Минимум
+                                                                    {t.formBuilder.min}
                                                                 </Label>
                                                                 <Input
                                                                     type="number"
@@ -678,7 +673,7 @@ export default function TournamentFormBuilderPage() {
                                                             </div>
                                                             <div className="space-y-2">
                                                                 <Label className="text-xs uppercase text-white/60">
-                                                                    Максимум
+                                                                    {t.formBuilder.max}
                                                                 </Label>
                                                                 <Input
                                                                     type="number"
@@ -713,8 +708,7 @@ export default function TournamentFormBuilderPage() {
                                                         <div className="grid gap-4 sm:grid-cols-2">
                                                             <div className="space-y-2">
                                                                 <Label className="text-xs uppercase text-white/60">
-                                                                    Подпись для
-                                                                    минимума
+                                                                    {t.formBuilder.minLabelCaption}
                                                                 </Label>
                                                                 <Input
                                                                     value={
@@ -739,8 +733,7 @@ export default function TournamentFormBuilderPage() {
                                                             </div>
                                                             <div className="space-y-2">
                                                                 <Label className="text-xs uppercase text-white/60">
-                                                                    Подпись для
-                                                                    максимума
+                                                                    {t.formBuilder.maxLabelCaption}
                                                                 </Label>
                                                                 <Input
                                                                     value={
@@ -771,9 +764,7 @@ export default function TournamentFormBuilderPage() {
                                                     field.type ===
                                                         "short_answer") && (
                                                     <div className="rounded-lg border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
-                                                        Ответ — короткая строка
-                                                        (участник увидит поле
-                                                        ввода)
+                                                        {t.formBuilder.shortAnswerHint}
                                                     </div>
                                                 )}
 
@@ -782,20 +773,14 @@ export default function TournamentFormBuilderPage() {
                                                     field.type ===
                                                         "paragraph") && (
                                                     <div className="rounded-lg border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
-                                                        Ответ — развернутый
-                                                        текст (участник увидит
-                                                        большое поле)
+                                                        {t.formBuilder.longAnswerHint}
                                                     </div>
                                                 )}
 
                                                 <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
                                                     <div className="flex items-center gap-2 text-xs text-white/60">
                                                         <MessageSquare className="size-4" />
-                                                        {
-                                                            TYPE_DESCRIPTIONS[
-                                                                field.type
-                                                            ]
-                                                        }
+                                                        {typeDescriptions[field.type]}
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Button
@@ -812,7 +797,7 @@ export default function TournamentFormBuilderPage() {
                                                                 index === 0
                                                             }
                                                             className="text-white/70 hover:text-white"
-                                                            title="Переместить вверх"
+                                                            title={t.formBuilder.moveUp}
                                                         >
                                                             <ArrowUp className="size-4" />
                                                         </Button>
@@ -832,7 +817,7 @@ export default function TournamentFormBuilderPage() {
                                                                     1
                                                             }
                                                             className="text-white/70 hover:text-white"
-                                                            title="Переместить вниз"
+                                                            title={t.formBuilder.moveDown}
                                                         >
                                                             <ArrowDown className="size-4" />
                                                         </Button>
@@ -846,7 +831,7 @@ export default function TournamentFormBuilderPage() {
                                                                 )
                                                             }
                                                             className="text-white/70 hover:text-white"
-                                                            title="Дублировать поле"
+                                                            title={t.formBuilder.duplicateField}
                                                         >
                                                             <Copy className="size-4" />
                                                         </Button>
@@ -864,7 +849,7 @@ export default function TournamentFormBuilderPage() {
                                                                 1
                                                             }
                                                             className="text-red-300/70 hover:text-red-400"
-                                                            title="Удалить поле"
+                                                            title={t.formBuilder.deleteField}
                                                         >
                                                             <Trash2 className="size-4" />
                                                         </Button>
@@ -882,7 +867,7 @@ export default function TournamentFormBuilderPage() {
                                         className="bg-accent text-white hover:bg-accent/90"
                                     >
                                         <Plus className="size-4" />
-                                        Добавить еще одно поле
+                                        {t.formBuilder.addAnotherField}
                                     </Button>
                                 </div>
                             </div>
@@ -891,17 +876,16 @@ export default function TournamentFormBuilderPage() {
                                 <Card className="border-white/10 bg-white/5 backdrop-blur">
                                     <CardHeader>
                                         <CardTitle className="text-white">
-                                            Превью формы
+                                            {t.formBuilder.formPreview}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3 text-sm text-white/80">
                                         <div>
                                             <p className="text-base font-semibold text-white">
-                                                Форма регистрации на турнир
+                                                {t.formBuilder.regFormForTournament}
                                             </p>
                                             <p className="text-xs text-white/60">
-                                                Заполните все поля для подачи
-                                                заявки
+                                                {t.formBuilder.fillAllFields}
                                             </p>
                                         </div>
                                         <ul className="space-y-3">
@@ -917,7 +901,7 @@ export default function TournamentFormBuilderPage() {
                                                         </p>
                                                         {field.required && (
                                                             <span className="text-xs font-semibold text-red-300">
-                                                                * обязательно
+                                                                {t.formBuilder.requiredMark}
                                                             </span>
                                                         )}
                                                     </div>
@@ -927,34 +911,31 @@ export default function TournamentFormBuilderPage() {
                                                     <div className="mt-3 text-xs text-white/50">
                                                         {field.type ===
                                                             "TEXT" &&
-                                                            "Короткий ответ"}
+                                                            t.formBuilder.previewShortAnswer}
                                                         {field.type ===
                                                             "DESCRIPTION" &&
-                                                            "Развернутый ответ"}
+                                                            t.formBuilder.previewLongAnswer}
                                                         {field.type ===
                                                             "short_answer" &&
-                                                            "Короткий ответ"}
+                                                            t.formBuilder.previewShortAnswer}
                                                         {field.type ===
                                                             "paragraph" &&
-                                                            "Развернутый ответ"}
+                                                            t.formBuilder.previewLongAnswer}
                                                         {field.type ===
                                                             "multiple_choice" &&
-                                                            `Один вариант из ${field.options.length}`}
+                                                            t.formBuilder.previewSingleChoice(field.options.length)}
                                                         {field.type ===
                                                             "checkboxes" &&
-                                                            `Несколько вариантов из ${field.options.length}`}
+                                                            t.formBuilder.previewMultiChoice(field.options.length)}
                                                         {field.type ===
                                                             "dropdown" &&
-                                                            `Выпадающий список (${field.options.length})`}
+                                                            t.formBuilder.previewDropdown(field.options.length)}
                                                         {field.type ===
                                                             "linear_scale" &&
-                                                            `Шкала от ${
-                                                                field.scale
-                                                                    ?.min ?? 1
-                                                            } до ${
-                                                                field.scale
-                                                                    ?.max ?? 5
-                                                            }`}
+                                                            t.formBuilder.previewScale(
+                                                                field.scale?.min ?? 1,
+                                                                field.scale?.max ?? 5
+                                                            )}
                                                     </div>
                                                 </li>
                                             ))}
@@ -964,36 +945,16 @@ export default function TournamentFormBuilderPage() {
                                 <Card className="border-white/10 bg-white/5 backdrop-blur">
                                     <CardHeader>
                                         <CardTitle className="text-white">
-                                            Как использовать форму
+                                            {t.formBuilder.howToUse}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3 text-sm text-white/70">
-                                        <p>
-                                            Этот конструктор позволяет создавать
-                                            сложные формы регистрации для
-                                            турниров. Добавляйте различные типы
-                                            полей, настраивайте обязательные
-                                            поля и создавайте интерактивные
-                                            элементы для сбора информации от
-                                            команд.
-                                        </p>
+                                        <p>{t.formBuilder.howToUseText}</p>
                                         <ul className="list-disc pl-5 space-y-1">
-                                            <li>
-                                                Используйте разные типы полей
-                                                для точного сбора данных
-                                            </li>
-                                            <li>
-                                                Настраивайте обязательные поля
-                                                для важной информации
-                                            </li>
-                                            <li>
-                                                В правой колонке видно, как
-                                                форму увидят участники
-                                            </li>
-                                            <li>
-                                                Сохраняйте шаблоны для
-                                                повторного использования
-                                            </li>
+                                            <li>{t.formBuilder.tip1}</li>
+                                            <li>{t.formBuilder.tip2}</li>
+                                            <li>{t.formBuilder.tip3}</li>
+                                            <li>{t.formBuilder.tip4}</li>
                                         </ul>
                                     </CardContent>
                                 </Card>

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { Card, CardContent } from "../ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Achievement = {
   title: string;
@@ -23,7 +26,7 @@ const SpeakerCard = ({
   avg_speech,
   total_achievements,
 }: SpeakerCardProps) => {
-  console.log("Avatar src:", avatar);
+  const { t } = useLanguage();
   return (
     <Card
       className="relative mr-4 flex flex-col sm:flex-row items-start sm:items-center gap-6 
@@ -44,7 +47,7 @@ const SpeakerCard = ({
           {full_name}
         </h3>
         <p className="text-sm text-[15px] sm:text-[20px] text-gray-300">
-          Средний балл: {avg_speech}
+          {t.shared.avgScore} {avg_speech}
         </p>
         <ul className="text-[15px] sm:text-[20px] mt-2 sm:mt-5 list-disc">
           {achievements?.map((achievement, index) => {

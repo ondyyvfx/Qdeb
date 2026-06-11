@@ -19,6 +19,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import LoadingState from "@/components/shared/LoadingState";
 import LoginRequiredMessage from "@/components/shared/LoginRequiredMessage";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RegistrationField {
   id?: number;
@@ -49,6 +50,7 @@ interface TeamInfo {
 }
 
 const TournamentJoinPage: React.FC = () => {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const { isChecking, isNotLoggedIn, isAuthorized } = useAuth();
@@ -96,7 +98,7 @@ const TournamentJoinPage: React.FC = () => {
         }
       } catch (e) {
         console.error(e);
-        toast.error("Не удалось загрузить данные турнира");
+        toast.error(t.tournamentDetail.couldNotLoadTournamentData);
       } finally {
         setLoading(false);
       }
@@ -122,7 +124,7 @@ const TournamentJoinPage: React.FC = () => {
     );
     for (const f of required) {
       if (!fieldValues[f.name] || !fieldValues[f.name].trim()) {
-        toast.error(`Заполните обязательное поле: ${f.name}`);
+        toast.error(t.tournamentDetail.requiredField(f.name));
         return;
       }
     }
@@ -149,7 +151,7 @@ const TournamentJoinPage: React.FC = () => {
     });
 
     if (res.status === 201 && res.data) {
-      toast.success("Заявка отправлена");
+      toast.success(t.tournamentDetail.applicationSent);
       router.push(`/tournaments/${tournament.slug}`);
       return;
     }
@@ -165,11 +167,9 @@ const TournamentJoinPage: React.FC = () => {
       errorMessage.toLowerCase().includes("только лидер");
 
     if (isLeaderError) {
-      toast.error(
-        "Только лидер команды может подавать заявки на турниры. Попросите лидера команды подать заявку."
-      );
+      toast.error(t.tournamentDetail.onlyLeaderCanApply);
     } else {
-      toast.error(errorMessage || "Не удалось отправить заявку");
+      toast.error(errorMessage || t.tournamentDetail.couldNotSendApp);
     }
   };
 
@@ -179,7 +179,7 @@ const TournamentJoinPage: React.FC = () => {
       <div className="min-h-screen bg-background text-text">
         <Toaster position="top-center" />
         <Navbar />
-        <LoadingState message="Проверка авторизации..." />
+        <LoadingState message={t.tournamentDetail.checkingAuth} />
         <Footer />
       </div>
     );
@@ -191,7 +191,7 @@ const TournamentJoinPage: React.FC = () => {
       <div className="min-h-screen bg-background text-text">
         <Toaster position="top-center" />
         <Navbar />
-        <LoginRequiredMessage message="Необходимо войти в систему для подачи заявки на участие в турнире" />
+        <LoginRequiredMessage message={t.tournamentDetail.loginRequiredJoin} />
         <Footer />
       </div>
     );
@@ -211,34 +211,38 @@ const TournamentJoinPage: React.FC = () => {
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
               <CardTitle className="text-2xl text-white">
-                Подача заявки
+                {t.tournamentDetail.applyTitle}
               </CardTitle>
               <CardDescription>
-                {tournament ? `Турнир: ${tournament.name}` : "Загрузка турнира"}
+                {tournament
+                  ? t.tournamentDetail.tournamentLabel(tournament.name)
+                  : t.tournamentDetail.loadingTournamentShort}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {loading && <div className="text-gray-300">Загрузка...</div>}
+              {loading && (
+                <div className="text-gray-300">{t.tournamentDetail.loading}</div>
+              )}
               {!loading && !tournament && (
-                <div className="text-red-400">Турнир не найден</div>
+                <div className="text-red-400">
+                  {t.tournamentDetail.tournamentNotFound}
+                </div>
               )}
               {!loading && tournament && (
                 <>
                   {!team && (
                     <div className="text-amber-400 text-sm">
-                      Вы не состоите в команде. Создайте или вступите в команду
-                      перед подачей заявки.
+                      {t.tournamentDetail.noTeamJoinApply}
                     </div>
                   )}
                   {team && team.memberCount !== 2 && (
                     <div className="text-amber-400 text-sm">
-                      Заявку может подать только команда из 2 участников.
-                      Сейчас: {team.memberCount}/2
+                      {t.tournamentDetail.onlyTwoMemberNow(team.memberCount)}
                     </div>
                   )}
                   <div className="rounded-md border border-white/10 p-3 text-sm text-gray-300">
                     <div className="flex items-center justify-between">
-                      <span>Команда</span>
+                      <span>{t.tournamentDetail.teamLabel}</span>
                       <span className="font-semibold text-white">
                         {team ? `${team.name} (${team.memberCount}/2)` : "—"}
                       </span>
@@ -273,13 +277,15 @@ const TournamentJoinPage: React.FC = () => {
                       }
                       className="border-white/20"
                     >
-                      Назад
+                      {t.tournamentDetail.back}
                     </Button>
                     <Button
                       onClick={submitApplication}
                       disabled={!canApply || submitting}
                     >
-                      {submitting ? "Отправка..." : "Отправить заявку"}
+                      {submitting
+                        ? t.tournamentDetail.sending
+                        : t.tournamentDetail.submitApplication}
                     </Button>
                   </div>
                 </>

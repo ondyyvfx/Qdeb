@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiGet, apiPost } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TeamUser {
   id: number;
@@ -30,6 +31,7 @@ interface TeamInfo {
 }
 
 const JoinTeamPage: React.FC = () => {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -51,17 +53,17 @@ const JoinTeamPage: React.FC = () => {
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!joinCode.trim()) {
-      toast.error("Введите код приглашения команды");
+      toast.error(t.team.enterCodeError);
       return;
     }
     setSubmitting(true);
     const res = await apiPost<TeamInfo>("/teams/join", { joinCode: joinCode.trim() });
     setSubmitting(false);
     if (res.status === 200 && res.data) {
-      toast.success("Вы присоединились к команде");
+      toast.success(t.team.joinedSuccess);
       router.push("/team");
     } else {
-      toast.error(res.error || "Не удалось присоединиться к команде");
+      toast.error(res.error || t.team.joinFailed);
     }
   };
 
@@ -72,36 +74,36 @@ const JoinTeamPage: React.FC = () => {
         <div className="max-w-xl mx-auto">
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
-              <CardTitle className="text-2xl text-white">Присоединиться к команде</CardTitle>
-              <CardDescription>Введите код приглашения для вступления</CardDescription>
+              <CardTitle className="text-2xl text-white">{t.team.joinTitle}</CardTitle>
+              <CardDescription>{t.team.joinDescriptionShort}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="py-10 text-center text-gray-300">Загрузка...</div>
+                <div className="py-10 text-center text-gray-300">{t.team.loading}</div>
               ) : team ? (
                 <div className="space-y-3">
-                  <p className="text-gray-200">Вы уже состоите в команде:</p>
+                  <p className="text-gray-200">{t.team.alreadyInTeamColon}</p>
                   <div className="rounded-md border border-white/10 p-3">
                     <div className="text-white font-semibold">{team.name}</div>
-                    <div className="text-sm text-gray-300">Участников: {team.memberCount}/2</div>
+                    <div className="text-sm text-gray-300">{t.team.membersColon(team.memberCount)}</div>
                   </div>
                   <div className="pt-2">
-                    <Button onClick={() => router.push("/team")} className="w-full">Перейти в команду</Button>
+                    <Button onClick={() => router.push("/team")} className="w-full">{t.team.enterTeam}</Button>
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handleJoin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="joinCode">Код приглашения</Label>
+                    <Label htmlFor="joinCode">{t.team.inviteCodeShort}</Label>
                     <Input
                       id="joinCode"
                       value={joinCode}
                       onChange={(e) => setJoinCode(e.target.value)}
-                      placeholder="Например: ABC12345"
+                      placeholder={t.team.joinCodePlaceholder}
                     />
                   </div>
                   <Button type="submit" disabled={submitting} className="w-full">
-                    {submitting ? "Присоединяем..." : "Присоединиться"}
+                    {submitting ? t.team.joining : t.team.joinButton}
                   </Button>
                 </form>
               )}

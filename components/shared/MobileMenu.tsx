@@ -7,6 +7,7 @@ import { DrawerTitle, DrawerHeader } from "@/components/ui/drawer";
 import Image from "next/image";
 import { User } from "@/stores/useUserStore";
 import { Separator } from "@/components/ui/separator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type MobileMenuProps = {
   user: User | null;
@@ -15,6 +16,7 @@ type MobileMenuProps = {
 };
 
 const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
+  const { t } = useLanguage();
   // Функция для форматирования имени пользователя
   const formatUserName = (user: { full_name?: string; email?: string }) => {
     if (user.full_name) {
@@ -24,7 +26,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
       const nameFromEmail = user.email.split("@")[0];
       return nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
     }
-    return "Пользователь";
+    return t.menu.userFallback;
   };
 
   // Функция для получения инициалов пользователя
@@ -47,7 +49,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
     <div className="flex flex-col h-full">
       <DrawerHeader className="border-b border-white/10 pb-4">
         <DrawerTitle className="text-xl font-bold text-white">
-          Меню
+          {t.menu.menu}
         </DrawerTitle>
       </DrawerHeader>
 
@@ -59,7 +61,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             onClick={() => onNavigate("/calendar")}
             className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
           >
-            Календарь
+            {t.nav.calendar}
           </Link>
           
           {user?.roles?.includes("ROLE_ADMIN") && (
@@ -68,7 +70,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
               onClick={() => onNavigate("/tournaments")}
               className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
             >
-              Турниры
+              {t.nav.tournaments}
             </Link>
           )}
           
@@ -77,7 +79,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             onClick={() => onNavigate("/rating")}
             className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
           >
-            Рейтинг спикеров
+            {t.nav.rating}
           </Link>
           
           <a
@@ -93,7 +95,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
             onClick={() => onNavigate("/about")}
             className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-white font-medium"
           >
-            О нас
+            {t.nav.about}
           </Link>
           
           
@@ -103,7 +105,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
               onClick={() => onNavigate("/tournaments/create")}
               className="px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-orange-500 font-semibold"
             >
-              Создать турнир
+              {t.nav.createTournament}
             </Link>
           )}
         </nav>
@@ -152,15 +154,15 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
                 onClick={() => onNavigate("/profile")}
                 className="justify-start w-full text-white hover:bg-white/10 h-12"
               >
-                Профиль
+                {t.nav.profile}
               </Button>
-              
+
               <Button
                 variant="ghost"
                 onClick={() => onNavigate("/team")}
                 className="justify-start w-full text-white hover:bg-white/10 h-12"
               >
-                Моя команда
+                {t.menu.myTeam}
               </Button>
               
               <Separator className="my-2 bg-white/10" />
@@ -170,7 +172,7 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
                 onClick={onLogout}
                 className="justify-start w-full text-red-400 hover:bg-red-500/20 hover:text-red-300 h-12"
               >
-                Выйти
+                {t.nav.logout}
               </Button>
             </div>
           </>
@@ -181,14 +183,14 @@ const MobileMenu = ({ user, onLogout, onNavigate }: MobileMenuProps) => {
               onClick={() => onNavigate("/register")}
               className="w-full border-gray-600 bg-background text-white hover:bg-orange-500 hover:border-accent transition-colors h-12"
             >
-              Регистрация
+              {t.nav.register}
             </Button>
             <Button
               variant="ghost"
               onClick={() => onNavigate("/login")}
               className="w-full text-white hover:bg-white/10 h-12"
             >
-              Вход
+              {t.nav.login}
             </Button>
           </div>
         )}

@@ -1,8 +1,11 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { User } from "@/stores/useUserStore";
 import { formatUserRoles } from "@/lib/auth-utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AccessDeniedMessageProps {
   user: User | null;
@@ -15,13 +18,14 @@ interface AccessDeniedMessageProps {
 
 export const AccessDeniedMessage: React.FC<AccessDeniedMessageProps> = ({
   user,
-  title = "Недостаточно прав",
-  message = "У вас нет доступа к этой странице",
+  title,
+  message,
   showRoles = true,
   redirectPath = "/",
-  redirectButtonText = "Вернуться на главную",
+  redirectButtonText,
 }) => {
   const router = useRouter();
+  const { t } = useLanguage();
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -43,19 +47,19 @@ export const AccessDeniedMessage: React.FC<AccessDeniedMessageProps> = ({
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-yellow-400 mb-2">
-            {title}
+            {title ?? t.shared.insufficientRights}
           </h2>
-          <p className="text-gray-400 mb-4">{message}</p>
+          <p className="text-gray-400 mb-4">{message ?? t.shared.noAccess}</p>
           {showRoles && (
             <p className="text-sm text-gray-500 mb-6">
-              Ваши роли: {formatUserRoles(user)}
+              {t.shared.yourRoles} {formatUserRoles(user)}
             </p>
           )}
           <Button
             onClick={() => router.push(redirectPath)}
             className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer warning-button"
           >
-            {redirectButtonText}
+            {redirectButtonText ?? t.shared.backToHome}
           </Button>
         </div>
       </div>

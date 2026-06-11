@@ -22,6 +22,7 @@ import { isAdmin } from "@/lib/auth-utils";
 import Cookies from "js-cookie";
 import DebateClubs from "@/components/shared/DebateClubs";
 import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Tournament = {
     id: number;
@@ -45,6 +46,7 @@ export default function TournamentsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState<"date" | "price">("date");
 
+    const { t } = useLanguage();
     const { user } = useUserStore();
 
     const API_URL =
@@ -168,7 +170,7 @@ export default function TournamentsPage() {
             <div className="min-h-screen bg-background text-text flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-                    <p className="text-lg">Загрузка турниров...</p>
+                    <p className="text-lg">{t.tournamentsPage.loadingTournaments}</p>
                 </div>
             </div>
         );
@@ -180,7 +182,7 @@ export default function TournamentsPage() {
                 <Card className="w-full max-w-md">
                     <CardHeader>
                         <CardTitle className="text-center text-red-500">
-                            Ошибка
+                            {t.tournamentsPage.error}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -189,7 +191,7 @@ export default function TournamentsPage() {
                             onClick={() => window.location.reload()}
                             className="w-full"
                         >
-                            Попробовать снова
+                            {t.tournamentsPage.tryAgain}
                         </Button>
                     </CardContent>
                 </Card>
@@ -200,8 +202,8 @@ export default function TournamentsPage() {
     return (
         <>
             <AdminOnlyPage
-                title="Недостаточно прав"
-                message="Только администраторы могут создавать турниры"
+                title={t.shared.insufficientRights}
+                message={t.tournamentsPage.onlyAdminsCreate}
             >
                 <div className="min-h-screen bg-background text-text">
                     <Navbar />
@@ -213,7 +215,7 @@ export default function TournamentsPage() {
                                     <div className="flex-1"></div>
                                     <div className="flex-1 text-center">
                                         <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                                            Турниры
+                                            {t.nav.tournaments}
                                         </h1>
                                     </div>
                                     <div className="flex-1 flex justify-end">
@@ -221,21 +223,20 @@ export default function TournamentsPage() {
                                             <Link href="/tournaments/create">
                                                 <Button className="flex items-center gap-2 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white font-semibold px-6 py-3 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded-xl gradient-button">
                                                     <Plus className="w-5 h-5" />
-                                                    Создать турнир
+                                                    {t.nav.createTournament}
                                                 </Button>
                                             </Link>
                                         ) : user ? (
                                             <div className="flex items-center gap-2 text-sm text-gray-500">
                                                 <span>
-                                                    Только для администраторов
+                                                    {t.tournamentsPage.onlyForAdmins}
                                                 </span>
                                             </div>
                                         ) : null}
                                     </div>
                                 </div>
                                 <p className="text-lg text-gray-400 max-w-2xl mx-auto font-medium">
-                                    Просматривайте все доступные турниры, ищите
-                                    по названию и регистрируйтесь
+                                    {t.tournamentsPage.subtitle}
                                 </p>
                             </div>
                         </div>
@@ -249,7 +250,7 @@ export default function TournamentsPage() {
                                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                         <Input
                                             type="text"
-                                            placeholder="Поиск турниров..."
+                                            placeholder={t.tournamentsPage.searchPlaceholder}
                                             value={searchTerm}
                                             onChange={(e) =>
                                                 setSearchTerm(e.target.value)
@@ -266,7 +267,7 @@ export default function TournamentsPage() {
                                             className="border-white/20 text-white hover:bg-white/10 px-6 py-3 transition-all duration-300"
                                         >
                                             <Calendar className="w-5 h-5 mr-2" />
-                                            По дате
+                                            {t.tournamentsPage.byDate}
                                         </Button>
                                         <Button
                                             onClick={sortByPrice}
@@ -274,7 +275,7 @@ export default function TournamentsPage() {
                                             className="border-white/20 text-white hover:bg-white/10 px-6 py-3 transition-all duration-300"
                                         >
                                             <Filter className="w-5 h-5 mr-2" />
-                                            По цене
+                                            {t.tournamentsPage.byPrice}
                                         </Button>
                                     </div>
                                 </div>
@@ -284,7 +285,7 @@ export default function TournamentsPage() {
                         {/* Results Count */}
                         <div className="mb-6">
                             <p className="text-gray-400">
-                                Найдено турниров: {filteredTournaments.length}
+                                {t.tournamentsPage.foundCount(filteredTournaments.length)}
                             </p>
                         </div>
 
@@ -293,12 +294,12 @@ export default function TournamentsPage() {
                             <div className="text-center py-12">
                                 <div className="bg-white/5 rounded-xl p-8 border border-white/10">
                                     <h3 className="text-xl font-semibold mb-2">
-                                        Турниры не найдены
+                                        {t.tournamentsPage.notFound}
                                     </h3>
                                     <p className="text-gray-400 mb-4">
                                         {searchTerm
-                                            ? "Попробуйте изменить поисковый запрос"
-                                            : "Пока нет доступных турниров"}
+                                            ? t.tournamentsPage.tryChangeSearch
+                                            : t.tournamentsPage.noTournamentsYet}
                                     </p>
                                     {searchTerm && (
                                         <Button
@@ -306,7 +307,7 @@ export default function TournamentsPage() {
                                             variant="outline"
                                             className="border-white/20 text-white hover:bg-white/10"
                                         >
-                                            Очистить поиск
+                                            {t.tournamentsPage.clearSearch}
                                         </Button>
                                     )}
                                 </div>

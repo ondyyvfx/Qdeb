@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import Cookies from "js-cookie";
 import { resolveProfilePictureUrl } from "@/lib/profilePicture";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserProfile {
   id: number;
@@ -29,6 +30,7 @@ interface UserProfile {
 }
 
 const ProfileView = () => {
+  const { t } = useLanguage();
   const user = useUserStore((state) => state.user);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,7 +132,7 @@ const ProfileView = () => {
       <div className="max-w-4xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg">Загрузка профиля...</p>
+          <p className="mt-4 text-lg">{t.profile.loadingProfile}</p>
         </div>
       </div>
     );
@@ -141,11 +143,9 @@ const ProfileView = () => {
       <div className="max-w-4xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-500">
-            Пользователь не найден
+            {t.profile.userNotFound}
           </h1>
-          <p className="mt-2 text-gray-400">
-            Войдите в систему для просмотра профиля
-          </p>
+          <p className="mt-2 text-gray-400">{t.profile.loginToView}</p>
         </div>
       </div>
     );
@@ -155,10 +155,10 @@ const ProfileView = () => {
     return (
       <div className="max-w-4xl mx-auto p-8 bg-background shadow-2xl rounded-2xl mt-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">Профиль не найден</h1>
-          <p className="mt-2 text-gray-400">
-            Не удалось загрузить данные профиля
-          </p>
+          <h1 className="text-2xl font-bold text-red-500">
+            {t.profile.profileNotFound}
+          </h1>
+          <p className="mt-2 text-gray-400">{t.profile.couldNotLoad}</p>
         </div>
       </div>
     );
@@ -194,7 +194,9 @@ const ProfileView = () => {
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-bold text-accent">
             {profile.fullName ||
-              (profile.email ? profile.email.split("@")[0] : "Пользователь")}
+              (profile.email
+                ? profile.email.split("@")[0]
+                : t.profile.userFallback)}
           </h1>
           <p className="text-lg text-muted-foreground">{profile.email}</p>
         </div>
@@ -204,36 +206,40 @@ const ProfileView = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg text-white">
-            Основная информация
+            {t.profile.basicInfo}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Email</p>
+            <p className="text-sm text-muted-foreground">{t.profile.email}</p>
             <p className="text-white font-medium">
-              {profile.email || "Не указан"}
+              {profile.email || t.profile.notSpecifiedM}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground">Полное имя</p>
+            <p className="text-sm text-muted-foreground">{t.profile.fullName}</p>
             <p className="text-white font-medium">
-              {profile.fullName || "Не указано"}
+              {profile.fullName || t.profile.notSpecifiedN}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground">Телефон</p>
+            <p className="text-sm text-muted-foreground">{t.profile.phone}</p>
             <p className="text-white font-medium">
-              {profile.phone || "Не указан"}
+              {profile.phone || t.profile.notSpecifiedM}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground">Логин (username)</p>
+            <p className="text-sm text-muted-foreground">
+              {t.profile.loginUsername}
+            </p>
             <p className="text-white font-medium">
               {profile.username ||
-                (profile.email ? profile.email.split("@")[0] : "Не указан")}
+                (profile.email
+                  ? profile.email.split("@")[0]
+                  : t.profile.notSpecifiedM)}
             </p>
           </div>
         </CardContent>
@@ -242,7 +248,7 @@ const ProfileView = () => {
       {/* Команда */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-white">Команда</CardTitle>
+          <CardTitle className="text-lg text-white">{t.profile.team}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {profile.teamId ? (
@@ -250,18 +256,18 @@ const ProfileView = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Название команды
+                    {t.profile.teamName}
                   </p>
                   <p className="text-white font-medium">{profile.teamName}</p>
                 </div>
                 <a href="/team" className="text-accent hover:underline text-sm">
-                  Открыть команду
+                  {t.profile.openTeam}
                 </a>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Код приглашения
+                    {t.profile.inviteCode}
                   </p>
                   <p className="text-white font-medium">
                     {profile.teamCode || "—"}
@@ -269,16 +275,18 @@ const ProfileView = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Количество участников
+                    {t.profile.membersCount}
                   </p>
                   <p className="text-white font-medium">
                     {profile.teamSize ?? "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Лидер</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t.profile.leader}
+                  </p>
                   <p className="text-white font-medium">
-                    {profile.teamLeader ? "Да" : "Нет"}
+                    {profile.teamLeader ? t.profile.yes : t.profile.no}
                   </p>
                 </div>
               </div>
@@ -294,6 +302,7 @@ const ProfileView = () => {
 
 // Локальный компонент действий, если пользователь без команды
 const TeamActionsNoTeam = () => {
+  const { t } = useLanguage();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -302,7 +311,7 @@ const TeamActionsNoTeam = () => {
     e.preventDefault();
     setError(null);
     if (!code.trim()) {
-      setError("Введите код команды");
+      setError(t.profile.enterTeamCode);
       return;
     }
     try {
@@ -331,7 +340,7 @@ const TeamActionsNoTeam = () => {
       console.log("Join team response status:", res.status);
 
       if (!res.ok) {
-        let errorMessage = "Ошибка входа в команду";
+        let errorMessage = t.profile.couldNotJoin;
         try {
           const errorData = await res.json();
           errorMessage = errorData.detail || errorData.message || errorMessage;
@@ -343,7 +352,7 @@ const TeamActionsNoTeam = () => {
       // Перезагрузить страницу профиля для обновления состояния команды
       window.location.reload();
     } catch (e) {
-      setError("Не удалось присоединиться к команде");
+      setError(t.profile.couldNotJoin);
     } finally {
       setLoading(false);
     }
@@ -352,11 +361,9 @@ const TeamActionsNoTeam = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Вы не состоите в команде
-        </p>
+        <p className="text-sm text-muted-foreground">{t.profile.noTeam}</p>
         <a href="/team/create" className="text-accent hover:underline text-sm">
-          Создать команду
+          {t.profile.createTeam}
         </a>
       </div>
       <form
@@ -365,7 +372,7 @@ const TeamActionsNoTeam = () => {
       >
         <input
           className="bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white"
-          placeholder="Код приглашения"
+          placeholder={t.profile.inviteCode}
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
@@ -374,7 +381,7 @@ const TeamActionsNoTeam = () => {
           className="bg-accent text-white rounded-md px-4 py-2 disabled:opacity-60"
           disabled={loading}
         >
-          {loading ? "Вход..." : "Войти в команду"}
+          {loading ? t.profile.joining : t.profile.joinTeam}
         </button>
       </form>
       {error && <p className="text-red-500 text-sm">{error}</p>}

@@ -10,11 +10,13 @@ import Image from "next/image"
 import { X, Eye, EyeOff, AlertTriangle, Upload, User } from "lucide-react"
 import Link from "next/link"
 import { Toaster, toast } from "react-hot-toast"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { t } = useLanguage()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -56,11 +58,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateEmail(email)) { toast.error("Введите корректный email."); return }
-    if (!validatePassword(password)) { toast.error("Пароль: мин. 8 символов, заглавная буква и спецсимвол."); return }
-    if (password !== confirmPassword) { toast.error("Пароли не совпадают."); return }
-    if (!validateFullName(full_name)) { toast.error("Введите имя и фамилию."); return }
-    if (!validatePhone(phone)) { toast.error("Телефон в формате +7XXXXXXXXXX."); return }
+    if (!validateEmail(email)) { toast.error(t.register.invalidEmail); return }
+    if (!validatePassword(password)) { toast.error(t.register.weakPassword); return }
+    if (password !== confirmPassword) { toast.error(t.register.passwordsMismatch); return }
+    if (!validateFullName(full_name)) { toast.error(t.register.enterFullName); return }
+    if (!validatePhone(phone)) { toast.error(t.register.invalidPhone); return }
 
     setIsLoading(true)
     try {
@@ -71,7 +73,7 @@ export default function RegisterPage() {
       const res = await fetch(`${API_URL}/auth/signup`, { method: "POST", body: formData, credentials: "include" })
 
       if (!res.ok) {
-        let message = "Ошибка регистрации"
+        let message = t.register.registerError
         try {
           const ct = res.headers.get("content-type") || ""
           if (ct.includes("application/json")) {
@@ -87,10 +89,10 @@ export default function RegisterPage() {
         throw new Error(message)
       }
 
-      toast.success("Регистрация успешна!")
+      toast.success(t.register.registerSuccess)
       router.push("/login")
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Ошибка при подключении к серверу.")
+      toast.error(err instanceof Error ? err.message : t.register.connectionError)
     } finally {
       setIsLoading(false)
     }
@@ -117,15 +119,15 @@ export default function RegisterPage() {
         <div className="w-full max-w-md ml-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Создайте аккаунт</h1>
-            <p className="text-white/40 text-sm">Уже есть аккаунт? <Link href="/login" className="text-accent hover:underline">Войти</Link></p>
+            <h1 className="text-3xl font-bold mb-1">{t.register.title}</h1>
+            <p className="text-white/40 text-sm">{t.register.haveAccount} <Link href="/login" className="text-accent hover:underline">{t.register.loginLink}</Link></p>
           </div>
 
           {/* Warning */}
           <div className="flex gap-3 bg-amber-500/8 border border-amber-500/20 rounded-xl px-4 py-3 mb-8">
             <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-300/80 leading-relaxed">
-              Данные используются в профиле и интегрируются с Tabbycat для рейтинга спикеров.
+              {t.register.dataWarning}
             </p>
           </div>
 
@@ -133,32 +135,32 @@ export default function RegisterPage() {
             {/* Name + Username */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-sm text-white/60">Полное имя</Label>
-                <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} placeholder="Фамилия Имя" required className={inputClass} />
+                <Label className="text-sm text-white/60">{t.register.fullName}</Label>
+                <Input value={full_name} onChange={(e) => setFull_name(e.target.value)} placeholder={t.register.fullNamePlaceholder} required className={inputClass} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm text-white/60">Nickname</Label>
+                <Label className="text-sm text-white/60">{t.register.nickname}</Label>
                 <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" required className={inputClass} />
               </div>
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/60">Электронная почта</Label>
+              <Label className="text-sm text-white/60">{t.register.email}</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setEmailTouched(true)} placeholder="example@gmail.com" required className={inputClass} />
               {emailTouched && !validateEmail(email) && (
-                <p className="text-red-400 text-xs">Введите корректный email</p>
+                <p className="text-red-400 text-xs">{t.register.invalidEmailInline}</p>
               )}
             </div>
 
             {/* Gender */}
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/60">Гендер</Label>
+              <Label className="text-sm text-white/60">{t.register.gender}</Label>
               <div className="flex rounded-xl overflow-hidden border border-white/10 bg-white/5 w-fit">
                 {(["M", "F", "O"] as const).map((g, i) => (
                   <button key={g} type="button" onClick={() => setGender(g)}
                     className={`px-5 py-2 text-sm font-medium transition-colors ${i > 0 ? "border-l border-white/10" : ""} ${gender === g ? "bg-accent text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}>
-                    {g === "M" ? "Муж" : g === "F" ? "Жен" : "Другое"}
+                    {g === "M" ? t.register.male : g === "F" ? t.register.female : t.register.other}
                   </button>
                 ))}
               </div>
@@ -167,40 +169,40 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-sm text-white/60">Пароль</Label>
+                <Label className="text-sm text-white/60">{t.register.password}</Label>
                 <div className="relative">
-                  <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onBlur={() => setPasswordTouched(true)} placeholder="Мин. 8 символов" required className={`${inputClass} pr-10`} />
+                  <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onBlur={() => setPasswordTouched(true)} placeholder={t.register.passwordPlaceholder} required className={`${inputClass} pr-10`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
                 {passwordTouched && !validatePassword(password) && (
-                  <p className="text-red-400 text-xs">Мин. 8 символов, заглавная буква и спецсимвол</p>
+                  <p className="text-red-400 text-xs">{t.register.weakPasswordInline}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm text-white/60">Подтверждение</Label>
+                <Label className="text-sm text-white/60">{t.register.confirm}</Label>
                 <div className="relative">
-                  <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={() => setConfirmPasswordTouched(true)} placeholder="Повторите пароль" required className={`${inputClass} pr-10`} />
+                  <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onBlur={() => setConfirmPasswordTouched(true)} placeholder={t.register.confirmPlaceholder} required className={`${inputClass} pr-10`} />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
                 {confirmPasswordTouched && password !== confirmPassword && (
-                  <p className="text-red-400 text-xs">Пароли не совпадают</p>
+                  <p className="text-red-400 text-xs">{t.register.passwordsMismatchInline}</p>
                 )}
               </div>
             </div>
 
             {/* Phone */}
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/60">Номер телефона</Label>
+              <Label className="text-sm text-white/60">{t.register.phone}</Label>
               <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+77XXXXXXXXX" className={inputClass} />
             </div>
 
             {/* Avatar */}
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/60">Фото профиля <span className="text-white/30">(необязательно)</span></Label>
+              <Label className="text-sm text-white/60">{t.register.profilePhoto} <span className="text-white/30">{t.register.optional}</span></Label>
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 group-hover:border-accent/50 transition-colors overflow-hidden flex items-center justify-center flex-shrink-0">
                   {preview ? (
@@ -211,7 +213,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/40 group-hover:text-white/60 transition-colors">
                   <Upload className="w-4 h-4" />
-                  <span>{avatar ? avatar.name : "Загрузить фото"}</span>
+                  <span>{avatar ? avatar.name : t.register.uploadPhoto}</span>
                 </div>
                 <Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               </label>
@@ -221,8 +223,8 @@ export default function RegisterPage() {
             <div className="flex items-center gap-3">
               <Checkbox id="policy" checked={isAgreedWithPolicy} onCheckedChange={(c) => setIsAgreedWithPolicy(!!c)} />
               <Label htmlFor="policy" className="text-sm text-white/50 cursor-pointer">
-                Я согласен(-на) с{" "}
-                <Link href="/privacy-policy" className="text-accent hover:underline">Условиями пользования</Link>
+                {t.register.agree}{" "}
+                <Link href="/privacy-policy" className="text-accent hover:underline">{t.register.termsLink}</Link>
               </Label>
             </div>
 
@@ -234,7 +236,7 @@ export default function RegisterPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-              ) : "Зарегистрироваться"}
+              ) : t.register.submit}
             </Button>
           </form>
         </div>

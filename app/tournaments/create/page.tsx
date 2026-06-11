@@ -19,6 +19,7 @@ import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import AdminOnlyPage from "@/components/shared/AdminOnlyPage";
 import { safeParseResponse } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type RegistrationFieldType =
   | "TEXT"
@@ -81,17 +82,6 @@ const mapFieldTypeToBackend = (
     default:
       return "DESCRIPTION";
   }
-};
-
-const REGISTRATION_TYPE_LABELS: Record<RegistrationFieldType, string> = {
-  TEXT: "Короткий ответ",
-  DESCRIPTION: "Развернутый ответ",
-  short_answer: "Короткий ответ",
-  paragraph: "Развернутый ответ",
-  multiple_choice: "Один вариант",
-  checkboxes: "Несколько вариантов",
-  dropdown: "Выпадающий список",
-  linear_scale: "Шкала оценки",
 };
 
 const DEFAULT_REGISTRATION_FIELDS: RegistrationField[] = [
@@ -158,6 +148,17 @@ const readTemplateFromStorage = (): RegistrationField[] | null => {
 
 const CreateTournamentPage = () => {
   const router = useRouter();
+  const { t } = useLanguage();
+  const typeLabels: Record<RegistrationFieldType, string> = {
+    TEXT: t.tournamentForm.typeShortAnswer,
+    DESCRIPTION: t.tournamentForm.typeLongAnswer,
+    short_answer: t.tournamentForm.typeShortAnswer,
+    paragraph: t.tournamentForm.typeLongAnswer,
+    multiple_choice: t.tournamentForm.typeSingleChoice,
+    checkboxes: t.tournamentForm.typeMultiChoice,
+    dropdown: t.tournamentForm.typeDropdown,
+    linear_scale: t.tournamentForm.typeScale,
+  };
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<TournamentFormData>({
     name: "",
@@ -258,12 +259,10 @@ const CreateTournamentPage = () => {
     const saved = readTemplateFromStorage();
     if (saved) {
       setRegistrationFields(saved);
-      toast.success("Шаблон формы обновлён.");
+      toast.success(t.tournamentForm.templateUpdated);
     } else {
       setRegistrationFields(DEFAULT_REGISTRATION_FIELDS);
-      toast.info(
-        "Сохранённый шаблон не найден. Откройте конструктор, чтобы создать его."
-      );
+      toast.info(t.tournamentForm.templateNotFound);
     }
   };
 
@@ -409,8 +408,8 @@ const CreateTournamentPage = () => {
 
   return (
     <AdminOnlyPage
-      title="Недостаточно прав"
-      message="Только администраторы могут создавать турниры"
+      title={t.shared.insufficientRights}
+      message={t.tournamentsPage.onlyAdminsCreate}
     >
       <div className="min-h-screen bg-background text-text">
         <Navbar />
@@ -419,10 +418,10 @@ const CreateTournamentPage = () => {
             <div className="mb-8">
               <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Создание турнира
+                  {t.tournamentForm.createTitle}
                 </h1>
                 <p className="text-lg text-gray-400 font-medium">
-                  Заполните форму ниже для публикации нового турнира
+                  {t.tournamentForm.createSubtitle}
                 </p>
               </div>
             </div>
@@ -433,13 +432,13 @@ const CreateTournamentPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <FileText className="w-6 h-6 text-accent" />
-                    Основная информация
+                    {t.tournamentForm.basicInfo}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name">Название турнира *</Label>
+                      <Label htmlFor="name">{t.tournamentForm.tournamentName}</Label>
                       <Input
                         id="name"
                         value={formData.name}
@@ -449,7 +448,7 @@ const CreateTournamentPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="shortName">Краткое название</Label>
+                      <Label htmlFor="shortName">{t.tournamentForm.shortName}</Label>
                       <Input
                         id="shortName"
                         value={formData.shortName}
@@ -462,7 +461,7 @@ const CreateTournamentPage = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="slug">URL-адрес (slug) *</Label>
+                    <Label htmlFor="slug">{t.tournamentForm.slugLabel}</Label>
                     <Input
                       id="slug"
                       value={formData.slug}
@@ -474,7 +473,7 @@ const CreateTournamentPage = () => {
                       {recommendedSlug ? (
                         <>
                           <span>
-                            Рекомендуемый slug:{" "}
+                            {t.tournamentForm.recommendedSlug}{" "}
                             <span className="text-white">
                               {recommendedSlug}
                             </span>
@@ -486,14 +485,11 @@ const CreateTournamentPage = () => {
                             onClick={applyRecommendedSlug}
                             className="h-6 px-2 text-xs"
                           >
-                            Использовать
+                            {t.tournamentForm.useSlug}
                           </Button>
                         </>
                       ) : (
-                        <span>
-                          Укажите понятный адрес — он появится в ссылке на
-                          турнир.
-                        </span>
+                        <span>{t.tournamentForm.slugHint}</span>
                       )}
                     </div>
                   </div>
@@ -501,7 +497,7 @@ const CreateTournamentPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="organizerName">
-                        Название организации *
+                        {t.tournamentForm.orgName}
                       </Label>
                       <Input
                         id="organizerName"
@@ -515,7 +511,7 @@ const CreateTournamentPage = () => {
                     </div>
                     <div>
                       <Label htmlFor="organizerContact">
-                        Контактная информация
+                        {t.tournamentForm.orgContact}
                       </Label>
                       <Input
                         id="organizerContact"
@@ -529,14 +525,14 @@ const CreateTournamentPage = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Описание турнира</Label>
+                    <Label htmlFor="description">{t.tournamentForm.descriptionLabel}</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) =>
                         handleInputChange("description", e.target.value)
                       }
-                      placeholder="Добавьте краткое описание, особенности, формат..."
+                      placeholder={t.tournamentForm.descriptionPlaceholder}
                       rows={4}
                     />
                   </div>
@@ -548,13 +544,13 @@ const CreateTournamentPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <Calendar className="w-6 h-6 text-accent" />
-                    Даты и формат
+                    {t.tournamentForm.datesAndFormat}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="startDate">Дата начала *</Label>
+                      <Label htmlFor="startDate">{t.tournamentForm.startDate}</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -566,7 +562,7 @@ const CreateTournamentPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="endDate">Дата окончания *</Label>
+                      <Label htmlFor="endDate">{t.tournamentForm.endDate}</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -581,7 +577,7 @@ const CreateTournamentPage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="fee">Регистрационный взнос (₸)</Label>
+                      <Label htmlFor="fee">{t.tournamentForm.fee}</Label>
                       <Input
                         id="fee"
                         type="number"
@@ -625,7 +621,7 @@ const CreateTournamentPage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="level">Уровень турнира</Label>
+                      <Label htmlFor="level">{t.tournamentForm.level}</Label>
                       <select
                         id="level"
                         value={formData.level}
@@ -633,36 +629,36 @@ const CreateTournamentPage = () => {
                           handleInputChange("level", e.target.value)
                         }
                         className="w-full p-2 rounded-md border  text-text"
-                        aria-label="Уровень турнира"
+                        aria-label={t.tournamentForm.level}
                       >
                         <option
                           value="LOCAL"
                           className="bg-[#0e1425] text-white"
                         >
-                          Локальный
+                          {t.tournamentForm.levelLocal}
                         </option>
                         <option
                           value="REGIONAL"
                           className="bg-[#0e1425]  text-white"
                         >
-                          Региональный
+                          {t.tournamentForm.levelRegional}
                         </option>
                         <option
                           value="NATIONAL"
                           className="bg-[#0e1425]  text-white"
                         >
-                          Национальный
+                          {t.tournamentForm.levelNational}
                         </option>
                         <option
                           value="INTERNATIONAL"
                           className="bg-[#0e1425]  text-white"
                         >
-                          Международный
+                          {t.tournamentForm.levelInternational}
                         </option>
                       </select>
                     </div>
                     <div>
-                      <Label htmlFor="format">Формат дебатов</Label>
+                      <Label htmlFor="format">{t.tournamentForm.format}</Label>
                       <Input
                         id="format"
                         value={formData.format}
@@ -683,9 +679,9 @@ const CreateTournamentPage = () => {
                         handleInputChange("active", e.target.checked)
                       }
                       className="rounded"
-                      aria-label="Регистрация открыта"
+                      aria-label={t.tournamentForm.registrationOpen}
                     />
-                    <Label htmlFor="active">Регистрация открыта</Label>
+                    <Label htmlFor="active">{t.tournamentForm.registrationOpen}</Label>
                   </div>
                 </CardContent>
               </Card>
@@ -695,17 +691,16 @@ const CreateTournamentPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <FileText className="w-6 h-6 text-accent" />
-                    Форма регистрации
+                    {t.tournamentForm.regForm}
                   </CardTitle>
                   <CardDescription className="text-gray-400">
-                    Настройте поля, которые заполнят команды при подаче заявки.
+                    {t.tournamentForm.regFormDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {registrationFields.length === 0 ? (
                     <p className="text-sm text-gray-300">
-                      Поля формы пока не выбраны. Откройте конструктор, чтобы
-                      создать шаблон.
+                      {t.tournamentForm.noFieldsSelected}
                     </p>
                   ) : (
                     <div className="space-y-3">
@@ -719,7 +714,7 @@ const CreateTournamentPage = () => {
                               {index + 1}. {field.title || field.name}
                             </span>
                             <span className="text-xs text-gray-300">
-                              {REGISTRATION_TYPE_LABELS[field.type]}
+                              {typeLabels[field.type]}
                             </span>
                           </div>
                           {field.description && (
@@ -730,19 +725,19 @@ const CreateTournamentPage = () => {
                           <div className="mt-2 flex items-center justify-between">
                             <p className="text-xs text-gray-400">
                               {field.required
-                                ? "Обязательное поле"
-                                : "Необязательное поле"}
+                                ? t.tournamentForm.requiredField
+                                : t.tournamentForm.optionalField}
                             </p>
                             {(field.type === "multiple_choice" ||
                               field.type === "checkboxes" ||
                               field.type === "dropdown") && (
                               <p className="text-xs text-gray-400">
-                                {field.options.length} вариантов
+                                {t.tournamentForm.optionsCount(field.options.length)}
                               </p>
                             )}
                             {field.type === "linear_scale" && field.scale && (
                               <p className="text-xs text-gray-400">
-                                Шкала {field.scale.min}-{field.scale.max}
+                                {t.tournamentForm.scaleLabel(field.scale.min, field.scale.max)}
                               </p>
                             )}
                           </div>
@@ -753,8 +748,7 @@ const CreateTournamentPage = () => {
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs text-gray-400">
-                      Шаблон хранится в браузере. После создания турнира поля
-                      будут включены в заявку.
+                      {t.tournamentForm.templateStored}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -764,14 +758,14 @@ const CreateTournamentPage = () => {
                         className="flex items-center gap-2"
                       >
                         <FileText className="w-4 h-4" />
-                        Открыть конструктор
+                        {t.tournamentForm.openBuilder}
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={handleRefreshRegistrationFields}
                       >
-                        Обновить
+                        {t.tournamentForm.refresh}
                       </Button>
                     </div>
                   </div>
@@ -783,13 +777,13 @@ const CreateTournamentPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <Users className="w-6 h-6 text-accent" />
-                    Информация об организаторе
+                    {t.tournamentForm.orgInfo}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="organizerName">
-                      Название организации *
+                      {t.tournamentForm.orgName}
                     </Label>
                     <Input
                       id="organizerName"
@@ -803,7 +797,7 @@ const CreateTournamentPage = () => {
                   </div>
                   <div>
                     <Label htmlFor="organizerContact">
-                      Контактная информация
+                      {t.tournamentForm.orgContact}
                     </Label>
                     <Input
                       id="organizerContact"
@@ -822,15 +816,15 @@ const CreateTournamentPage = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
                     <Upload className="w-6 h-6 text-accent" />
-                    Изображение турнира
+                    {t.tournamentForm.tournamentImage}
                   </CardTitle>
                   <CardDescription className="text-gray-400">
-                    Загрузите изображение для турнира (опционально)
+                    {t.tournamentForm.uploadImageOptional}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div>
-                    <Label htmlFor="photo">Выберите изображение</Label>
+                    <Label htmlFor="photo">{t.tournamentForm.chooseImage}</Label>
                     <Input
                       id="photo"
                       type="file"
@@ -853,7 +847,7 @@ const CreateTournamentPage = () => {
                   disabled={loading}
                   className="px-8 py-3 text-lg border-white/20 text-white hover:bg-white/10 transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl cursor-pointer"
                 >
-                  Отмена
+                  {t.tournamentForm.cancel}
                 </Button>
                 <Button
                   type="submit"
@@ -861,7 +855,7 @@ const CreateTournamentPage = () => {
                   className="flex items-center gap-2 px-8 py-3 text-lg bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded-xl cursor-pointer gradient-button"
                 >
                   <Save className="w-5 h-5" />
-                  {loading ? "Создание..." : "Создать турнир"}
+                  {loading ? t.tournamentForm.creating : t.tournamentForm.createTournament}
                 </Button>
               </div>
             </form>

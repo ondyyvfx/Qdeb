@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import LoadingState from "./LoadingState";
 import LoginRequiredMessage from "./LoginRequiredMessage";
 import AccessDeniedMessage from "./AccessDeniedMessage";
@@ -14,16 +17,17 @@ interface AdminOnlyPageProps {
 
 export const AdminOnlyPage: React.FC<AdminOnlyPageProps> = ({
   children,
-  title = "Недостаточно прав",
-  message = "Только администраторы могут получить доступ к этой странице",
+  title,
+  message,
 }) => {
   const { isChecking, isUnauthorized, isNotLoggedIn, user } = useAdminAuth();
+  const { t } = useLanguage();
 
   if (isChecking) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <LoadingState message="Проверка прав доступа..." />
+        <LoadingState message={t.shared.checkingAccess} />
         <Footer />
       </div>
     );
@@ -43,7 +47,11 @@ export const AdminOnlyPage: React.FC<AdminOnlyPageProps> = ({
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <AccessDeniedMessage user={user} title={title} message={message} />
+        <AccessDeniedMessage
+          user={user}
+          title={title ?? t.shared.insufficientRights}
+          message={message ?? t.shared.adminOnly}
+        />
         <Footer />
       </div>
     );

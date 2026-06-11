@@ -142,19 +142,10 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
     const uniqueCities = useMemo(() => {
         const allEvents = Object.values(formattedEvents).flat();
         const cities = new Set(allEvents.map((event) => event.city));
-        return ["Все", ...Array.from(cities)];
-    }, [formattedEvents]);
+        return [t.calendar.allCities, ...Array.from(cities)];
+    }, [formattedEvents, t.calendar.allCities]);
 
-    const categoryTranslations: Record<string, string> = {
-        students: "Для студентов",
-        offline: "Оффлайн",
-        bpf: "БПФ",
-        school: "Для школьников",
-        online: "Онлайн",
-        apf: "АПФ",
-        wsdc: "WSDC",
-        // Добавьте другие категории по мере необходимости
-    };
+    const categoryTranslations: Record<string, string> = t.calendar.categories;
 
     return (
         <div>
@@ -167,7 +158,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                         width={20}
                         height={20}
                         className="absolute top-[13px] left-2"
-                        alt="Поиск"
+                        alt={t.calendar.searchAria}
                     />
                     <input
                         type="text"
@@ -181,10 +172,13 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
                     className="p-2 rounded-lg bg-primary text-white font-montserrat w-full appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
-                    aria-label="Выберите город"
+                    aria-label={t.calendar.cityAria}
                 >
                     {uniqueCities.map((city) => (
-                        <option key={city} value={city === "Все" ? "" : city}>
+                        <option
+                            key={city}
+                            value={city === t.calendar.allCities ? "" : city}
+                        >
                             {city}
                         </option>
                     ))}
@@ -360,7 +354,7 @@ const ClientCalendar = ({ events, categories }: ClientCalendarProps) => {
                                                             rel="noopener noreferrer"
                                                             className="bg-green-400 text-white px-3 py-2 text-[13px] text-center sm:text-[16px] sm:px-4 sm:py-2 rounded-md font-semibold hover:bg-green-500 transition w-full sm:w-auto"
                                                         >
-                                                            Регистрация
+                                                            {t.calendar.registration}
                                                         </a>
                                                     ) : (
                                                         <Link href={`/tournaments/${event.slug}/join`}>

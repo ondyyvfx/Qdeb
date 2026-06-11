@@ -36,6 +36,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import TabbycatTournamentInfo from "@/components/shared/TabbycatTournamentInfo";
 import TournamentResults from "@/components/shared/TournamentResults";
 import TournamentStats from "@/components/shared/TournamentStats";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RegistrationField {
   id?: number;
@@ -91,6 +92,7 @@ interface TournamentApplicationListItem {
 }
 
 const TournamentDetailPage = () => {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const user = useUserStore((state) => state.user);
@@ -246,7 +248,7 @@ const TournamentDetailPage = () => {
     );
     for (const f of required) {
       if (!fieldValues[f.name] || !fieldValues[f.name].trim()) {
-        toast.error(`Заполните обязательное поле: ${f.name}`);
+        toast.error(t.tournamentDetail.requiredField(f.name));
         return;
       }
     }
@@ -268,11 +270,11 @@ const TournamentDetailPage = () => {
     setSubmitting(false);
 
     if (res.status === 201 && res.data) {
-      toast.success("Заявка отправлена");
+      toast.success(t.tournamentDetail.applicationSent);
       setShowApply(false);
       setFieldValues({});
     } else {
-      toast.error(res.error || "Не удалось отправить заявку");
+      toast.error(res.error || t.tournamentDetail.couldNotSendApp);
     }
   };
 
@@ -286,7 +288,7 @@ const TournamentDetailPage = () => {
     if (res.status === 200 && res.data) {
       setApplications(res.data as unknown as TournamentApplicationListItem[]);
     } else {
-      toast.error(res.error || "Не удалось загрузить заявки");
+      toast.error(res.error || t.tournamentDetail.couldNotLoadApps);
     }
   };
 
@@ -297,11 +299,13 @@ const TournamentDetailPage = () => {
     const res = await apiPost(`/applications/${applicationId}/${action}`);
     if (res.status === 200) {
       toast.success(
-        action === "accept" ? "Заявка принята" : "Заявка отклонена"
+        action === "accept"
+          ? t.tournamentDetail.appAccepted
+          : t.tournamentDetail.appRejected
       );
       await loadApplications();
     } else {
-      toast.error(res.error || "Не удалось обновить заявку");
+      toast.error(res.error || t.tournamentDetail.couldNotUpdateApp);
     }
   };
 
@@ -341,10 +345,10 @@ const TournamentDetailPage = () => {
 
   const getLevelLabel = (level: string) => {
     const levels: Record<string, string> = {
-      LOCAL: "Местный",
-      REGIONAL: "Региональный",
-      NATIONAL: "Национальный",
-      INTERNATIONAL: "Международный",
+      LOCAL: t.tournamentDetail.levelLocal,
+      REGIONAL: t.tournamentDetail.levelRegional,
+      NATIONAL: t.tournamentDetail.levelNational,
+      INTERNATIONAL: t.tournamentDetail.levelInternational,
     };
     return levels[level] || level;
   };
@@ -360,7 +364,7 @@ const TournamentDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    toast.info("Удаление турнира пока не реализовано");
+    toast.info(t.tournamentDetail.deleteNotImplemented);
   };
 
   if (loading) {
@@ -370,7 +374,7 @@ const TournamentDetailPage = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-            <p className="text-lg">Загрузка информации о турнире...</p>
+            <p className="text-lg">{t.tournamentDetail.loadingTournament}</p>
           </div>
         </div>
         <Footer />
@@ -385,14 +389,14 @@ const TournamentDetailPage = () => {
         <div className="container mx-auto px-4 py-16">
           <Card className="max-w-lg mx-auto">
             <CardHeader>
-              <CardTitle>Ошибка</CardTitle>
+              <CardTitle>{t.tournamentDetail.error}</CardTitle>
               <CardDescription>
                 {error || "Tournament not found."}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => router.push("/tournaments")}>
-                Вернуться к списку
+                {t.tournamentDetail.backToList}
               </Button>
             </CardContent>
           </Card>
@@ -413,7 +417,7 @@ const TournamentDetailPage = () => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад
+            {t.tournamentDetail.back}
           </Button>
 
           <Card className="bg-white/5 border-white/10 shadow-xl">
@@ -442,14 +446,14 @@ const TournamentDetailPage = () => {
                     className="px-4 py-2 text-sm font-semibold"
                   >
                     {tournament.active
-                      ? "Регистрация открыта"
-                      : "Регистрация закрыта"}
+                      ? t.tournamentDetail.registrationOpen
+                      : t.tournamentDetail.registrationClosed}
                   </Badge>
                 </div>
               </div>
 
               <p className="text-lg text-gray-200 leading-relaxed whitespace-pre-line">
-                {tournament.description || "Описание появится позже."}
+                {tournament.description || t.tournamentDetail.descriptionLater}
               </p>
 
               {tournament.imageUrl && (
@@ -469,16 +473,16 @@ const TournamentDetailPage = () => {
               <Card className="bg-white/5 border-white/10">
                 <CardHeader>
                   <CardTitle className="text-xl font-semibold text-white">
-                    Информация
+                    {t.tournamentDetail.information}
                   </CardTitle>
-                  <CardDescription>Основные данные о турнире</CardDescription>
+                  <CardDescription>{t.tournamentDetail.basicData}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-3">
                       <Calendar className="w-5 h-5 text-accent" />
                       <div>
-                        <p className="text-sm text-gray-400">Дата</p>
+                        <p className="text-sm text-gray-400">{t.tournamentDetail.date}</p>
                         <p className="text-base text-white">
                           {formatDateRange(
                             tournament.startDate,
@@ -490,10 +494,10 @@ const TournamentDetailPage = () => {
                     <div className="flex items-center gap-3">
                       <DollarSign className="w-5 h-5 text-accent" />
                       <div>
-                        <p className="text-sm text-gray-400">Взнос</p>
+                        <p className="text-sm text-gray-400">{t.tournamentDetail.fee}</p>
                         <p className="text-base text-white">
                           {tournament.fee === 0
-                            ? "Бесплатно"
+                            ? t.tournamentDetail.free
                             : `${tournament.fee} ₸`}
                         </p>
                       </div>
@@ -501,16 +505,16 @@ const TournamentDetailPage = () => {
                     <div className="flex items-center gap-3">
                       <Users className="w-5 h-5 text-accent" />
                       <div>
-                        <p className="text-sm text-gray-400">Формат</p>
+                        <p className="text-sm text-gray-400">{t.tournamentDetail.format}</p>
                         <p className="text-base text-white">
-                          {tournament.format || "Уточняется"}
+                          {tournament.format || t.tournamentDetail.formatTBD}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-accent" />
                       <div>
-                        <p className="text-sm text-gray-400">Организатор</p>
+                        <p className="text-sm text-gray-400">{t.tournamentDetail.organizer}</p>
                         <p className="text-base text-white">
                           {tournament.organizerName}
                         </p>
@@ -519,7 +523,7 @@ const TournamentDetailPage = () => {
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-accent" />
                       <div>
-                        <p className="text-sm text-gray-400">Контакты</p>
+                        <p className="text-sm text-gray-400">{t.tournamentDetail.contacts}</p>
                         <p className="text-base text-white">
                           {tournament.organizerContact}
                         </p>
@@ -534,10 +538,10 @@ const TournamentDetailPage = () => {
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
                       <CardTitle className="text-xl font-semibold text-white">
-                        Поля регистрации
+                        {t.tournamentDetail.registrationFields}
                       </CardTitle>
                       <CardDescription>
-                        Какие данные нужно будет указать при подаче заявки
+                        {t.tournamentDetail.registrationFieldsDesc}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -557,7 +561,9 @@ const TournamentDetailPage = () => {
                           <Badge
                             variant={field.required ? "default" : "secondary"}
                           >
-                            {field.required ? "Обязательно" : "Опционально"}
+                            {field.required
+                              ? t.tournamentDetail.required
+                              : t.tournamentDetail.optional}
                           </Badge>
                         </div>
                       ))}
@@ -569,33 +575,32 @@ const TournamentDetailPage = () => {
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-white">
-                      Подача заявки
+                      {t.tournamentDetail.applyTitle}
                     </CardTitle>
                     <CardDescription>
-                      Заполните форму и отправьте на рассмотрение организатору
+                      {t.tournamentDetail.applyDesc}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {!user && (
                       <p className="text-sm text-red-400">
-                        Необходимо войти в аккаунт
+                        {t.tournamentDetail.needLogin}
                       </p>
                     )}
                     {user && !team && (
                       <p className="text-sm text-amber-400">
-                        Вы не состоите в команде. Создайте или вступите в
-                        команду.
+                        {t.tournamentDetail.noTeamApply}
                       </p>
                     )}
                     {user && team && team.memberCount !== 2 && (
                       <p className="text-sm text-amber-400">
-                        Заявку может подать только команда из 2 участников.
+                        {t.tournamentDetail.onlyTwoMember}
                       </p>
                     )}
                     {user && team && (
                       <div className="rounded-md border border-white/10 p-3 text-sm text-gray-300">
                         <div className="flex items-center justify-between">
-                          <span>Команда</span>
+                          <span>{t.tournamentDetail.teamLabel}</span>
                           <span className="font-semibold text-white">
                             {team.name} ({team.memberCount}/2)
                           </span>
@@ -628,14 +633,16 @@ const TournamentDetailPage = () => {
                         onClick={() => setShowApply(false)}
                         className="border-white/20"
                       >
-                        Отмена
+                        {t.tournamentDetail.cancel}
                       </Button>
                       <Button
                         onClick={submitApplication}
                         disabled={!canApply || submitting}
                         className="bg-accent hover:bg-accent/90 text-white"
                       >
-                        {submitting ? "Отправка..." : "Отправить заявку"}
+                        {submitting
+                          ? t.tournamentDetail.sending
+                          : t.tournamentDetail.submitApplication}
                       </Button>
                     </div>
                   </CardContent>
@@ -663,9 +670,9 @@ const TournamentDetailPage = () => {
               <Card className="bg-white/5 border-white/10">
                 <CardHeader>
                   <CardTitle className="text-xl font-semibold text-white">
-                    Действия
+                    {t.tournamentDetail.actions}
                   </CardTitle>
-                  <CardDescription>Ссылки и управляющие кнопки</CardDescription>
+                  <CardDescription>{t.tournamentDetail.actionsDesc}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {tournament.active ? (
@@ -682,7 +689,7 @@ const TournamentDetailPage = () => {
                             className="flex items-center gap-2"
                           >
                             <ExternalLink className="w-5 h-5" />
-                            Регистрация на Tabbycat
+                            {t.tournamentDetail.registerTabbycat}
                           </a>
                         </Button>
                       )}
@@ -694,12 +701,12 @@ const TournamentDetailPage = () => {
                           }
                           disabled={!user}
                         >
-                          Подать заявку
+                          {t.tournamentDetail.apply}
                         </Button>
                       )}
                       {!user && (
                         <p className="text-xs text-gray-400">
-                          Войдите в аккаунт, чтобы подать заявку
+                          {t.tournamentDetail.loginToApply}
                         </p>
                       )}
                     </>
@@ -709,7 +716,7 @@ const TournamentDetailPage = () => {
                       className="w-full bg-gray-600 text-gray-300"
                     >
                       <Clock className="w-4 h-4 mr-2" />
-                      Регистрация закрыта
+                      {t.tournamentDetail.registrationClosed}
                     </Button>
                   )}
 
@@ -723,7 +730,7 @@ const TournamentDetailPage = () => {
                         }
                       >
                         <Edit className="w-4 h-4 mr-2" />
-                        Редактировать
+                        {t.tournamentDetail.edit}
                       </Button>
                       <Button
                         variant="outline"
@@ -731,7 +738,7 @@ const TournamentDetailPage = () => {
                         onClick={handleDelete}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Удалить
+                        {t.tournamentDetail.delete}
                       </Button>
                       <div className="pt-2">
                         <Button
@@ -739,7 +746,7 @@ const TournamentDetailPage = () => {
                           className="w-full text-emerald-400 transition-colors hover:bg-emerald-400 hover:text-white"
                           onClick={loadApplications}
                         >
-                          Показать заявки
+                          {t.tournamentDetail.showApplications}
                         </Button>
                       </div>
                     </div>
@@ -750,17 +757,19 @@ const TournamentDetailPage = () => {
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
                     <CardTitle className="text-xl font-semibold text-white">
-                      Заявки на турнир
+                      {t.tournamentDetail.applicationsTitle}
                     </CardTitle>
                     <CardDescription>
                       {appsLoading
-                        ? "Загрузка..."
-                        : `Всего: ${applications.length}`}
+                        ? t.tournamentDetail.loading
+                        : t.tournamentDetail.total(applications.length)}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {applications.length === 0 && (
-                      <p className="text-sm text-gray-400">Заявок пока нет</p>
+                      <p className="text-sm text-gray-400">
+                        {t.tournamentDetail.noApplicationsYet}
+                      </p>
                     )}
                     {applications.map((app) => (
                       <div
@@ -769,7 +778,7 @@ const TournamentDetailPage = () => {
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="text-white font-medium">
-                            #{app.id} — {app.team?.name || "Команда"}
+                            #{app.id} — {app.team?.name || t.tournamentDetail.teamFallback}
                           </div>
                           <Badge
                             variant={
@@ -784,7 +793,7 @@ const TournamentDetailPage = () => {
                           </Badge>
                         </div>
                         <div className="mt-2 text-sm text-gray-300">
-                          Подал: {app.submittedBy?.username}
+                          {t.tournamentDetail.submittedByLabel(app.submittedBy?.username)}
                         </div>
                         {app.fields?.length > 0 && (
                           <div className="mt-2 grid grid-cols-1 gap-2">
@@ -804,7 +813,7 @@ const TournamentDetailPage = () => {
                                 changeApplicationStatus(app.id, "accept")
                               }
                             >
-                              <CheckCircle2 className="w-4 h-4 mr-2" /> Принять
+                              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.tournamentDetail.accept}
                             </Button>
                             <Button
                               variant="destructive"
@@ -812,7 +821,7 @@ const TournamentDetailPage = () => {
                                 changeApplicationStatus(app.id, "reject")
                               }
                             >
-                              <XCircle className="w-4 h-4 mr-2" /> Отклонить
+                              <XCircle className="w-4 h-4 mr-2" /> {t.tournamentDetail.reject}
                             </Button>
                           </div>
                         )}

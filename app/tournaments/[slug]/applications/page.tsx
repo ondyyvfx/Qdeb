@@ -24,6 +24,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale/ru";
 import { useParams, useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TeamUser {
   id: number;
@@ -89,6 +90,7 @@ async function apiPost(url: string, data?: any) {
 }
 
 export default function ApplicationsPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const [applications, setApplications] = useState<
@@ -102,7 +104,7 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     if (!tournamentSlug) {
-      setError("Slug турнира не найден");
+      setError(t.applications.slugNotFound);
       return;
     }
 
@@ -116,21 +118,21 @@ export default function ApplicationsPage() {
         if (res.status === 200 && res.data) {
           setApplications(res.data);
         } else {
-          const msg = res.error || "Не удалось загрузить заявки";
+          const msg = res.error || t.applications.couldNotLoadApps;
           setError(msg);
           toast.error(msg);
         }
       } catch (e) {
         console.error("Error loading applications:", e);
-        setError("Произошла ошибка при загрузке заявок");
-        toast.error("Произошла ошибка при загрузке заявок");
+        setError(t.applications.loadError);
+        toast.error(t.applications.loadError);
       } finally {
         setLoading(false);
       }
     };
 
     loadApplications();
-  }, [tournamentSlug]);
+  }, [tournamentSlug, t]);
 
   const changeApplicationStatus = async (
     applicationId: number,
@@ -142,7 +144,9 @@ export default function ApplicationsPage() {
 
       if (res.status === 200) {
         toast.success(
-          action === "accept" ? "Заявка принята" : "Заявка отклонена"
+          action === "accept"
+            ? t.applications.appAccepted
+            : t.applications.appRejected
         );
         // Обновляем список заявок
         const updatedRes = await apiGet<TournamentApplicationListItem[]>(
@@ -152,11 +156,11 @@ export default function ApplicationsPage() {
           setApplications(updatedRes.data);
         }
       } else {
-        toast.error(res.error || "Не удалось обновить заявку");
+        toast.error(res.error || t.applications.couldNotUpdateApp);
       }
     } catch (error) {
       console.error("Error updating application:", error);
-      toast.error("Произошла ошибка при обновлении заявки");
+      toast.error(t.applications.updateError);
     } finally {
       setUpdating(null);
     }
@@ -174,17 +178,17 @@ export default function ApplicationsPage() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       PENDING: {
-        label: "На рассмотрении",
+        label: t.applications.statusPending,
         variant: "outline" as const,
         className: "border-yellow-400 text-yellow-400",
       },
       APPROVED: {
-        label: "Принята",
+        label: t.applications.statusApproved,
         variant: "default" as const,
         className: "bg-green-500 text-white",
       },
       REJECTED: {
-        label: "Отклонена",
+        label: t.applications.statusRejected,
         variant: "secondary" as const,
         className: "bg-red-500 text-white",
       },
@@ -207,7 +211,7 @@ export default function ApplicationsPage() {
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-            <p className="text-lg text-white">Загрузка заявок...</p>
+            <p className="text-lg text-white">{t.applications.loadingApplications}</p>
           </div>
         </main>
         <Footer />
@@ -227,11 +231,11 @@ export default function ApplicationsPage() {
             className="flex items-center gap-2 mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад
+            {t.applications.back}
           </Button>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Заявки на турнир
+            {t.applications.title}
           </h1>
 
           {error && (
@@ -258,7 +262,7 @@ export default function ApplicationsPage() {
                         </CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-2">
                           <Calendar className="w-4 h-4" />
-                          Подана: {formatDate(application.createdAt)}
+                          {t.applications.submittedOn(formatDate(application.createdAt))}
                         </CardDescription>
                       </div>
                       {getStatusBadge(application.status)}
@@ -268,17 +272,17 @@ export default function ApplicationsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <h4 className="text-sm font-medium text-gray-400 mb-2">
-                          Информация о команде
+                          {t.applications.teamInfo}
                         </h4>
                         <div className="space-y-2 text-sm text-gray-300">
                           <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
                             <p className="text-gray-400 text-xs uppercase tracking-wide">
-                              Капитан
+                              {t.applications.captain}
                             </p>
                             <p className="text-white font-medium">
                               {application.team.leader?.fullName ||
                                 application.team.leader?.username ||
-                                "Не указан"}
+                                t.applications.notSpecified}
                             </p>
                             {application.team.leader?.email && (
                               <p className="text-gray-400 text-xs">
@@ -288,12 +292,12 @@ export default function ApplicationsPage() {
                           </div>
                           <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
                             <p className="text-gray-400 text-xs uppercase tracking-wide">
-                              Напарник
+                              {t.applications.teammate}
                             </p>
                             <p className="text-white font-medium">
                               {application.team.member?.fullName ||
                                 application.team.member?.username ||
-                                "Не указан"}
+                                t.applications.notSpecified}
                             </p>
                             {application.team.member?.email && (
                               <p className="text-gray-400 text-xs">
@@ -303,7 +307,7 @@ export default function ApplicationsPage() {
                           </div>
                           <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2">
                             <p className="text-gray-400 text-xs uppercase tracking-wide">
-                              Подана пользователем
+                              {t.applications.submittedByUser}
                             </p>
                             <p className="text-white font-medium">
                               {application.submittedBy.fullName ||
@@ -311,11 +315,11 @@ export default function ApplicationsPage() {
                             </p>
                             <p className="text-gray-400 text-xs">
                               {application.submittedBy.email ??
-                                "Email не указан"}
+                                t.applications.emailNotSpecified}
                             </p>
                           </div>
                           <p className="text-white">
-                            <span className="text-gray-400">Состав:</span>{" "}
+                            <span className="text-gray-400">{t.applications.roster}</span>{" "}
                             {application.team.memberCount}/2
                           </p>
                         </div>
@@ -324,7 +328,7 @@ export default function ApplicationsPage() {
                       {application.fields && application.fields.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-400 mb-2">
-                            Дополнительные поля
+                            {t.applications.additionalFields}
                           </h4>
                           <div className="space-y-1 text-sm">
                             {application.fields.map((field) => (
@@ -351,8 +355,8 @@ export default function ApplicationsPage() {
                         >
                           <CheckCircle2 className="w-4 h-4 mr-2" />
                           {updating === application.id
-                            ? "Обновление..."
-                            : "Принять заявку"}
+                            ? t.applications.updating
+                            : t.applications.acceptApplication}
                         </Button>
                         <Button
                           variant="destructive"
@@ -363,8 +367,8 @@ export default function ApplicationsPage() {
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           {updating === application.id
-                            ? "Обновление..."
-                            : "Отклонить заявку"}
+                            ? t.applications.updating
+                            : t.applications.rejectApplication}
                         </Button>
                       </div>
                     )}
@@ -377,13 +381,13 @@ export default function ApplicationsPage() {
                   <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">
                     {applications
-                      ? "Заявок пока нет"
-                      : "Не удалось загрузить заявки"}
+                      ? t.applications.noApplicationsYet
+                      : t.applications.couldNotLoad}
                   </h3>
                   <p className="text-gray-400">
                     {applications
-                      ? "На этот турнир еще не было подано ни одной заявки."
-                      : "Попробуйте обновить страницу или проверьте подключение к интернету."}
+                      ? t.applications.noApplicationsText
+                      : t.applications.tryRefresh}
                   </p>
                 </CardContent>
               </Card>

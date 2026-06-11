@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LoginRequiredMessageProps {
   message?: string;
@@ -8,10 +11,11 @@ interface LoginRequiredMessageProps {
 }
 
 export const LoginRequiredMessage: React.FC<LoginRequiredMessageProps> = ({
-  message = "Необходимо войти в систему для доступа к этой странице",
+  message,
   redirectPath = "/login",
 }) => {
   const router = useRouter();
+  const { t } = useLanguage();
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -33,15 +37,17 @@ export const LoginRequiredMessage: React.FC<LoginRequiredMessageProps> = ({
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-red-400 mb-2">
-            Доступ запрещен
+            {t.shared.accessDenied}
           </h2>
-          <p className="text-gray-400 mb-4">{message}</p>
+          <p className="text-gray-400 mb-4">
+            {message ?? t.shared.loginRequired}
+          </p>
           <div className="mt-6">
             <Button
               onClick={() => router.push(redirectPath)}
               className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer error-button"
             >
-              Войти в систему
+              {t.shared.loginToSystem}
             </Button>
           </div>
         </div>

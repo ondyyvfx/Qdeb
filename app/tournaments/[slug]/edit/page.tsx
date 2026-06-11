@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiGet, safeParseResponse } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TournamentFormData {
   name: string;
@@ -48,6 +49,7 @@ interface TournamentFormData {
 const EditTournamentPage = () => {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +129,7 @@ const EditTournamentPage = () => {
       setError(null);
     } catch (err) {
       console.error("Error fetching tournament:", err);
-      setError("Не удалось загрузить данные турнира.");
+      setError(t.tournamentForm.couldNotLoadTournamentData);
     } finally {
       setLoading(false);
     }
@@ -191,11 +193,11 @@ const EditTournamentPage = () => {
       }
 
       // TODO: PUT /api/tournaments/{slug}
-      toast.success("Турнир успешно обновлен!");
+      toast.success(t.tournamentForm.tournamentUpdated);
       router.push(`/tournaments/${tournamentSlug}`);
     } catch (err) {
       console.error("Error updating tournament:", err);
-      toast.error("Произошла ошибка при обновлении турнира");
+      toast.error(t.tournamentForm.updateError);
     } finally {
       setSaving(false);
     }
@@ -208,7 +210,7 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4" />
-              <p className="text-lg">Загрузка турнира...</p>
+              <p className="text-lg">{t.tournamentForm.loadingTournamentEdit}</p>
             </div>
           </div>
         </div>
@@ -221,7 +223,7 @@ const EditTournamentPage = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle>Ошибка</CardTitle>
+                <CardTitle>{t.tournamentDetail.error}</CardTitle>
                 <CardDescription>{error}</CardDescription>
               </CardHeader>
               <CardContent>
@@ -229,7 +231,7 @@ const EditTournamentPage = () => {
                   onClick={() => router.push("/tournaments")}
                   className="w-full"
                 >
-                  Вернуться к списку
+                  {t.tournamentDetail.backToList}
                 </Button>
               </CardContent>
             </Card>
@@ -248,17 +250,17 @@ const EditTournamentPage = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Назад к турниру
+              {t.tournamentForm.backToTournament}
             </Button>
           </div>
 
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl p-8 border border-white/10">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Редактирование турнира
+                {t.tournamentForm.editTitle}
               </h1>
               <p className="text-lg text-gray-400 font-medium">
-                Измените информацию о турнире
+                {t.tournamentForm.editSubtitle}
               </p>
             </div>
           </div>
@@ -268,13 +270,13 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Основная информация
+                  {t.tournamentForm.basicInfo}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Название турнира *</Label>
+                    <Label htmlFor="name">{t.tournamentForm.tournamentName}</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -284,7 +286,7 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="shortName">Краткое название</Label>
+                    <Label htmlFor="shortName">{t.tournamentForm.shortName}</Label>
                     <Input
                       id="shortName"
                       value={formData.shortName}
@@ -297,7 +299,7 @@ const EditTournamentPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="slug">URL-адрес (slug) *</Label>
+                  <Label htmlFor="slug">{t.tournamentForm.slugLabel}</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -308,14 +310,14 @@ const EditTournamentPage = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Описание</Label>
+                  <Label htmlFor="description">{t.tournamentForm.descriptionLabelShort}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) =>
                       handleInputChange("description", e.target.value)
                     }
-                    placeholder="Добавьте описание турнира"
+                    placeholder={t.tournamentForm.descriptionPlaceholderEdit}
                     rows={4}
                   />
                 </div>
@@ -326,13 +328,13 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Даты и информация
+                  {t.tournamentForm.datesAndInfo}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="startDate">Дата начала *</Label>
+                    <Label htmlFor="startDate">{t.tournamentForm.startDate}</Label>
                     <Input
                       id="startDate"
                       type="date"
@@ -344,7 +346,7 @@ const EditTournamentPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="endDate">Дата окончания *</Label>
+                    <Label htmlFor="endDate">{t.tournamentForm.endDate}</Label>
                     <Input
                       id="endDate"
                       type="date"
@@ -359,7 +361,7 @@ const EditTournamentPage = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="fee">Регистрационный взнос (₸)</Label>
+                    <Label htmlFor="fee">{t.tournamentForm.fee}</Label>
                     <Input
                       id="fee"
                       type="number"
@@ -375,7 +377,7 @@ const EditTournamentPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="level">Уровень турнира</Label>
+                    <Label htmlFor="level">{t.tournamentForm.level}</Label>
                     <select
                       id="level"
                       value={formData.level}
@@ -383,16 +385,16 @@ const EditTournamentPage = () => {
                         handleInputChange("level", e.target.value)
                       }
                       className="w-full p-2 rounded-md border bg-background text-text"
-                      aria-label="Уровень турнира"
+                      aria-label={t.tournamentForm.level}
                     >
-                      <option value="LOCAL">Локальный</option>
-                      <option value="REGIONAL">Региональный</option>
-                      <option value="NATIONAL">Национальный</option>
-                      <option value="INTERNATIONAL">Международный</option>
+                      <option value="LOCAL">{t.tournamentForm.levelLocal}</option>
+                      <option value="REGIONAL">{t.tournamentForm.levelRegional}</option>
+                      <option value="NATIONAL">{t.tournamentForm.levelNational}</option>
+                      <option value="INTERNATIONAL">{t.tournamentForm.levelInternational}</option>
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="format">Формат дебатов</Label>
+                    <Label htmlFor="format">{t.tournamentForm.format}</Label>
                     <Input
                       id="format"
                       value={formData.format}
@@ -413,9 +415,9 @@ const EditTournamentPage = () => {
                       handleInputChange("active", e.target.checked)
                     }
                     className="rounded"
-                    aria-label="Регистрация открыта"
+                    aria-label={t.tournamentForm.registrationOpen}
                   />
-                  <Label htmlFor="active">Регистрация открыта</Label>
+                  <Label htmlFor="active">{t.tournamentForm.registrationOpen}</Label>
                 </div>
               </CardContent>
             </Card>
@@ -424,12 +426,12 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Информация об организаторе
+                  {t.tournamentForm.orgInfo}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="organizerName">Название организации *</Label>
+                  <Label htmlFor="organizerName">{t.tournamentForm.orgName}</Label>
                   <Input
                     id="organizerName"
                     value={formData.organizerName}
@@ -442,7 +444,7 @@ const EditTournamentPage = () => {
                 </div>
                 <div>
                   <Label htmlFor="organizerContact">
-                    Контактная информация
+                    {t.tournamentForm.orgContact}
                   </Label>
                   <Input
                     id="organizerContact"
@@ -460,15 +462,15 @@ const EditTournamentPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
-                  Изображение турнира
+                  {t.tournamentForm.tournamentImage}
                 </CardTitle>
                 <CardDescription>
-                  Загрузите новое изображение (опционально)
+                  {t.tournamentForm.uploadNewImageOptional}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>
-                  <Label htmlFor="photo">Выберите файл</Label>
+                  <Label htmlFor="photo">{t.tournamentForm.chooseFile}</Label>
                   <Input
                     id="photo"
                     type="file"
@@ -489,7 +491,7 @@ const EditTournamentPage = () => {
                 onClick={() => router.push(`/tournaments/${tournamentSlug}`)}
                 disabled={saving}
               >
-                Отмена
+                {t.tournamentForm.cancel}
               </Button>
               <Button
                 type="submit"
@@ -497,7 +499,7 @@ const EditTournamentPage = () => {
                 className="flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {saving ? "Сохранение..." : "Сохранить изменения"}
+                {saving ? t.tournamentForm.saving : t.tournamentForm.saveChanges}
               </Button>
             </div>
           </form>
@@ -508,8 +510,8 @@ const EditTournamentPage = () => {
 
   return (
     <AdminOnlyPage
-      title="Недостаточно прав"
-      message="Только администраторы могут редактировать турниры"
+      title={t.shared.insufficientRights}
+      message={t.tournamentForm.onlyAdminsEdit}
     >
       <Navbar />
       <div className="min-h-screen bg-background text-text">

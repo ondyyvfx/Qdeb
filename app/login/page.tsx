@@ -13,6 +13,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Toaster, toast } from "react-hot-toast"
 import { safeParseResponse } from "@/lib/api"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4232/api"
 
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
+  const { t } = useLanguage()
 
   const fetchProfile = async (accessToken: string) => {
     const res = await fetch(`${API_URL}/profile`, {
@@ -49,14 +51,14 @@ export default function LoginPage() {
 
       if (res.ok) {
         const parseResult = await safeParseResponse(res)
-        if (parseResult.error || !parseResult.isJson) { toast.error("Ошибка обработки ответа сервера"); return }
+        if (parseResult.error || !parseResult.isJson) { toast.error(t.login.serverResponseError); return }
         const data = parseResult.data as { token: string }
-        toast.success("Успешный вход!")
+        toast.success(t.login.loginSuccess)
         Cookies.set("accessToken", data.token, { expires: rememberDevice ? 7 : 1 })
         await fetchProfile(data.token)
         router.push("/")
       } else {
-        let message = "Ошибка входа. Проверьте данные."
+        let message = t.login.loginError
         const parseResult = await safeParseResponse(res)
         if (parseResult.error) message = parseResult.error
         else if (typeof parseResult.data === "string") message = parseResult.data
@@ -67,7 +69,7 @@ export default function LoginPage() {
         toast.error(message)
       }
     } catch {
-      toast.error("Произошла ошибка. Попробуйте снова.")
+      toast.error(t.login.genericError)
     } finally {
       setIsLoading(false)
     }
@@ -94,17 +96,17 @@ export default function LoginPage() {
         <div className="w-full max-w-md ml-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">Войдите в аккаунт</h1>
+            <h1 className="text-3xl font-bold mb-1">{t.login.title}</h1>
             <p className="text-white/40 text-sm">
-              Нет учётной записи?{" "}
-              <Link href="/register" className="text-accent hover:underline">Зарегистрироваться</Link>
+              {t.login.noAccount}{" "}
+              <Link href="/register" className="text-accent hover:underline">{t.login.registerLink}</Link>
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Username */}
             <div className="space-y-1.5">
-              <Label className="text-sm text-white/60">Никнейм</Label>
+              <Label className="text-sm text-white/60">{t.login.nickname}</Label>
               <Input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -117,15 +119,15 @@ export default function LoginPage() {
             {/* Password */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <Label className="text-sm text-white/60">Пароль</Label>
-                <a href="#" className="text-xs text-accent hover:underline">Забыли пароль?</a>
+                <Label className="text-sm text-white/60">{t.login.password}</Label>
+                <a href="#" className="text-xs text-accent hover:underline">{t.login.forgotPassword}</a>
               </div>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Введите пароль"
+                  placeholder={t.login.passwordPlaceholder}
                   required
                   className={`${inputClass} pr-10`}
                 />
@@ -147,7 +149,7 @@ export default function LoginPage() {
                 onCheckedChange={(c) => setRememberDevice(!!c)}
               />
               <Label htmlFor="remember" className="text-sm text-white/50 cursor-pointer">
-                Запомнить это устройство
+                {t.login.rememberDevice}
               </Label>
             </div>
 
@@ -162,7 +164,7 @@ export default function LoginPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-              ) : "Войти"}
+              ) : t.login.submit}
             </Button>
           </form>
         </div>
