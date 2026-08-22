@@ -20,7 +20,7 @@ QDeb — это веб-платформа для проведения и орг�
 ## 📁 Установка
 
 ```bash
-git clone https://github.com/yourusername/qdeb.git
+git clone https://github.com/ondyyvfx/qdeb.git
 cd qdeb
 npm install
 npm run dev
